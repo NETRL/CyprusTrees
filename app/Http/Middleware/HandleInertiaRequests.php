@@ -2,6 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Entities\Navbar;
+use App\Entities\Auth;
+use App\Entities\Message;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -14,6 +17,8 @@ class HandleInertiaRequests extends Middleware
      */
     protected $rootView = 'app';
 
+    
+    public function __construct(private Message $message, private Navbar $navbar, private Auth $auth){}
     /**
      * Determine the current asset version.
      */
@@ -31,11 +36,16 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            'auth' => [
-                'user' => fn() => $request->user()
-                    ? $request->user()
-                    : null,
-            ],
+            // 'auth' => [
+            //     'user' => fn() => $request->user()
+            //         ? $request->user()
+            //         : null,
+            // ],
+            
+            'auth'    => $this->auth->toArray(),
+            'message' => $this->message->getMessage(),
+            'navbar'  => $this->navbar->getNavbar(),
+
             'flash' => [
                 'success' => fn() => $request->session()->get('success'),
                 'error'   => fn() => $request->session()->get('error'),

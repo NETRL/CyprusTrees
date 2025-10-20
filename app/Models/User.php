@@ -9,13 +9,12 @@ use Illuminate\Contracts\Auth\MustVerifyEmail as AuthMustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements AuthMustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, MustVerifyEmail;
-
-    protected $guard_name = 'web';
+    use HasFactory, Notifiable, MustVerifyEmail, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -50,4 +49,7 @@ class User extends Authenticatable implements AuthMustVerifyEmail
             'password' => 'hashed',
         ];
     }
+
+    protected $with = ['roles'];
+
 }
