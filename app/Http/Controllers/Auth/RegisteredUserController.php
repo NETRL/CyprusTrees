@@ -32,7 +32,8 @@ class RegisteredUserController extends Controller
     {
         // TODO reset the password rules. 
         $request->validate([
-            'fullname' => 'required|string|max:255',
+            'firstName' => 'required|string|max:255',
+            'lastName' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             // 'password' => ['required', 'confirmed', Rules\Password::defaults()], 
             'password' => ['required', 'confirmed'],
@@ -42,7 +43,8 @@ class RegisteredUserController extends Controller
         ]);
 
         $user = User::create([
-            'name' => $request->fullname,
+            'first_name' => $request->firstName,
+            'last_name' => $request->lastName,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);

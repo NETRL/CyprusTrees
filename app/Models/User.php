@@ -50,6 +50,10 @@ class User extends Authenticatable implements AuthMustVerifyEmail
         ];
     }
 
-    protected $with = ['roles'];
+    public function address(){
+        return $this->hasOne(UserAddress::class);
+    }
+
+    protected $with = ['roles', 'address'];
 
 }

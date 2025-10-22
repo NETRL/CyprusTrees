@@ -8,13 +8,13 @@
           <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
             <div>
               <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Country</p>
-              <p class="text-sm font-medium text-gray-800 dark:text-white/90">United States</p>
+              <p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ user.address.country }}</p>
             </div>
 
             <div>
               <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">City/State</p>
               <p class="text-sm font-medium text-gray-800 dark:text-white/90">
-                Phoenix, United States
+                {{ user.address.city }}, {{ user.address.state }}
               </p>
             </div>
 
@@ -22,13 +22,13 @@
               <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
                 Postal Code
               </p>
-              <p class="text-sm font-medium text-gray-800 dark:text-white/90">ERT 2489</p>
+              <p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ user.address.postal_code }}</p>
             </div>
 
-            <div>
+            <!-- <div>
               <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">TAX ID</p>
               <p class="text-sm font-medium text-gray-800 dark:text-white/90">AS4568384</p>
-            </div>
+            </div> -->
           </div>
         </div>
 
@@ -163,6 +163,9 @@
 <script setup>
 import { ref } from 'vue'
 import Modal from './Modal.vue'
+import { usePage } from '@inertiajs/vue3'
+
+const user = usePage().props.auth.user;
 
 const isProfileAddressModal = ref(false)
 

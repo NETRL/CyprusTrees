@@ -5,6 +5,26 @@ layer(base);
 
 @custom-variant dark (&:is(.dark *));
 
+
+/* PrimeVue DataTable */
+.p-datatable {
+  --p-datatable-header-background: rgba(0, 0, 0, 0);
+  --p-datatable-header-cell-background: rgba(0, 0, 0, 0);
+  --p-datatable-row-background: rgba(0, 0, 0, 0);
+  --p-paginator-background: rgba(0, 0, 0, 0);
+  --p-checkbox-background: rgba(0, 0, 0, 0);
+  --p-inputtext-background: rgba(0, 0, 0, 0);
+  --p-select-background: rgba(0, 0, 0, 0);
+}
+/* PrimeVue InputText */
+.p-inputtext {
+  --p-inputtext-background: rgba(0, 0, 0, 0) !important,
+}
+/* PrimeVue MultiSelect */
+.p-multiselect {
+  --p-multiselect-background: rgba(0, 0, 0, 0) !important,
+}
+
 @theme {
   --font-*: initial;
   --font-outfit: Outfit, sans-serif;

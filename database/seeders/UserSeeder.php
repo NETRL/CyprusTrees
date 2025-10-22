@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\UserAddress;
 use Illuminate\Support\Str;
 use Illuminate\Database\Seeder;
 
@@ -11,31 +12,25 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $admin = User::create([
-            'name'              => 'Admin',
+            'first_name'              => 'Admin',
+            'last_name'              => 'Admin',
             'email'             => 'admin@admin.com',
+            'email_verified_at' => now(),
+            'password'          => password_hash('password', PASSWORD_BCRYPT),
+            'remember_token'    => Str::random(10),
+            'phone'    => fake()->phoneNumber(),
+        ]);
+
+        $user = User::create([
+            'first_name'              => 'Test',
+            'last_name'              => 'User',
+            'email'             => 'test@example.com',
             'email_verified_at' => now(),
             'password'          => password_hash('password', PASSWORD_BCRYPT),
             'remember_token'    => Str::random(10),
         ]);
 
-        // $citizen = User::create([
-        //     'name'              => 'citizen',
-        //     'email'             => 'citizen@admin.com',
-        //     'email_verified_at' => now(),
-        //     'password'          => password_hash('password', PASSWORD_BCRYPT),
-        //     'remember_token'    => Str::random(10),
-        // ]);
-
-        // $staff = User::create([
-        //     'name'              => 'staff',
-        //     'email'             => 'staff@admin.com',
-        //     'email_verified_at' => now(),
-        //     'password'          => password_hash('password', PASSWORD_BCRYPT),
-        //     'remember_token'    => Str::random(10),
-        // ]);
-
         $admin->assignRole('admin');
-        // $citizen->assignRole('web');
-        // $staff->assignRole('web');
+        UserAddress::factory()->for($admin)->create();
     }
 }

@@ -39,7 +39,7 @@
       <div v-if="isAuthenticated" :class="[isApplicationMenuOpen ? 'flex' : 'hidden']"
         class="items-center justify-between w-full gap-4 px-5 py-4 shadow-theme-md lg:flex lg:justify-end lg:px-0 lg:shadow-none">
         <div class="flex items-center gap-2 2xsm:gap-3">
-          <Link v-if="$page.component != 'Dashboard'" :href="route('login')" type="button" :title="`Theme: ${theme}`" aria-label="Toggle theme" class="relative inline-flex items-center justify-center p-2 rounded-lg border bg-white text-gray-500 transition-colors
+          <Link v-if="$page.component != 'Dashboard'" :href="route('login')" type="button" as="button" :title="`Theme: ${theme}`" aria-label="Toggle theme" class="relative inline-flex items-center justify-center p-2 rounded-lg border bg-white text-gray-500 transition-colors
            hover:bg-gray-100 hover:text-gray-700 border-gray-200
            dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white">
           Go to Dashboard

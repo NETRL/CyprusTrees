@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Dashboard\PermissionController;
+use App\Http\Controllers\Dashboard\RoleController;
+use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -23,9 +26,20 @@ Route::get('/dashboard', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile');
 
+
+    Route::post('/users/mass-destroy', [UserConroller::class, 'massDestroy'])->name('users.massDestroy');
+    Route::resource('users', UserController::class)->except(['create', 'edit']);
+
+    Route::post('/roles/mass-destroy', [RoleController::class, 'massDestroy'])->name('roles.massDestroy');
+    Route::resource('roles', RoleController::class)->except(['create', 'edit']);
+
+    Route::post('/permissions/store-group', [PermissionController::class, 'storeGroup'])->name('permissions.storeGroup');
+    Route::patch('/permissions/{permission}/update-group', [PermissionController::class, 'updateGroup'])->name('permissions.updateGroup');
+    Route::resource('permissions', PermissionController::class)->except(['create', 'edit']);
+
     // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     // Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

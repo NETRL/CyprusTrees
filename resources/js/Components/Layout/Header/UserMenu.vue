@@ -5,7 +5,7 @@
         <img src="https://i.pravatar.cc/300" alt="User" />
       </span>
 
-      <span class="block mr-1 font-medium text-theme-sm">Musharof </span>
+      <span class="block mr-1 font-medium text-theme-sm">{{ $page.props.auth.user.name }} </span>
 
       <ChevronDownIcon :class="{ 'rotate-180': dropdownOpen }" />
     </button>
@@ -15,10 +15,10 @@
       class="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark">
       <div>
         <span class="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-          Musharof Chowdhury
+          {{ $page.props.auth.user.name }}
         </span>
         <span class="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-          randomuser@pimjo.com
+          {{ $page.props.auth.user.email }}
         </span>
       </div>
 
