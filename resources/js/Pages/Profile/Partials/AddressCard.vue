@@ -128,7 +128,7 @@ const user = computed(() => page.props.auth?.user)
 
 const form = useForm({
   'country': user.value.address?.country,
-  'state': user.value.address?.country,
+  'state': user.value.address?.state,
   'city': user.value.address?.city,
   'postal_code': user.value.address?.postal_code,
 });

@@ -133,8 +133,8 @@
                       Current Password
                     </label>
                     <Password id="current_password" type="password" v-model="passwordForm.current_password"
-                      autocomplete="current-password" inputClass="w-full border-transparent!"
-                      class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
+                      autocomplete="current-password" inputClass="w-full border-transparent! shadow-none! rounded-lg!"
+                      class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
                     <InputError :message="passwordForm.errors.current_password" class="mt-2" />
                   </div>
                   <div class="hidden lg:block"></div>
@@ -143,8 +143,8 @@
                       New Password
                     </label>
                     <Password id="password" type="password" v-model="passwordForm.password" autocomplete="new-password"
-                      inputClass="w-full border-transparent!" toggleMask
-                      class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
+                      inputClass="w-full border-transparent! shadow-none! rounded-lg!" toggleMask
+                      class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent bg-none text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
                     <InputError :message="passwordForm.errors.password" class="mt-2" />
 
                   </div>
@@ -153,8 +153,8 @@
                       Confirm New Password
                     </label>
                     <Password id="password_confirmation" type="password" v-model="passwordForm.password_confirmation"
-                      autocomplete="new-password" inputClass="w-full border-transparent!"
-                      class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
+                      autocomplete="new-password" inputClass="w-full border-transparent! shadow-none! rounded-lg!"
+                      class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent bg-none text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
                     <InputError :message="passwordForm.errors.password_confirmation" class="mt-2" />
 
                   </div>

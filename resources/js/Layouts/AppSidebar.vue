@@ -64,8 +64,8 @@
 import { computed } from "vue";
 import { usePage } from '@inertiajs/vue3';
 import { HorizontalDots } from "@/icons";
-import SidebarWidget from '@/Components/Layout/SidebarWidget.vue';
-import SidebarNavItem from '@/Components/Layout/SidebarNavItem.vue';
+import SidebarWidget from '@/Components/Layout/Sidebar/SidebarWidget.vue';
+import SidebarNavItem from '@/Components/Layout/Sidebar/SidebarNavItem.vue';
 import { useSidebar } from '@/Composables/useSidebar';
 
 const page = usePage();

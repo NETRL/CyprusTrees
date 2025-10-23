@@ -71,7 +71,7 @@
 <script setup>
 import { computed } from 'vue';
 import { ChevronDownIcon } from "@/icons";
-import SidebarNavLink from '@/Components/Layout/SidebarNavLink.vue';
+import SidebarNavLink from '@/Components/Layout/Sidebar/SidebarNavLink.vue';
 import { useSidebar } from '@/Composables/useSidebar';
 
 const props = defineProps({
