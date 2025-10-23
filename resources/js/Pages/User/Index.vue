@@ -29,8 +29,10 @@
                 </template>
                 <Column :exportable="false" selectionMode="multiple" style="width: 3rem"></Column>
                 <Column :sortable="true" field="id" header="Id"></Column>
-                <Column :sortable="true" field="name" header="Name"></Column>
+                <Column :sortable="true" field="first_name" header="First Name"></Column>
+                <Column :sortable="true" field="last_name" header="Last Name"></Column>
                 <Column :sortable="true" field="email" header="Email"></Column>
+                <Column :sortable="true" field="phone" header="Phone"></Column>
                 <Column :exportable="false">
                     <template #body="slotProps">
                         <Button v-has-permission="{ props: $page.props, permissions: ['users.edit'] }"

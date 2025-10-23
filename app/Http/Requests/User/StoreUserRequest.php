@@ -21,7 +21,11 @@ class StoreUserRequest extends FormRequest
                 'email',
                 Rule::unique('users')
             ],
-            'name'             => [
+            'first_name'             => [
+                'required',
+                'string',
+            ],
+            'last_name'             => [
                 'required',
                 'string',
             ],

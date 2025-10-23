@@ -2,12 +2,14 @@
 
 namespace App\Entities;
 
-use App\Models\User as UserModel;
+use App\Models\User;
 use Illuminate\Http\Request;
+
+use function Illuminate\Log\log;
 
 class Auth
 {
-    private ?UserModel $user;
+    private ?User $user;
 
     public function __construct(Request $request)
     {

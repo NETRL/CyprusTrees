@@ -33,7 +33,8 @@ class UserController extends Controller
     {
         $user = new User();
 
-        $user->name     = $request->input('name');
+        $user->first_name  = $request->input('first_name');
+        $user->last_name  = $request->input('last_name');
         $user->email    = $request->input('email');
         $user->password = bcrypt($request->input('password'));
 
@@ -54,7 +55,8 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
-        $user->name  = $request->input('name');
+        $user->first_name  = $request->input('first_name');
+        $user->last_name  = $request->input('last_name');
         $user->email = $request->input('email');
 
         // has permission to assign roles
@@ -134,6 +136,4 @@ class UserController extends Controller
 
         return redirect()->route('users.index');
     }
-
-
 }

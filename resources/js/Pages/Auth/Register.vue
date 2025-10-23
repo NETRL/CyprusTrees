@@ -1,6 +1,5 @@
 <template>
     <FullScreenLayout>
-
         <Head title="Register" />
         <div class="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
             <div class="relative flex flex-col justify-center w-full h-screen lg:flex-row dark:bg-gray-900">
@@ -84,22 +83,22 @@
                                                 class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                                 Full Name<span class="text-error-500">*</span>
                                             </label>
-                                            <input v-model="form.firstName" type="text" id="fname" name="fname"
+                                            <input v-model="form.first_name" type="text" id="fname" name="fname"
                                                 placeholder="Enter your first name"
                                                 class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 invalid-focus-outline dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
+                                            <InputError class="mt-2" :message="form.errors.first_name" />
                                         </div>
-                                        <InputError class="mt-2" :message="form.errors.firstName" />
                                         <!-- Last Name -->
                                         <div class="sm:col-span-1">
                                             <label for="lname"
                                                 class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                                 Last Name<span class="text-error-500">*</span>
                                             </label>
-                                            <input v-model="form.lastName" type="text" id="lname" name="lname"
+                                            <input v-model="form.last_name" type="text" id="lname" name="lname"
                                                 placeholder="Enter your last name"
                                                 class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
-                                            </div>
-                                            <InputError class="mt-2" :message="form.errors.lastName" />
+                                            <InputError class="mt-2" :message="form.errors.last_name" />
+                                        </div>
                                     </div>
                                     <!-- Email -->
                                     <div>
@@ -110,8 +109,8 @@
                                         <input v-model="form.email" type="email" id="email" name="email"
                                             placeholder="Enter your email"
                                             class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 invalid-focus-outline dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
+                                        <InputError class="mt-2" :message="form.errors.email" />
                                     </div>
-                                    <InputError class="mt-2" :message="form.errors.email" />
 
                                     <!-- Password -->
                                     <div>
@@ -138,8 +137,8 @@
                                                         fill="#98A2B3" />
                                                 </svg>
                                             </span>
+                                            <InputError class="mt-2" :message="form.errors.password" />
                                         </div>
-                                        <InputError class="mt-2" :message="form.errors.password" />
                                     </div>
                                     <!-- Confirm Password -->
                                     <div>
@@ -167,6 +166,8 @@
                                                         class="text-gray-800 dark:text-white">Privacy Policy</span>.</a>
                                             </p>
                                         </Checkbox>
+                                        <InputError class="mt-2" :message="form.errors.agreeToTerms" />
+
                                     </div>
                                     <!-- Button -->
                                     <div>
@@ -175,8 +176,6 @@
                                             class="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
                                             Sign Up
                                         </button>
-                                        <InputError class="mt-2" :message="form.errors.agreeToTerms" />
-
                                     </div>
                                 </div>
                             </form>
@@ -219,8 +218,8 @@ import Checkbox from '@/Components/Checkbox.vue';
 import InputError from '@/Components/InputError.vue';
 
 const form = useForm({
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     email: '',
     password: '',
     password_confirmation: '',

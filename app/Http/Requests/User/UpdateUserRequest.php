@@ -21,7 +21,11 @@ class UpdateUserRequest extends FormRequest
                 'email',
                 Rule::unique('users')->ignore($this->id)
             ],
-            'name'             => [
+            'first_name'             => [
+                'required',
+                'string',
+            ],
+            'last_name'             => [
                 'required',
                 'string',
             ],

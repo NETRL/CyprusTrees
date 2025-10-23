@@ -3,8 +3,12 @@
         :visible="visible" header="User Details" @show="initForm" @update:visible="$emit('update:visible', event)">
         <form class="grid grid-cols-12 w-full" @submit.prevent="submit">
             <div class="col-span-12 mb-4">
-                <FormField v-model="localUser.name" :displayErrors="displayErrors" autocomplete="name" label="Name"
-                    name="name" />
+                <FormField v-model="localUser.first_name" :displayErrors="displayErrors" autocomplete="given-name"
+                    label="First Name" name="first_name" />
+            </div>
+            <div class="col-span-12 mb-4">
+                <FormField v-model="localUser.last_name" :displayErrors="displayErrors" autocomplete="family-name"
+                    label="Last Name" name="last_name" />
             </div>
             <div class="col-span-12 mb-4">
                 <FormField v-model="localUser.email" :displayErrors="displayErrors" autocomplete="email" label="Email"
@@ -72,6 +76,7 @@ export default {
                             preserveScroll: true,
                             onSuccess: () => this.closeForm(),
                             onFinish: () => this.displayErrors = true,
+
                         }
                     );
                 }
@@ -79,7 +84,8 @@ export default {
         initForm() {
             this.displayErrors = false;
             this.localUser.id = this.user?.id
-            this.localUser.name = this.user?.name
+            this.localUser.first_name = this.user?.first_name
+            this.localUser.last_name = this.user?.last_name
             this.localUser.email = this.user?.email
             this.localUser.password = ''
             this.localUser.confirm_password = ''

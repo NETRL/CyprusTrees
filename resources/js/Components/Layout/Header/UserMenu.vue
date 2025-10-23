@@ -51,7 +51,7 @@ const dropdownOpen = ref(false)
 const dropdownRef = ref(null)
 
 const menuItems = [
-  { href: 'profile', icon: UserCircleIcon, text: 'Edit profile' },
+  { href: 'profile.edit', icon: UserCircleIcon, text: 'Edit profile' },
   { href: '/', icon: SettingsIcon, text: 'Account settings' },
   { href: '/', icon: InfoCircleIcon, text: 'Support' },
 ]

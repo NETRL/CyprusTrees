@@ -1,5 +1,5 @@
 <template>
-  <admin-layout>
+  <dashboard>
     <PageBreadcrumb :pageTitle="currentPageTitle" />
 
     <div
@@ -9,16 +9,19 @@
       <profile-card />
       <personal-info-card />
       <address-card />
+      <delete-user-card />
+      
     </div>
-  </admin-layout>
+  </dashboard>
 </template>
 
 <script setup>
-import AdminLayout from '@/Layouts/AuthLayout.vue'
+import Dashboard from '@/Pages/Dashboard.vue'
 import PageBreadcrumb from '@/Components/Common/PageBreadcrumb.vue'
 import { ref } from 'vue'
-import ProfileCard from '@/Components/Layout/Profile/ProfileCard.vue'
-import PersonalInfoCard from '@/Components/Layout/Profile/PersonalInfoCard.vue'
-import AddressCard from '@/Components/Layout/Profile/AddressCard.vue'
+import ProfileCard from '@/Pages/Profile/Partials/ProfileCard.vue'
+import PersonalInfoCard from '@/Pages/Profile/Partials/PersonalInfoCard.vue'
+import AddressCard from '@/Pages/Profile/Partials/AddressCard.vue'
+import DeleteUserCard from '@/Pages/Profile/Partials/DeleteUserCard.vue'
 const currentPageTitle = ref('User Profile')
 </script>
