@@ -11,7 +11,7 @@
           'menu-item-active': isSubmenuOpen(groupIndex, itemIndex),
           'menu-item-inactive': !isSubmenuOpen(groupIndex, itemIndex),
         },
-        !isExpanded && !isHovered ? 'lg:justify-center' : 'lg:justify-start',
+        !isExpanded && !isHovered? 'lg:justify-center' : 'lg:justify-start',
       ]"
     >
       <!-- Row Icons -->
@@ -24,7 +24,7 @@
       </span>
       
       <!-- Row Names -->
-      <span v-if="isExpanded || isHovered || isMobileOpen" class="menu-item-text">
+      <span v-if="isExpanded || isHovered || isMobileOpen" class="menu-item-text whitespace-nowrap overflow-hidden transition-opacity duration-300">
         {{ item.name }}
       </span>
       
@@ -44,6 +44,7 @@
       v-else
       v-has-permission="{props: $page.props, permissions: item.permissions?.split('|')}"
       :item="item"
+      :class="!isExpanded && !isHovered? 'lg:justify-center' : 'lg:justify-start'"
     />
     
     <!-- Sub items list -->

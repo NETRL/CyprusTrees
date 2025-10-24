@@ -1,7 +1,0 @@
-<template>
-
-    <header>
-        
-    </header>
-
-</template>

@@ -8,7 +8,7 @@
       <i :class="item.icon"></i>
     </span>
     
-    <span v-if="isExpanded || isHovered || isMobileOpen" class="menu-item-text">
+    <span v-if="isExpanded || isHovered || isMobileOpen" class="menu-item-text whitespace-nowrap overflow-hidden transition-opacity duration-300">
       {{ item.name }}
     </span>
     
