@@ -53,10 +53,10 @@
                     <!-- Checkbox -->
                     <div class="flex items-center justify-between">
                       <div>
-                        <Checkbox name="keepLoggedIn" id="keepLoggedIn" v-model:checked="form.remember"
+                        <CustomCheckbox name="keepLoggedIn" id="keepLoggedIn" v-model:checked="form.remember"
                           :dispayErrors="false">
                           Keep me logged in
-                        </Checkbox>
+                        </CustomCheckbox>
                       </div>
                       <Link v-if="canResetPassword" :href="route('password.request')"
                         class="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400">Forgot password?
@@ -106,7 +106,7 @@ import { ref } from 'vue'
 import CommonGridShape from '@/Components/Common/CommonGridShape.vue'
 import FullScreenLayout from '@/Layouts/FullScreenLayout.vue'
 import InputError from '@/Components/InputError.vue';
-import Checkbox from '@/Components/Checkbox.vue';
+import CustomCheckbox from '@/Components/CustomCheckbox.vue';
 import { useForm } from '@inertiajs/vue3';
 import { ChevronLeftIcon, GoogleIcon } from '@/icons';
 import NavLink from '@/Components/NavLink.vue';

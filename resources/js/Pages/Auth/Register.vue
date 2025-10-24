@@ -79,7 +79,7 @@
                                     </div>
                                     <!-- Checkbox -->
                                     <div>
-                                        <Checkbox name="agreeToTerms" id="agreeToTerms"
+                                        <CustomCheckbox name="agreeToTerms" id="agreeToTerms"
                                             v-model:checked="form.agreeToTerms">
                                             <p class="inline-block font-normal text-gray-500 dark:text-gray-400">
                                                 By creating an account you agree to the
@@ -90,7 +90,7 @@
                                                 <a href="https://cyens.org.cy" target="_blank"><span
                                                         class="text-gray-800 dark:text-white">Privacy Policy</span>.</a>
                                             </p>
-                                        </Checkbox>
+                                        </CustomCheckbox>
                                     </div>
                                     <!-- Button -->
                                     <div>
@@ -137,8 +137,7 @@ import FullScreenLayout from '@/Layouts/FullScreenLayout.vue'
 import CommonGridShape from '@/Components/Common/CommonGridShape.vue'
 import { ref } from 'vue'
 import { useForm } from '@inertiajs/vue3';
-import Checkbox from '@/Components/Checkbox.vue';
-import InputError from '@/Components/InputError.vue';
+import CustomCheckbox from '@/Components/CustomCheckbox.vue';
 import FormField from '@/Components/Primitives/FormField.vue';
 import { GoogleIcon } from '@/icons';
 
