@@ -1,13 +1,11 @@
 <template>
-  <div
-    :class="[
-      'rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]',
-      className,
-    ]"
-  >
-    <!-- Card Header -->
-    <div class="px-6 py-5">
-      <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
+  <div :class="[
+    'rounded-2xl border border-gray-200 dark:border-gray-800 ',
+    className,
+   transparent ? 'bg-transparent!' : 'bg-white dark:bg-white/3'
+  ]">
+    <div v-if="title || desc" class="px-6 pt-5">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
         {{ title }}
       </h3>
       <p v-if="desc" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -15,8 +13,7 @@
       </p>
     </div>
 
-    <!-- Card Body -->
-    <div class="p-4 border-t border-gray-100 dark:border-gray-800 sm:p-6">
+    <div class="p-4 border-gray-100 dark:border-gray-800 sm:p-6">
       <div class="space-y-5">
         <slot></slot>
       </div>
@@ -28,9 +25,10 @@
 import { defineProps } from 'vue'
 
 interface Props {
-  title: string
+  title?: string
   className?: string
   desc?: string
+  transparent?: Boolean
 }
 
 defineProps<Props>()

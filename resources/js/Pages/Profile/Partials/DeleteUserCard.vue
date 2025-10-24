@@ -1,22 +1,9 @@
 <template>
     <div>
-        <div class="p-5 mb-6 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
-            <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                    <h4 class="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
-                        Delete Account
-                    </h4>
-                    <p class="mb-2 text-sm font-medium text-gray-800 dark:text-white/90">
-                        Once your account is deleted, all of its resources and data will
-                        be permanently deleted. Before deleting your account, please
-                        download any data or information that you wish to retain.
-                    </p>
-
-
-                    <DangerButton @click="openModal">Delete Account</DangerButton>
-                </div>
-            </div>
-        </div>
+        <ComponentCard :transparent="true" :title="'Delete Account'"
+            :desc="'Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.'">
+            <DangerButton @click="openModal">Delete Account</DangerButton>
+        </ComponentCard>
         <Modal v-if="confirmingUserDeletion" @close="closeModal">
             <template #body>
                 <div
@@ -53,11 +40,11 @@
                         </div>
                         <div class="flex items-center gap-3 px-2 mt-6 lg:justify-end">
                             <button @click="closeModal = false" type="button"
-                                class="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto">
+                                class="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 sm:w-auto">
                                 Cancel
                             </button>
-                            <DangerButton :class="{ 'opacity-25': form.processing }"
-                                :disabled="form.processing" type="submit">
+                            <DangerButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing"
+                                type="submit">
                                 Delete Account
                             </DangerButton>
                         </div>
@@ -79,6 +66,7 @@ import InputError from '@/Components/InputError.vue';
 import Modal from '@/Components/Modal.vue'
 import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
+import ComponentCard from '@/Components/Common/ComponentCard.vue';
 
 const confirmingUserDeletion = ref(false);
 

@@ -1,10 +1,8 @@
 <template>
   <div>
-    <div class="p-5 mb-6 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+      <ComponentCard :title="'Address'" :transparent="true">
       <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h4 class="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">Address</h4>
-
           <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
             <div>
               <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Country</p>
@@ -30,7 +28,7 @@
         </div>
 
         <button @click="openModal"
-          class="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto">
+          class="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200 lg:inline-flex lg:w-auto">
           <svg class="fill-current" width="18" height="18" viewBox="0 0 18 18" fill="none"
             xmlns="http://www.w3.org/2000/svg">
             <path fill-rule="evenodd" clip-rule="evenodd"
@@ -40,7 +38,7 @@
           Edit
         </button>
       </div>
-    </div>
+      </ComponentCard>
     <Modal v-if="isProfileAddressModal" @close="closeModal">
       <template #body>
         <div
@@ -102,7 +100,7 @@
             </div>
             <div class="flex items-center gap-3 mt-6 lg:justify-end">
               <button @click="closeModal" type="button"
-                class="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto">
+                class="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 sm:w-auto">
                 Close
               </button>
               <button type="submit"
@@ -122,6 +120,7 @@ import { computed, ref } from 'vue'
 import Modal from '@/Components/Modal.vue'
 import { useForm, usePage } from '@inertiajs/vue3'
 import { router } from '@inertiajs/vue3'
+import ComponentCard from '@/Components/Common/ComponentCard.vue'
 
 const page = usePage()
 const user = computed(() => page.props.auth?.user)
