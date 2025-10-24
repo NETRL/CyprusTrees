@@ -1,12 +1,18 @@
 <template>
-    <label :for="name" class="font-medium text-900 mr-3 w-full mb-1 block">{{ label }}</label>
-    <InputText v-if="component === 'InputText'" :id="name" :class="[shouldDisplayErrors ? 'p-invalid' : '', 'w-full']" v-bind="$attrs"/>
-    <Password v-else-if="component === 'Password'" :id="name" :class="[shouldDisplayErrors ? 'p-invalid' : '', 'w-full']" v-bind="$attrs" inputClass="w-full">
+    <label :for="name" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+        {{ label }}
+        <span v-if="required" class="text-error-500">*</span>
+    </label>
+    <InputText v-if="component === 'InputText'" :id="name"
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', inputTextStyle]" v-bind="$attrs" />
+    <Password v-else-if="component === 'Password'" :id="name"
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', passwordStyle]" v-bind="$attrs" inputClass="w-full border-transparent! focus:border-brand-300! focus:outline-hidden! focus:ring-1! focus:ring-brand-500/60! rounded-lg! text-sm! text-gray-800! placeholder:text-gray-400! dark:text-white/90! dark:placeholder:text-white/30! dark:focus:border-brand-800!">
+ >
         <template #header>
             <h3>Pick a password</h3>
         </template>
         <template #footer>
-            <Divider/>
+            <Divider />
             <p class="mt-2">Suggestions</p>
             <ul class="pl-2 ml-2 mt-0" style="line-height: 1.5">
                 <li>At least one lowercase</li>
@@ -16,35 +22,59 @@
             </ul>
         </template>
     </Password>
-    <Dropdown v-else-if="component === 'Dropdown'" :id="name" :class="[shouldDisplayErrors ? 'p-invalid' : '', 'w-full']" v-bind="$attrs"/>
-    <MultiSelect v-else-if="component === 'MultiSelect'" :id="name" :class="[shouldDisplayErrors ? 'p-invalid' : '', 'w-full']" v-bind="$attrs"  :maxSelectedLabels="1" />
-    <InputNumber v-else-if="component==='Number'" :id="name" :class="[shouldDisplayErrors ? 'p-invalid' : '', 'w-full']" v-bind="$attrs"/>
-    <Textarea v-else-if="component==='Textarea'" :id="name" :class="[shouldDisplayErrors ? 'p-invalid' : '', 'w-full']" v-bind="$attrs"/>
-    <FileUpload v-else-if="component === 'File'" :id="name" :class="[shouldDisplayErrors ? 'p-invalid' : '', 'w-full']" style="width:130px;" v-bind="$attrs"/>
-    <Calendar v-else-if="component === 'Calendar'" :id="name" :class="[shouldDisplayErrors ? 'p-invalid' : '', 'w-full']" locale="en-GB" v-bind="$attrs"/>
-    <InputSwitch v-else-if="component === 'InputSwitch'" :id="name" :class="[shouldDisplayErrors ? 'p-invalid' : '', 'w-full']" v-bind="$attrs"/>
-    <Checkbox v-else-if="component === 'Checkbox'" :id="name" :class="[shouldDisplayErrors ? 'p-invalid' : '', 'w-full']" v-bind="$attrs"/>
-    <small v-if="shouldDisplayErrors" :id="name+'-help'" class="p-error">{{ $page.props.errors[name] }}</small>
+    <Dropdown v-else-if="component === 'Dropdown'" :id="name"
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle]" v-bind="$attrs" />
+    <MultiSelect v-else-if="component === 'MultiSelect'" :id="name"
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle]" v-bind="$attrs"
+        :maxSelectedLabels="1" />
+    <InputNumber v-else-if="component === 'Number'" :id="name"
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle]" v-bind="$attrs" />
+    <Textarea v-else-if="component === 'Textarea'" :id="name"
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle]" v-bind="$attrs" />
+    <FileUpload v-else-if="component === 'File'" :id="name"
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle]" style="width:130px;"
+        v-bind="$attrs" />
+    <Calendar v-else-if="component === 'Calendar'" :id="name"
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle]" locale="en-GB" v-bind="$attrs" />
+    <InputSwitch v-else-if="component === 'InputSwitch'" :id="name"
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle]" v-bind="$attrs" />
+    <Checkbox v-else-if="component === 'Checkbox'" :id="name"
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', ]" v-bind="$attrs" />
+    <InputError v-if="shouldDisplayErrors" :id="name + '-help'" class="mt-2" :message="$page.props.errors[name]" />
 </template>
 
-<script>
-export default {
-    props    : {
-        label         : String,
-        name          : String,
-        displayErrors : {
-            type    : Boolean,
-            default : true
-        },
-        component     : {
-            type    : String,
-            default : 'InputText'
-        }
+<script setup>
+import InputError from '@/Components/InputError.vue';
+import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+
+const page = usePage();
+
+const props = defineProps({
+    label: String,
+    name: String,
+    required: {
+        type: Boolean,
+        default: false
     },
-    computed : {
-        shouldDisplayErrors() {
-            return this.$page.props.errors[this.name] && this.displayErrors;
-        }
+    displayErrors: {
+        type: Boolean,
+        default: true
+    },
+    component: {
+        type: String,
+        default: 'InputText'
     }
-}
+});
+
+const shouldDisplayErrors = computed(() => {
+    const errors = page?.props?.errors ?? {}
+    return !!props.displayErrors && !!props.name && !!errors[props.name]
+})
+
+const inputBase = 'dark:bg-dark-900! h-11! w-full! rounded-lg! border! border-gray-300! bg-transparent! text-sm! text-gray-800! shadow-theme-xs! placeholder:text-gray-400! focus:border-brand-300! focus:outline-hidden! focus:ring-1! focus:ring-brand-500/60! dark:border-gray-700! dark:bg-gray-900! dark:text-white/90! dark:placeholder:text-white/30! dark:focus:border-brand-800!'
+
+const inputTextStyle = inputBase + 'px-4! py-2.5!'
+const passwordStyle = inputBase + 'bg-none!'
+const defaultStyle = inputBase + 'py-2.5! pl-4! pr-11!'
 </script>

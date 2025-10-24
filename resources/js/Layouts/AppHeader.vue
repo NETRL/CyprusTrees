@@ -33,17 +33,12 @@
               fill="currentColor" />
           </svg>
         </button>
-        <!-- <SearchBar /> -->
       </div>
 
       <div v-if="isAuthenticated" :class="[isApplicationMenuOpen ? 'flex' : 'hidden']"
         class="items-center justify-between w-full gap-4 px-5 py-4 shadow-theme-md lg:flex lg:justify-end lg:px-0 lg:shadow-none">
         <div class="flex items-center gap-2 2xsm:gap-3">
-          <Link v-if="$page.component != 'Dashboard'" :href="route('login')" type="button" as="button" :title="`Theme: ${theme}`" aria-label="Toggle theme" class="relative inline-flex items-center justify-center p-2 rounded-lg border bg-white text-gray-500 transition-colors
-           hover:bg-gray-100 hover:text-gray-700 border-gray-200
-           dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white">
-          Go to Dashboard
-          </Link>
+          <NavLinkButton v-if="$page.component != 'Dashboard'" :href="route('dashboard')" >Go to Dashboard</NavLinkButton>
           <ThemeToggler />
           <NotificationMenu />
         </div>
@@ -52,8 +47,8 @@
       <div v-else :class="[isApplicationMenuOpen ? 'flex' : 'hidden']"
         class="items-center justify-between w-full gap-4 px-5 py-4 shadow-theme-md lg:flex lg:justify-end lg:px-0 lg:shadow-none">
         <div class="flex items-center gap-2 2xsm:gap-3">
-          <Link :href="route('login')" class="dark:text-white">Login</Link>
-          <Link :href="route('register')" class="dark:text-white">Register</Link>
+          <NavLink :href="'login'">Login</NavLink>
+          <NavLink :href="'register'">Register</NavLink>
         </div>
         <ThemeToggler />
       </div>
@@ -70,6 +65,8 @@ import HeaderLogo from '@/Components/Layout/Header/HeaderLogo.vue'
 import NotificationMenu from '@/Components/Layout/Header/NotificationMenu.vue'
 import UserMenu from '@/Components/Layout/Header/UserMenu.vue'
 import { useAuth } from '@/Composables/useAuth'
+import NavLink from '@/Components/NavLink.vue'
+import NavLinkButton from '@/Components/NavLinkButton.vue'
 
 const { user, isAuthenticated } = useAuth()
 const { toggleSidebar, toggleMobileSidebar, isMobileOpen } = useSidebar()

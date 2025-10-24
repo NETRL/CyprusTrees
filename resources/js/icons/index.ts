@@ -8,6 +8,7 @@ import DocsIcon from "./DocsIcon.vue";
 import PieChartIcon from "./PieChartIcon.vue";
 import UserCircleIcon from "./UserCircleIcon.vue";
 import ChevronDownIcon from "./ChevronDownIcon.vue";
+import ChevronLeftIcon from "./ChevronLeftIcon.vue";
 import HorizontalDots from "./HorizontalDots.vue";
 import PlugInIcon from "./PlugInIcon.vue";
 import PageIcon from "./PageIcon.vue";
@@ -45,6 +46,13 @@ import LayoutDashboardIcon from "./LayoutDashboardIcon.vue";
 import UserGroupIcon from "./UserGroupIcon.vue";
 import BellIcon from "./BellIcon.vue";
 import BarChartIcon from "./BarChartIcon.vue";
+import MoonIcon from "./MoonIcon.vue";
+import SunIcon from "./SunIcon.vue";
+import SystemIcon from "./SystemIcon.vue";
+import CloseIcon from "./CloseIcon.vue";
+import GoogleIcon from "./GoogleIcon.vue";
+import XIcon from "./XIcon.vue";
+import MarkIcon from "./MarkIcon.vue";
 
 export {
   BellIcon,
@@ -94,4 +102,12 @@ export {
   MailBox,
   SendIcon,
   DraftIcon,
+  ChevronLeftIcon,
+  MoonIcon,
+  SunIcon,
+  SystemIcon,
+  CloseIcon,
+  GoogleIcon,
+  XIcon,
+  MarkIcon,
 };

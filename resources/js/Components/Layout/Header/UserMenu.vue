@@ -4,9 +4,7 @@
       <span class="mr-3 overflow-hidden rounded-full h-11 w-11">
         <img src="https://i.pravatar.cc/300" alt="User" />
       </span>
-
       <span class="block mr-1 font-medium text-theme-sm">{{ $page.props.auth.user.name }} </span>
-
       <ChevronDownIcon :class="{ 'rotate-180': dropdownOpen }" />
     </button>
 
@@ -15,7 +13,7 @@
       class="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark">
       <div>
         <span class="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-          {{ $page.props.auth.user.name }}
+          {{ $page.props.auth.user?.first_name }} {{ $page.props.auth.user?.last_name }}
         </span>
         <span class="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
           {{ $page.props.auth.user.email }}
@@ -24,19 +22,10 @@
 
       <ul class="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
         <li v-for="item in menuItems" :key="item.href">
-          <Link :href="route(item.href)"
-            class="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
-          <!-- SVG icon would go here -->
-          <component :is="item.icon" class="text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300" />
-          {{ item.text }}
-          </Link>
+          <UserMenuNavLink :item="item" :active="route().current(item.href)" />
         </li>
       </ul>
-      <Link :href="route('logout')" method="post" @click="signOut"
-        class="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
-      <LogoutIcon class="text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300" />
-      Sign out
-      </Link>
+      <UserMenuNavLink :item="logOutItem" :active="route().current(logOutItem.href)" :method="'post'" />
     </div>
     <!-- Dropdown End -->
   </div>
@@ -46,15 +35,19 @@
 import { UserCircleIcon, ChevronDownIcon, LogoutIcon, SettingsIcon, InfoCircleIcon } from '@/icons'
 import { Link } from '@inertiajs/vue3'
 import { ref, onMounted, onUnmounted } from 'vue'
+import UserMenuNavLink from './UserMenuNavLink.vue'
 
 const dropdownOpen = ref(false)
 const dropdownRef = ref(null)
 
 const menuItems = [
   { href: 'profile.edit', icon: UserCircleIcon, text: 'Edit profile' },
-  { href: '/', icon: SettingsIcon, text: 'Account settings' },
-  { href: '/', icon: InfoCircleIcon, text: 'Support' },
+  // { href: '/', icon: SettingsIcon, text: 'Account settings' },
+  // { href: '/', icon: InfoCircleIcon, text: 'Support' },
 ]
+
+const logOutItem =  { href: 'logout', icon: LogoutIcon, text: 'Sign out' }
+
 
 const toggleDropdown = () => {
   dropdownOpen.value = !dropdownOpen.value
