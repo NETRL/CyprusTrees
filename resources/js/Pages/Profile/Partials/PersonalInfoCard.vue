@@ -1,6 +1,6 @@
 <template>
   <div>
-      <ComponentCard :title="'Personal Information'" :transparent="true">
+    <ComponentCard :title="'Personal Information'" :transparent="true">
 
       <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div>
@@ -40,7 +40,7 @@
           Edit
         </button>
       </div>
-      </ComponentCard>
+    </ComponentCard>
     <Modal v-if="isProfileInfoModal" @close="closeModal">
       <template #body>
         <div
@@ -125,7 +125,7 @@
                       Current Password
                     </label>
                     <Password id="current_password" type="password" v-model="passwordForm.current_password"
-                       autocomplete="current-password" inputClass="w-full border-transparent! shadow-none! rounded-lg!"
+                      autocomplete="current-password" inputClass="w-full border-transparent! shadow-none! rounded-lg!"
                       class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
                     <InputError :message="passwordForm.errors.current_password" class="mt-2" />
                   </div>
@@ -201,7 +201,15 @@ const isProfileInfoModal = ref(false)
 const updatePassword = () => {
   passwordForm.put(route('password.update'), {
     preserveScroll: true,
-    onSuccess: () => closeModal(),
+    onSuccess: () => {
+      closeModal();
+       toast.add({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Password updated successfuly!',
+        life: 3000
+      });
+    },
     onError: () => {
       if (passwordForm.errors.password) {
         passwordForm.reset('password', 'password_confirmation');
@@ -217,7 +225,15 @@ const updatePassword = () => {
 const updateProfile = () => {
   infoForm.patch(route('profile.update'), {
     preserveScroll: true,
-    onSuccess: () => closeModal(),
+    onSuccess: () => {
+      closeModal();
+      toast.add({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Information updated successfuly!',
+        life: 3000
+      });
+    },
     onFinish: () => infoForm.reset(),
   });
 }
@@ -232,11 +248,5 @@ const closeModal = () => {
   infoForm.clearErrors();
   infoForm.reset();
   passwordForm.reset();
-  toast.add({
-    severity: 'info',
-    summary: 'Info',
-    detail: 'Composition API Toast',
-    life: 3000
-  });
 };
 </script>

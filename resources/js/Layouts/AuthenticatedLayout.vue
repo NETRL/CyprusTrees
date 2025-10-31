@@ -1,16 +1,16 @@
 <template>
-    <Head title="Welcome" />
-    <div class="min-h-screen xl:flex">
-        <!-- <AppSidebar /> -->
-        <Backdrop />
-        <div class="flex-1 transition-all duration-300 ease-in-out">
-            <AppHeader :with-sidebar="false" />
-            <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6 dark:text-white">
-                This is the content of the welcome page
+    <Toast :breakpoints="{'920px': {width: '100%', right: '0', left: '0'}}" position="bottom-right"/>
+    <ConfirmDialog></ConfirmDialog>
+    <div class="min-h-screen xl:flex" >
+        <AppSidebar />
+        <Backdrop/>
+        <div class="flex-1 transition-all duration-300 ease-in-out"
+            :class="[isExpanded || isHovered ? 'lg:ml-[290px]' : 'lg:ml-[90px]']">
+            <AppHeader/>
+            <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
+                <slot/>
             </div>
         </div>
-
-     
     </div>
 
 </template>
@@ -45,3 +45,5 @@ const { isExpanded, isHovered } = useSidebar()
 
 
 </script>
+
+

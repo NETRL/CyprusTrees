@@ -1,6 +1,4 @@
 <template>
-    <FullScreenLayout>
-
         <Head title="Confirm Password" />
         <div class="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
             <div class="relative flex flex-col justify-center w-full h-screen lg:flex-row dark:bg-gray-900">
@@ -13,7 +11,7 @@
                             <path d="M12.7083 5L7.5 10.2083L12.7083 15.4167" stroke="" stroke-width="1.5"
                                 stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
-                        Back to dashboard
+                        Back
                         </Link>
                     </div>
                     <div class="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
@@ -72,14 +70,17 @@
                 </div>
             </div>
         </div>
-    </FullScreenLayout>
 </template>
 
 
 <script setup>
-import FullScreenLayout from '@/Layouts/FullScreenLayout.vue';
+import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import { useForm } from '@inertiajs/vue3';
+
+defineOptions({
+    layout: GuestLayout
+});
 
 const form = useForm({
     password: '',

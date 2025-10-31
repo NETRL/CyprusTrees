@@ -73,13 +73,13 @@ l<template>
 </template>
 
 <script>
-import Dashboard from "@/Pages/Dashboard.vue";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import GroupForm from "./Partials/GroupForm.vue"
 import PermissionForm from "./Partials/PermissionForm.vue"
 import { FilterMatchMode } from '@primevue/core/api';
 
 export default {
-    layout: Dashboard,
+    layout: AuthenticatedLayout,
     components: {
         GroupForm,
         PermissionForm

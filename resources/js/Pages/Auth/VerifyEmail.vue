@@ -1,5 +1,4 @@
 <template>
-    <FullScreenLayout>
         <Head title="Verify Email" />
         <div class="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
             <div class="relative flex flex-col justify-center w-full h-screen lg:flex-row dark:bg-gray-900">
@@ -64,16 +63,17 @@
                 </div>
             </div>
         </div>
-    </FullScreenLayout>
 </template>
 
 <script setup>
 import CommonGridShape from '@/Components/Common/CommonGridShape.vue'
-import FullScreenLayout from '@/Layouts/FullScreenLayout.vue'
+import GuestLayout from '@/Layouts/GuestLayout.vue'
 import { useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
-
+defineOptions({
+    layout: GuestLayout
+});
 
 const props = defineProps({
     status: {

@@ -98,11 +98,11 @@
 </template>
 
 <script>
-import Dashboard from "@/Pages/Dashboard.vue";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import DataTableMixins from "@/Components/Mixins/DataTableMixins.vue";
 
 export default {
-    layout : Dashboard,
+    layout : AuthenticatedLayout,
     emits  : ['createNewResource', 'editResource', 'showResource'],
 
     props  : {

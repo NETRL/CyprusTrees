@@ -51,12 +51,12 @@
 </template>
 
 <script>
-import Dashboard from "@/Pages/Dashboard.vue";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import UserForm from "./Partials/UserForm.vue"
 import { FilterMatchMode } from '@primevue/core/api';
 
 export default {
-    layout: Dashboard,
+    layout: AuthenticatedLayout,
     components: {
         UserForm
     },

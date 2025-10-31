@@ -1,6 +1,6 @@
 <template>
   <div>
-      <ComponentCard :title="'Address'" :transparent="true">
+    <ComponentCard :title="'Address'" :transparent="true">
       <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
@@ -38,7 +38,7 @@
           Edit
         </button>
       </div>
-      </ComponentCard>
+    </ComponentCard>
     <Modal v-if="isProfileAddressModal" @close="closeModal">
       <template #body>
         <div
@@ -119,11 +119,12 @@
 import { computed, ref } from 'vue'
 import Modal from '@/Components/Modal.vue'
 import { useForm, usePage } from '@inertiajs/vue3'
-import { router } from '@inertiajs/vue3'
 import ComponentCard from '@/Components/Common/ComponentCard.vue'
+import { useToast } from 'primevue'
 
 const page = usePage()
 const user = computed(() => page.props.auth?.user)
+const toast = useToast();
 
 const form = useForm({
   'country': user.value.address?.country,
@@ -137,7 +138,15 @@ const isProfileAddressModal = ref(false)
 const saveAddress = () => {
   form.patch(route('address.update'), {
     preserveScroll: true,
-    onSuccess: () => closeModal(),
+    onSuccess: () => {
+      closeModal();
+      toast.add({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Information updated successfuly!',
+        life: 3000
+      });
+    },
     onFinish: () => form.reset(),
   });
 }
@@ -147,6 +156,7 @@ const openModal = () => {
 }
 
 const closeModal = () => {
+  
   isProfileAddressModal.value = false;
   form.clearErrors();
   form.reset();

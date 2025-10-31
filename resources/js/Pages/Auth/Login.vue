@@ -1,6 +1,4 @@
 <template>
-  <FullScreenLayout>
-
     <Head title="Login" />
     <div class="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
       <div class="relative flex flex-col justify-center w-full h-screen lg:flex-row dark:bg-gray-900">
@@ -8,7 +6,7 @@
           <div class="w-full max-w-md pt-10 mx-auto">
             <NavLink :href="'/'">
               <ChevronLeftIcon />
-              Back to dashboard
+              Back
             </NavLink>
           </div>
           <div class="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
@@ -98,13 +96,12 @@
         </div>
       </div>
     </div>
-  </FullScreenLayout>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import CommonGridShape from '@/Components/Common/CommonGridShape.vue'
-import FullScreenLayout from '@/Layouts/FullScreenLayout.vue'
+import GuestLayout from '@/Layouts/GuestLayout.vue'
 import InputError from '@/Components/InputError.vue';
 import CustomCheckbox from '@/Components/CustomCheckbox.vue';
 import { useForm } from '@inertiajs/vue3';
@@ -112,6 +109,9 @@ import { ChevronLeftIcon, GoogleIcon } from '@/icons';
 import NavLink from '@/Components/NavLink.vue';
 import FormField from '@/Components/Primitives/FormField.vue';
 
+defineOptions({
+    layout: GuestLayout
+});
 
 defineProps({
   canResetPassword: {

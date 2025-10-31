@@ -1,5 +1,4 @@
 <template>
-    <FullScreenLayout>
         <Head title="Reset Password" />
         <div class="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
             <div class="relative flex flex-col justify-center w-full h-screen lg:flex-row dark:bg-gray-900">
@@ -96,15 +95,18 @@
                 </div>
             </div>
         </div>
-    </FullScreenLayout>
 </template>
 
-<script setup lang="ts">
-import FullScreenLayout from '@/Layouts/FullScreenLayout.vue'
+<script setup >
+import GuestLayout from '@/Layouts/GuestLayout.vue'
 import CommonGridShape from '@/Components/Common/CommonGridShape.vue'
 import { ref } from 'vue'
 import { useForm } from '@inertiajs/vue3';
 import InputError from '@/Components/InputError.vue';
+
+defineOptions({
+    layout: GuestLayout
+});
 
 const props = defineProps({
     email: {

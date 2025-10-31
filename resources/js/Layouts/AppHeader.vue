@@ -67,6 +67,7 @@ import UserMenu from '@/Components/Layout/Header/UserMenu.vue'
 import { useAuth } from '@/Composables/useAuth'
 import NavLink from '@/Components/NavLink.vue'
 import NavLinkButton from '@/Components/NavLinkButton.vue'
+import DropdownMenu from '@/Components/Common/DropdownMenu.vue'
 
 const { user, isAuthenticated } = useAuth()
 const { toggleSidebar, toggleMobileSidebar, isMobileOpen } = useSidebar()
