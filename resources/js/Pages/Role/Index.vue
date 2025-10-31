@@ -6,12 +6,13 @@
                 <Button v-has-permission="{ props: $page.props, permissions: ['roles.create'] }" severity="success"
                     class="mr-2 mb-2 max-sm:text-sm!" icon="pi pi-plus" label="New" @click="createNewResource()" />
                 <Button v-has-permission="{ props: $page.props, permissions: ['roles.delete'] }" severity="danger"
-                    class="mb-2 max-sm:text-sm!" :disabled="!selected || !selected.length"  icon="pi pi-trash"
+                    class="mb-2 max-sm:text-sm!" :disabled="!selected || !selected.length" icon="pi pi-trash"
                     label="Delete" @click="massDeleteResource()" />
             </template>
 
             <template #end>
-                <Button class="mb-2 max-sm:text-sm!" severity="help" icon="pi pi-upload" label="Export" @click="exportCSV($event)" />
+                <Button class="mb-2 max-sm:text-sm!" severity="help" icon="pi pi-upload" label="Export"
+                    @click="exportCSV($event)" />
             </template>
         </Toolbar>
         <div>
@@ -21,7 +22,8 @@
                 <template #header>
                     <div class="table-header flex flex-column md:flex-row md:justiify-content-between">
                         <h5 class="mb-2 md:m-0 p-as-md-center">Manage Roles</h5>
-                        <InputText v-model="filters['global'].value" class="p-inputtext-sm max-md:w-full" placeholder="Search..." />
+                        <InputText v-model="filters['global'].value" class="p-inputtext-sm max-md:w-full"
+                            placeholder="Search..." />
                     </div>
                 </template>
                 <template #empty>
@@ -33,7 +35,8 @@
                 <Column :exportable="false">
                     <template #body="slotProps">
                         <Button v-has-permission="{ props: $page.props, permissions: ['roles.edit'] }"
-                            class="p-button-rounded mr-2 max-sm:text-sm! max-sm:mb-2" severity="primary" icon="pi pi-pencil"  @click="editResource(slotProps.data)" />
+                            class="p-button-rounded mr-2 max-sm:text-sm! max-sm:mb-2" severity="primary"
+                            icon="pi pi-pencil" @click="editResource(slotProps.data)" />
                         <Button v-has-permission="{ props: $page.props, permissions: ['roles.delete'] }"
                             class="p-button-rounded max-sm:text-sm!" severity="danger" icon="pi pi-trash" iconPos="left"
                             @click="deleteResource(slotProps.data.id)" />
@@ -42,7 +45,8 @@
             </DataTable>
         </div>
 
-        <RoleForm v-model:visible="formVisible" :action="action" :permissions="permissions" :role="role" class="dark:bg-gray-900!"/>
+        <RoleForm v-model:visible="formVisible" :action="action" :permissions="permissions" :role="role"
+            class="dark:bg-gray-900!" />
     </div>
 </template>
 
@@ -82,7 +86,16 @@ export default {
                 header: 'Confirmation',
                 icon: 'pi pi-exclamation-triangle',
                 accept: () => {
-                    this.$inertia.delete(route('roles.destroy', id))
+                    this.$inertia.delete(route('roles.destroy', id), {
+                        onSuccess: () => {
+                            this.$toast.add({
+                                severity: 'success',
+                                summary: 'Success',
+                                detail: 'Role deleted successfuly!',
+                                life: 3000
+                            });
+                        }
+                    })
                 },
                 reject: () => {
                 }
@@ -108,7 +121,15 @@ export default {
                         roles: this.selected,
                     },
                         {
-                            onSuccess: () => this.selected = [],
+                            onSuccess: () => {
+                                this.selected = [];
+                                this.$toast.add({
+                                    severity: 'success',
+                                    summary: 'Success',
+                                    detail: 'Roles deleted successfuly!',
+                                    life: 3000
+                                });
+                            },
                         })
                 },
                 reject: () => {

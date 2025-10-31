@@ -15,12 +15,12 @@
                     name="email" type="email" />
             </div>
             <div class="col-span-12 mb-4">
-                <FormField v-model="localUser.password" :displayErrors="displayErrors" autocomplete="new-password"
-                    component="Password" label="Password" name="password" />
+                <FormField v-model="localUser.password" :displayErrors="displayErrors" component="Password"
+                    label="Password" name="password" />
             </div>
             <div class="col-span-12 mb-4">
-                <FormField v-model="localUser.confirm_password" :displayErrors="displayErrors"
-                    autocomplete="new-password" component="Password" label="Confirm Password" name="confirm_password" />
+                <FormField v-model="localUser.confirm_password" :displayErrors="displayErrors" component="Password"
+                    label="Confirm Password" name="confirm_password" />
             </div>
             <div v-has-permission="{ props: $page.props, permissions: ['roles.assign'] }" class="col-span-12 mb-4">
                 <FormField v-model="localUser.roles" :displayErrors="displayErrors" :filter="false" :options="roles"
@@ -63,7 +63,15 @@ export default {
                     this.localUser,
                     {
                         preserveScroll: true,
-                        onSuccess: () => this.closeForm(),
+                        onSuccess: () => {
+                            this.closeForm();
+                            this.$toast.add({
+                                severity: 'success',
+                                summary: 'Success',
+                                detail: 'User created successfuly!',
+                                life: 3000
+                            });
+                        },
                         onFinish: () => this.displayErrors = true,
                     }
                 );
@@ -74,7 +82,15 @@ export default {
                         this.localUser,
                         {
                             preserveScroll: true,
-                            onSuccess: () => this.closeForm(),
+                            onSuccess: () => {
+                                this.closeForm();
+                                this.$toast.add({
+                                    severity: 'success',
+                                    summary: 'Success',
+                                    detail: 'User updated successfuly!',
+                                    life: 3000
+                                });
+                            },
                             onFinish: () => this.displayErrors = true,
 
                         }

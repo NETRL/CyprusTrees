@@ -5,12 +5,13 @@
                 <Button v-has-permission="{ props: $page.props, permissions: ['users.create'] }" severity="success"
                     class="mr-2 max-sm:text-sm!" icon="pi pi-plus" label="New" @click="createNewResource()" />
                 <Button v-has-permission="{ props: $page.props, permissions: ['users.delete'] }" severity="danger"
-                    :disabled="!selected || !selected.length" icon="pi pi-trash" label="Delete"
-                    class="max-sm:text-sm!" @click="massDeleteResource()" />
+                    :disabled="!selected || !selected.length" icon="pi pi-trash" label="Delete" class="max-sm:text-sm!"
+                    @click="massDeleteResource()" />
             </template>
 
             <template #end>
-                <Button class="max-sm:text-sm!" severity="help" icon="pi pi-upload" label="Export" @click="exportCSV($event)" />
+                <Button class="max-sm:text-sm!" severity="help" icon="pi pi-upload" label="Export"
+                    @click="exportCSV($event)" />
             </template>
         </Toolbar>
 
@@ -21,7 +22,8 @@
                 <template #header>
                     <div class="table-header flex flex-col md:flex-row md:justify-content-between">
                         <h5 class="mb-2 md:m-0 p-as-md-center">Manage Users</h5>
-                        <InputText v-model="filters['global'].value" class="p-inputtext-sm max-md:w-full" placeholder="Search..." />
+                        <InputText v-model="filters['global'].value" class="p-inputtext-sm max-md:w-full"
+                            placeholder="Search..." />
                     </div>
                 </template>
                 <template #empty>
@@ -86,7 +88,16 @@ export default {
                 header: 'Confirmation',
                 icon: 'pi pi-exclamation-triangle',
                 accept: () => {
-                    this.$inertia.delete(route('users.destroy', id))
+                    this.$inertia.delete(route('users.destroy', id), {
+                        onSuccess: () => {
+                            this.$toast.add({
+                                severity: 'success',
+                                summary: 'Success',
+                                detail: 'User deleted successfuly!',
+                                life: 3000
+                            });
+                        }
+                    })
                 },
                 reject: () => {
                 }
@@ -112,7 +123,15 @@ export default {
                         users: this.selected,
                     },
                         {
-                            onSuccess: () => this.selected = [],
+                            onSuccess: () => {
+                                this.selected = [];
+                                this.$toast.add({
+                                    severity: 'success',
+                                    summary: 'Success',
+                                    detail: ' Users deleted successfuly!',
+                                    life: 3000
+                                });
+                            },
                         })
                 },
                 reject: () => {
@@ -129,7 +148,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
 .table-header {
     display: flex;
     align-items: center;
