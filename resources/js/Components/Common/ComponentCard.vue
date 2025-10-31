@@ -21,15 +21,24 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { defineProps } from 'vue'
-
-interface Props {
-  title?: string
-  className?: string
-  desc?: string
-  transparent?: Boolean
-}
-
-defineProps<Props>()
+<script setup>
+const props = defineProps({
+  title: {
+    type: String,
+    default: '',
+  },
+  className: {
+    type: String,
+    default: '',
+  },
+  desc: {
+    type: String,
+    default: '',
+  },
+  transparent: {
+    type: Boolean,
+    default: false,
+  },
+})
 </script>
+

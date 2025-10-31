@@ -22,7 +22,7 @@
 
       <ul class="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
         <li v-for="item in menuItems" :key="item.href">
-          <UserMenuNavLink :item="item" :active="route().current(item.href)" />
+          <UserMenuNavLink :item="item" :active="route().current(item.href)" @click="toggleDropdown" />
         </li>
       </ul>
       <UserMenuNavLink :item="logOutItem" :active="route().current(logOutItem.href)" :method="'post'" />
@@ -32,8 +32,7 @@
 </template>
 
 <script setup>
-import { UserCircleIcon, ChevronDownIcon, LogoutIcon, SettingsIcon, InfoCircleIcon } from '@/icons'
-import { Link } from '@inertiajs/vue3'
+import { UserCircleIcon, ChevronDownIcon, LogoutIcon } from '@/icons'
 import { ref, onMounted, onUnmounted } from 'vue'
 import UserMenuNavLink from './UserMenuNavLink.vue'
 
@@ -55,12 +54,6 @@ const toggleDropdown = () => {
 
 const closeDropdown = () => {
   dropdownOpen.value = false
-}
-
-const signOut = () => {
-  // Implement sign out logic here
-  console.log('Signing out...')
-  closeDropdown()
 }
 
 const handleClickOutside = (event) => {

@@ -37,12 +37,11 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { defineProps } from 'vue'
+<script setup>
 
-interface BreadcrumbProps {
+defineProps({
   pageTitle: string
-}
 
-defineProps<BreadcrumbProps>()
+})
+
 </script>

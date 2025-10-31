@@ -1,0 +1,112 @@
+services:
+  # Application Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        node: True
+        user: ${DOCKER_USER}
+        uid: ${DOCKER_UID}
+    image: laravel-starter-kit
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    working_dir: /var/www/html/
+    volumes:
+      - ./:/var/www/html/
+      - ./docker-data/php/laravel.ini:/usr/local/etc/php/conf.d/laravel.ini
+    networks:
+      - app-network
+
+  # Node Service
+  node:
+    image: node:20
+    restart: unless-stopped
+    tty: true
+    working_dir: /app
+    volumes:
+      - ./:/app
+    ports:
+      - "5173:5173"
+    networks:
+      - app-network
+
+  # Nginx Service
+  webserver:
+    image: nginx:alpine
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./:/var/www/html/
+      - ./docker-data/nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - app-network
+
+  # MySQL Service
+  db:
+    image: mysql:8.2.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: user
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./docker-data/mysql-data/:/var/lib/mysql
+      - ./docker-data/mysql/my.cnf:/etc/mysql/my.cnf
+    networks:
+      - app-network
+
+  # Supervisor Service
+  supervisor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        supervisor: True
+        cron: True
+        user: root
+        uid: 0
+    image: laravel-starter-kit-supervisor
+    restart: unless-stopped
+    networks:
+      - app-network
+    volumes:
+      - ./:/var/www/html/
+      - ./docker-data/supervisor/:/etc/supervisor/conf.d/
+    depends_on:
+      - app
+      - webserver
+    command: supervisord
+
+  # Redis Service
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+  # Testing Mail Service
+  mailhog:
+    image: mailhog/mailhog:latest
+    restart: unless-stopped
+    ports:
+      - "8003:1025"
+      - "8100:8025"
+    networks:
+      - app-network
+
+
+# Docker Network
+networks:
+  app-network:
+    driver: bridge

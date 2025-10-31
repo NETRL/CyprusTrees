@@ -4,7 +4,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "production": "vite build",
+        "dev": "vite --host"
     },
     "devDependencies": {
         "@inertiajs/vue3": "^2.2.6",
