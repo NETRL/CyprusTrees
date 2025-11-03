@@ -72,18 +72,19 @@ layer(base);
     --color-white: #ffffff;
     --color-black: #101828;
 
-    --color-brand-25: #f2f7ff;
-    --color-brand-50: #ecf3ff;
-    --color-brand-100: #dde9ff;
-    --color-brand-200: #c2d6ff;
-    --color-brand-300: #9cb9ff;
-    --color-brand-400: #7592ff;
-    --color-brand-500: #465fff;
-    --color-brand-600: #3641f5;
-    --color-brand-700: #2a31d8;
-    --color-brand-800: #252dae;
-    --color-brand-900: #262e89;
-    --color-brand-950: #161950;
+    --color-brand-25:  #f3fcf5;   /* very light, almost white green tint */
+--color-brand-50:  #e7f9eb;   /* faint leaf tint */
+--color-brand-100: #d2f0d6;   /* light pastel green */
+--color-brand-200: #b0e3b5;   /* soft foliage */
+--color-brand-300: #88d18d;   /* fresh spring green */
+--color-brand-400: #5dbf62;   /* lively leaf green */
+--color-brand-500: #36a93a;   /* main brand green (vibrant, tree trunk balance) */
+--color-brand-600: #2b8f2e;   /* stronger natural green */
+--color-brand-700: #257526;   /* forest mid-tone */
+--color-brand-800: #1f5a21;   /* deep woodland */
+--color-brand-900: #17421a;   /* shadowed pine */
+--color-brand-950: #0e2610;   /* near-black forest depth */
+
 
     --color-blue-light-25: #f5fbff;
     --color-blue-light-50: #f0f9ff;
