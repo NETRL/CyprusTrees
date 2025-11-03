@@ -1,16 +1,18 @@
 <template>
+
     <Head title="Welcome" />
-    <div class="min-h-screen xl:flex">
+    <div class="min-h-dvh h-dvh flex flex-col">
         <!-- <AppSidebar /> -->
         <Backdrop />
-        <div class="flex-1 transition-all duration-300 ease-in-out">
+        <header class="shrink-0 relative ">
             <AppHeader :with-sidebar="false" />
-            <div class="">
-                 <MapLibreView />
-            </div>
-        </div>
+        </header>
 
-     
+        <main class="flex-1 relative overflow-hidden">
+            <MapLibreView/>
+        </main>
+
+
     </div>
 
 </template>

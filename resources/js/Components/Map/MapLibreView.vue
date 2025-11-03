@@ -1,5 +1,5 @@
 <template>
-    <div ref="mapContainer" class="w-screen h-dvh overflow-hidden"></div>
+    <div ref="mapContainer" class="w-full h-full"></div>
 </template>
 
 
@@ -29,7 +29,8 @@ onMounted(() => {
                 },
             },
             layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
-        },  
+        },
+        attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
         center,
         zoom,
     })
@@ -58,7 +59,17 @@ onMounted(() => {
             source: 'trees',
             paint: { 'circle-radius': 10, 'circle-color': 'green' }
         })
+
+        map.value.on('click', 'trees-points', e => {
+            new maplibregl.Popup()
+                .setLngLat(e.lngLat)
+                .setHTML(`<strong>${e.features[0].properties.name}</strong>`)
+                .addTo(map.value)
+        })
+
     })
+
+
 })
 </script>
 
