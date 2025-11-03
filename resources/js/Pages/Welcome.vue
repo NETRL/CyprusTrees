@@ -5,8 +5,8 @@
         <Backdrop />
         <div class="flex-1 transition-all duration-300 ease-in-out">
             <AppHeader :with-sidebar="false" />
-            <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6 dark:text-white">
-                This is the content of the welcome page
+            <div class="">
+                 <MapLibreView />
             </div>
         </div>
 
@@ -20,6 +20,8 @@ import AppSidebar from '@/Layouts/AppSidebar.vue';
 import AppHeader from '@/Layouts/AppHeader.vue';
 import { useSidebar } from '@/Composables/useSidebar';
 import Backdrop from '@/Components/Layout/Backdrop.vue';
+import MapLibreView from '@/Components/Map/MapLibreView.vue';
+
 
 
 const darkMode = 'class';

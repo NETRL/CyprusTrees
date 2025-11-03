@@ -11,13 +11,16 @@
     <!-- Dropdown Start -->
     <div v-if="dropdownOpen"
       class="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark">
-      <div>
-        <span class="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-          {{ $page.props.auth.user?.first_name }} {{ $page.props.auth.user?.last_name }}
-        </span>
-        <span class="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-          {{ $page.props.auth.user.email }}
-        </span>
+      <div class="flex justify-between">
+        <div>
+          <span class="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
+            {{ $page.props.auth.user?.first_name }} {{ $page.props.auth.user?.last_name }}
+          </span>
+          <span class="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
+            {{ $page.props.auth.user.email }}
+          </span>
+        </div>
+        <ThemeToggler/>
       </div>
 
       <ul class="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
@@ -35,6 +38,7 @@
 import { UserCircleIcon, ChevronDownIcon, LogoutIcon } from '@/icons'
 import { ref, onMounted, onUnmounted } from 'vue'
 import UserMenuNavLink from './UserMenuNavLink.vue'
+import ThemeToggler from '@/Components/Common/ThemeToggler.vue'
 
 const dropdownOpen = ref(false)
 const dropdownRef = ref(null)
@@ -57,7 +61,7 @@ const closeDropdown = () => {
 }
 
 const handleClickOutside = (event) => {
-  if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target) ) {
     closeDropdown()
   }
 }

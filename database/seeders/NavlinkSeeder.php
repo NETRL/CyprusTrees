@@ -10,8 +10,8 @@ class NavlinkSeeder extends Seeder
     public function run(): void
     {
         Navlink::create([
-            'name'       => 'Welcome Screen',
-            'icon'       => 'pi pi-home',
+            'name'       => 'Map',
+            'icon'       => 'pi pi-map',
             'route_name' => '/'
         ]);
 

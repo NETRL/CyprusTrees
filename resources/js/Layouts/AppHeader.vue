@@ -39,8 +39,7 @@
         class="items-center justify-between w-full gap-4 px-5 py-4 shadow-theme-md lg:flex lg:justify-end lg:px-0 lg:shadow-none">
         <div class="flex items-center gap-2 2xsm:gap-3">
           <NavLinkButton v-if="$page.component != 'Dashboard'" :href="route('dashboard')" >Go to Dashboard</NavLinkButton>
-          <ThemeToggler />
-          <NotificationMenu />
+          <!-- <NotificationMenu /> -->
         </div>
         <UserMenu />
       </div>
@@ -50,7 +49,6 @@
           <NavLink :href="'login'">Login</NavLink>
           <NavLink :href="'register'">Register</NavLink>
         </div>
-        <ThemeToggler />
       </div>
     </div>
   </header>
@@ -59,15 +57,13 @@
 <script setup>
 import { ref } from 'vue'
 import { useSidebar } from '@/Composables/useSidebar'
-import ThemeToggler from '@/Components/Common/ThemeToggler.vue'
 // import SearchBar from '@/Components/Layout/Header/SearchBar.vue'
 import HeaderLogo from '@/Components/Layout/Header/HeaderLogo.vue'
-import NotificationMenu from '@/Components/Layout/Header/NotificationMenu.vue'
+// import NotificationMenu from '@/Components/Layout/Header/NotificationMenu.vue'
 import UserMenu from '@/Components/Layout/Header/UserMenu.vue'
 import { useAuth } from '@/Composables/useAuth'
 import NavLink from '@/Components/NavLink.vue'
 import NavLinkButton from '@/Components/NavLinkButton.vue'
-import DropdownMenu from '@/Components/Common/DropdownMenu.vue'
 
 const { user, isAuthenticated } = useAuth()
 const { toggleSidebar, toggleMobileSidebar, isMobileOpen } = useSidebar()
