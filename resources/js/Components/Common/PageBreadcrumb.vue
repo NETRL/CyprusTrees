@@ -40,7 +40,7 @@
 <script setup>
 
 defineProps({
-  pageTitle: string
+  pageTitle: String
 
 })
 

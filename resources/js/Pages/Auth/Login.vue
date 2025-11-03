@@ -44,7 +44,7 @@
                     </div>
                     <!-- Password -->
                     <div>
-                      <FormField v-model="form.password" name="password" label="Password" :required="true"
+                      <FormField v-model="form.password" name="password" label="Password" :required="true" :feedback="false"
                         component="Password" type="password" :displayErrors="true" placeholder="Enter your password"
                         toggleMask />
                     </div>
