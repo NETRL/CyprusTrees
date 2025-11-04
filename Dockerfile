@@ -25,14 +25,16 @@ RUN apt-get update && apt-get install -y \
     git \
     libonig-dev \
     curl \
-    mariadb-client
+    libpq-dev \
+    mariadb-client \
+    postgresql-client
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* && \
     apt-get update
 
 # Install extensions for php
-RUN docker-php-ext-install pdo_mysql mbstring zip exif pcntl && \
+RUN docker-php-ext-install pdo_mysql pdo_pgsql mbstring zip exif pcntl && \
     docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-install gd
 

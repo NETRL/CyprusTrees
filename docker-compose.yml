@@ -48,19 +48,18 @@ services:
     networks:
       - app-network
 
-  # MySQL Service
-  db:
-    image: mysql:8.2.0
+  #PostgreSQL Service
+  postgis:
+    image: postgis/postgis:16-3.4
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_USER: user
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "3307:3306"
+      - "5432:5432" # expose to host if needed
     volumes:
-      - ./docker-data/mysql-data/:/var/lib/mysql
-      - ./docker-data/mysql/my.cnf:/etc/mysql/my.cnf
+      - ./docker-data/postgis-data/:/var/lib/postgresql/data
     networks:
       - app-network
 
@@ -104,7 +103,6 @@ services:
       - "8100:8025"
     networks:
       - app-network
-
 
 # Docker Network
 networks:
