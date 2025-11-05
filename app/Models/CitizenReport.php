@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class CitizenReport extends Model
+{
+    /** @use HasFactory<\Database\Factories\CitizenReportFactory> */
+    use HasFactory;
+
+    protected $fillable = [
+        'report_type_id',
+        'created_by',
+        'tree_id',
+        'lat',
+        'lon',
+        'description',
+        'status',
+        'photo_url',
+        'created_at',
+        'resolved_at',
+    ];
+
+    public $timestamps = false; // we manually handle timestamps above
+
+    protected $casts = [
+        'lat'         => 'float',
+        'lon'         => 'float',
+        'created_at'  => 'datetime',
+        'resolved_at' => 'datetime',
+    ];
+
+    public function type()
+    {
+        return $this->belongsTo(ReportType::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by', 'id');
+    }
+
+    public function tree()
+    {
+        return $this->belongsTo(Tree::class);
+    }
+}

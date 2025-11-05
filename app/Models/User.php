@@ -53,10 +53,30 @@ class User extends Authenticatable implements AuthMustVerifyEmail
         ];
     }
 
-    public function address(){
+    public function address()
+    {
         return $this->hasOne(UserAddress::class);
     }
 
-    protected $with = ['roles', 'address'];
+    public function plantingEvents()
+    {
+        return $this->hasMany(PlantingEvent::class, 'planted_by', 'id');
+    }
 
+    public function maintenanceEvents()
+    {
+        return $this->hasMany(MaintenanceEvent::class, 'performed_by', 'id');
+    }
+
+    public function healthAssessments()
+    {
+        return $this->hasMany(HealthAssesment::class, 'assessed_by', 'id');
+    }
+
+    public function citizenReports()
+    {
+        return $this->hasMany(CitizenReport::class, 'created_by', 'id');
+    }
+
+    protected $with = ['roles', 'address'];
 }
