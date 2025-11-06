@@ -42,7 +42,7 @@
             <!-- Items list -->
             <ul class="flex flex-col">
               <SidebarNavItem v-for="(navlink, index) in navLinks" :key="navlink.id" :item="navlink" :group-index="0"
-                :item-index="index" />
+                :item-index="index" class="my-1"/>
             </ul>
           </div>
         </div>

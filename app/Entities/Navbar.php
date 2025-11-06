@@ -10,7 +10,7 @@ class Navbar
 
     public function getNavbar(): Collection
     {
-        return Navlink::whereNull('parent_id')->get();
+        return Navlink::where('enabled', true)->whereNull('parent_id')->orderBy('id', 'asc')->get();
     }
 
 }

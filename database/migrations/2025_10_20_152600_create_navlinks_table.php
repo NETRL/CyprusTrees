@@ -10,12 +10,14 @@ return new class extends Migration
     {
         Schema::create('navlinks', function (Blueprint $table) {
             $table->id();
+            $table->string('key');
             $table->string('name');
             $table->string('icon');
             $table->string('permissions')->nullable();
             $table->string('route_name')->nullable();
             $table->bigInteger('parent_id')->nullable();
             $table->boolean('external')->default(0);
+            $table->boolean('enabled')->default(1);
 
             $table->foreign('parent_id')->references('id')->on('navlinks');
             $table->timestamps();

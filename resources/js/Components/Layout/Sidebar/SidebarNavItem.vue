@@ -1,67 +1,53 @@
 <template>
   <li>
     <!-- Item with submenu (has children) -->
-    <button 
-      v-if="hasChildren"
-      v-has-permission="{props: $page.props, permissions: item.permissions?.split('|')}"
-      @click="toggleSubmenu(groupIndex, itemIndex)" 
-      :class="[
+    <button v-if="hasChildren" v-has-permission="{ props: $page.props, permissions: item.permissions?.split('|') }"
+      @click="toggleSubmenu(groupIndex, itemIndex)" :class="[
         'menu-item group w-full',
         {
           'menu-item-active': isSubmenuOpen(groupIndex, itemIndex),
           'menu-item-inactive': !isSubmenuOpen(groupIndex, itemIndex),
         },
-        !isExpanded && !isHovered? 'lg:justify-center' : 'lg:justify-start',
-      ]"
-    >
+        !isExpanded && !isHovered ? 'lg:justify-center' : 'lg:justify-start',
+      ]">
       <!-- Row Icons -->
       <span :class="[
         isSubmenuOpen(groupIndex, itemIndex)
           ? 'menu-item-icon-active'
           : 'menu-item-icon-inactive',
       ]">
-        <i :class="item.icon"></i>
+        <!-- PrimeVue icon -->
+        <i v-if="isPrimeIcon" :class="item.icon"></i>
+        <!-- Custom Vue SVG icon -->
+        <component v-else-if="customIconComponent" :is="customIconComponent" class="w-5 h-5" />
       </span>
-      
+
       <!-- Row Names -->
-      <span v-if="isExpanded || isHovered || isMobileOpen" class="menu-item-text whitespace-nowrap overflow-hidden transition-opacity duration-300">
+      <span v-if="isExpanded || isHovered || isMobileOpen"
+        class="menu-item-text whitespace-nowrap overflow-hidden transition-opacity duration-300">
         {{ item.name }}
       </span>
-      
-      <ChevronDownIcon 
-        v-if="isExpanded || isHovered || isMobileOpen" 
-        :class="[
-          'ml-auto w-5 h-5 transition-transform duration-200',
-          {
-            'rotate-180 text-brand-500': isSubmenuOpen(groupIndex, itemIndex),
-          },
-        ]" 
-      />
+
+      <Icons.ChevronDownIcon v-if="isExpanded || isHovered || isMobileOpen" :class="[
+        'ml-auto w-5 h-5 transition-transform duration-200',
+        {
+          'rotate-180 text-brand-500': isSubmenuOpen(groupIndex, itemIndex),
+        },
+      ]" />
     </button>
-    
+
     <!-- Item without submenu -->
-    <SidebarNavLink
-      v-else
-      v-has-permission="{props: $page.props, permissions: item.permissions?.split('|')}"
-      :item="item"
-      :class="!isExpanded && !isHovered? 'lg:justify-center' : 'lg:justify-start'"
-    />
-    
+    <SidebarNavLink v-else v-has-permission="{ props: $page.props, permissions: item.permissions?.split('|') }"
+      :item="item" :class="!isExpanded && !isHovered ? 'lg:justify-center' : 'lg:justify-start'" />
+
     <!-- Sub items list -->
-    <transition 
-      @enter="startTransition" 
-      @after-enter="endTransition" 
-      @before-leave="startTransition"
-      @after-leave="endTransition"
-    >
+    <transition @enter="startTransition" @after-enter="endTransition" @before-leave="startTransition"
+      @after-leave="endTransition">
       <div v-show="isSubmenuOpen(groupIndex, itemIndex) && (isExpanded || isHovered || isMobileOpen)">
         <ul class="mt-2 space-y-1 ml-9">
           <li v-for="subItem in item.children" :key="subItem.id">
-            <SidebarNavLink
-              v-has-permission="{props: $page.props, permissions: subItem.permissions?.split('|')}"
-              :item="subItem"
-              :is-sub-item="true"
-            />
+            <SidebarNavLink v-has-permission="{ props: $page.props, permissions: subItem.permissions?.split('|') }"
+              :item="subItem" :is-sub-item="true" />
           </li>
         </ul>
       </div>
@@ -71,7 +57,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import { ChevronDownIcon } from "@/icons";
+import * as Icons from "@/icons";
 import SidebarNavLink from '@/Components/Layout/Sidebar/SidebarNavLink.vue';
 import { useSidebar } from '@/Composables/useSidebar';
 
@@ -90,6 +76,15 @@ const props = defineProps({
   }
 });
 
+// PrimeVue icons: "pi pi-..."
+const isPrimeIcon = computed(() => props.item.icon?.startsWith('pi '));
+
+// Resolve from @/icons/index.js
+const customIconComponent = computed(() => {
+  if (isPrimeIcon.value) return null;
+  return Icons[props.item.icon] || null;
+});
+
 const { isExpanded, isMobileOpen, isHovered, openSubmenu } = useSidebar();
 
 const hasChildren = computed(() => {
@@ -103,17 +98,17 @@ const toggleSubmenu = (groupIndex, itemIndex) => {
 
 const isSubmenuOpen = (groupIndex, itemIndex) => {
   const key = `${groupIndex}-${itemIndex}`;
-  
+
   // Check if this submenu is explicitly opened
   if (openSubmenu.value === key) {
     return true;
   }
-  
+
   // Check if any child route is active
   if (props.item.children && props.item.children.length > 0) {
     return props.item.children.some((subItem) => isActive(subItem.route_name));
   }
-  
+
   return false;
 };
 

@@ -1,41 +1,37 @@
 <template>
-  <component 
-    :is="componentType"
-    :href="linkHref"
-    :class="linkClasses"
-  >
-    <span :class="iconClasses">
+  <component :is="componentType" :href="linkHref" :class="linkClasses">
+    <!-- PrimeVue icon -->
+    <span v-if="isPrimeIcon" :class="iconClasses">
       <i :class="item.icon"></i>
     </span>
-    
-    <span v-if="isExpanded || isHovered || isMobileOpen" class="menu-item-text whitespace-nowrap overflow-hidden transition-opacity duration-300">
+    <!-- Custom Vue SVG icon -->
+    <span v-else-if="customIconComponent" :class="iconClasses">
+      <component :is="customIconComponent" class="w-5 h-5 " />
+    </span>
+
+    <span v-if="isExpanded || isHovered || isMobileOpen"
+      class="menu-item-text whitespace-nowrap overflow-hidden transition-opacity duration-300">
       {{ item.name }}
     </span>
-    
+
     <!-- Badges for sub items -->
     <span v-if="isSubItem" class="flex items-center gap-1 ml-auto">
-      <span 
-        v-if="item.new" 
-        :class="[
-          'menu-dropdown-badge',
-          {
-            'menu-dropdown-badge-active': isActive(item.route_name),
-            'menu-dropdown-badge-inactive': !isActive(item.route_name),
-          },
-        ]"
-      >
+      <span v-if="item.new" :class="[
+        'menu-dropdown-badge',
+        {
+          'menu-dropdown-badge-active': isActive(item.route_name),
+          'menu-dropdown-badge-inactive': !isActive(item.route_name),
+        },
+      ]">
         new
       </span>
-      <span 
-        v-if="item.pro" 
-        :class="[
-          'menu-dropdown-badge',
-          {
-            'menu-dropdown-badge-active': isActive(item.route_name),
-            'menu-dropdown-badge-inactive': !isActive(item.route_name),
-          },
-        ]"
-      >
+      <span v-if="item.pro" :class="[
+        'menu-dropdown-badge',
+        {
+          'menu-dropdown-badge-active': isActive(item.route_name),
+          'menu-dropdown-badge-inactive': !isActive(item.route_name),
+        },
+      ]">
         pro
       </span>
     </span>
@@ -45,6 +41,7 @@
 <script setup>
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
+import * as Icons from '@/icons';
 import { useSidebar } from '@/Composables/useSidebar';
 
 const props = defineProps({
@@ -56,6 +53,15 @@ const props = defineProps({
     type: Boolean,
     default: false
   }
+});
+
+// PrimeVue icons: "pi pi-..."
+const isPrimeIcon = computed(() => props.item.icon?.startsWith('pi '));
+
+// Resolve from @/icons/index.js
+const customIconComponent = computed(() => {
+  if (isPrimeIcon.value) return null;
+  return Icons[props.item.icon] || null;
 });
 
 const { isExpanded, isMobileOpen, isHovered } = useSidebar();
@@ -70,12 +76,12 @@ const linkHref = computed(() => {
   if (!props.item.route_name) {
     return '#';
   }
-  
+
   // If external, use route_name as-is
   if (props.item.external) {
     return props.item.route_name;
   }
-  
+
   // Check if route exists before trying to generate it
   try {
     if (typeof route === 'function' && route().has && route().has(props.item.route_name)) {
@@ -84,7 +90,7 @@ const linkHref = computed(() => {
   } catch (e) {
     console.warn(`Route '${props.item.route_name}' not found, using '#' instead`);
   }
-  
+
   // If route doesn't exist, return '#'
   return '#';
 });
@@ -99,7 +105,7 @@ const isActive = (routeName) => {
 
 const linkClasses = computed(() => {
   const hasValidRoute = props.item.route_name && linkHref.value !== '#';
-  
+
   if (props.isSubItem) {
     return [
       'menu-dropdown-item',
@@ -110,7 +116,7 @@ const linkClasses = computed(() => {
       },
     ];
   }
-  
+
   return [
     'menu-item group',
     {
@@ -125,7 +131,7 @@ const iconClasses = computed(() => {
   if (props.isSubItem) {
     return ''; // No special icon classes for sub items
   }
-  
+
   return [
     isActive(props.item.route_name)
       ? 'menu-item-icon-active'

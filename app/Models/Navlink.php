@@ -34,6 +34,6 @@ class Navlink extends Model
      */
     public function children(): HasMany
     {
-        return $this->hasMany(Navlink::class, 'parent_id');
+        return $this->hasMany(Navlink::class, 'parent_id')->where('enabled', true)->orderBy('id');;
     }
 }

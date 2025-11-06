@@ -54,6 +54,7 @@ import GoogleIcon from "./GoogleIcon.vue";
 import XIcon from "./XIcon.vue";
 import MarkIcon from "./MarkIcon.vue";
 import LogoIcon from "./LogoIcon.vue";
+import TreeIcon from "./TreeIcon.vue";
 
 export {
   BellIcon,
@@ -112,4 +113,5 @@ export {
   XIcon,
   MarkIcon,
   LogoIcon,
+  TreeIcon,
 };
