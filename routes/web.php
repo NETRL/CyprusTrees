@@ -4,7 +4,12 @@ use App\Http\Controllers\Dashboard\PermissionController;
 use App\Http\Controllers\Dashboard\RoleController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SpeciesController;
+use App\Http\Controllers\TreeController;
+use App\Http\Controllers\TreeTagController;
 use App\Http\Controllers\UserAddressController;
+use App\Models\Species;
+use App\Models\TreeTag;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -43,6 +48,10 @@ Route::middleware('auth', '2fa')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::patch('/address', [UserAddressController::class, 'update'])->name('address.update');
+
+    Route::resource('trees', TreeController::class);
+    Route::resource('treeTags', TreeTagController::class);
+    Route::resource('species', SpeciesController::class);
 });
 
 require __DIR__ . '/auth.php';

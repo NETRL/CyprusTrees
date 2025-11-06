@@ -55,6 +55,7 @@ import XIcon from "./XIcon.vue";
 import MarkIcon from "./MarkIcon.vue";
 import LogoIcon from "./LogoIcon.vue";
 import TreeIcon from "./TreeIcon.vue";
+import SpeciesIcon from "./SpeciesIcon.vue";
 
 export {
   BellIcon,
@@ -114,4 +115,5 @@ export {
   MarkIcon,
   LogoIcon,
   TreeIcon,
+  SpeciesIcon,
 };

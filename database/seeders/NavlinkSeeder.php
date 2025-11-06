@@ -64,9 +64,46 @@ class NavlinkSeeder extends Seeder
             ['key' => 'tree_management'],
             [
                 'name'        => 'Tree Management',
-                'permissions' => 'permissions.view',
+                'permissions' => 'trees.view',
                 'icon'        => 'TreeIcon',
-                'route_name'  => 'dashboard'
+            ]
+        );
+
+       $this->createOrUpdateNavlink(
+            ['key' => 'tree_management-trees'],
+            [
+                'name'        => 'Trees',
+                'permissions' => 'trees.view',
+                'icon'        => 'TreeIcon',
+                'parent_id'   => $tree_management->id,
+                'route_name'  => 'trees.index'
+
+
+            ]
+        );
+
+        $this->createOrUpdateNavlink(
+            ['key' => 'tree_management-tags'],
+            [
+                'name'        => 'Tree Tags',
+                'permissions' => 'treeTags.view',
+                'icon'        => 'pi pi-tags',
+                'parent_id'   => $tree_management->id,
+                'route_name'  => 'treeTags.index'
+
+
+            ]
+        );
+         $this->createOrUpdateNavlink(
+            ['key' => 'tree_management-species'],
+            [
+                'name'        => 'Species',
+                'permissions' => 'species.view',
+                'icon'        => 'SpeciesIcon',
+                'parent_id'   => $tree_management->id,
+                'route_name'  => 'species.index'
+
+
             ]
         );
 
@@ -84,6 +121,8 @@ class NavlinkSeeder extends Seeder
     {
         $values = array_merge([
             'enabled' => true, // default if not specified
+            'parent_id' => null,
+            'route_name'  => null,
         ], $values);
 
         return Navlink::updateOrCreate($match, $values);

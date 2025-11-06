@@ -13,10 +13,8 @@ class RolePermissionSeeder extends Seeder
     {
 
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
-
         $guard = 'web';
-
-        $admin = Role::findOrCreate('admin');
+        $admin = Role::findOrCreate('admin', $guard);
 
         // user permissions
         $users = Permission::firstOrCreate([
@@ -123,6 +121,99 @@ class RolePermissionSeeder extends Seeder
             'parent_id'   => $permissions->id
         ]);
 
+        // trees permissions
+        $trees = Permission::firstOrCreate([
+            'name'       => 'trees',
+            'group_name' => 'trees'
+        ]);
+
+        Permission::firstOrCreate([
+            'name'        => 'trees.view',
+            'group_name'  => 'trees',
+            'description' => 'Can view trees.',
+            'parent_id'   => $trees->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'trees.edit',
+            'group_name'  => 'trees',
+            'description' => 'Can edit existing trees.',
+            'parent_id'   => $trees->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'trees.create',
+            'group_name'  => 'trees',
+            'description' => 'Can create new trees.',
+            'parent_id'   => $trees->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'trees.delete',
+            'group_name'  => 'trees',
+            'description' => 'Can delete trees.',
+            'parent_id'   => $trees->id
+        ]);
+
+        // treeTass permissions
+        $treeTags = Permission::firstOrCreate([
+            'name'       => 'treeTags',
+            'group_name' => 'treeTags'
+        ]);
+
+        Permission::firstOrCreate([
+            'name'        => 'treeTags.view',
+            'group_name'  => 'treeTags',
+            'description' => 'Can view treeTags.',
+            'parent_id'   => $treeTags->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'treeTags.edit',
+            'group_name'  => 'treeTags',
+            'description' => 'Can edit existing treeTags.',
+            'parent_id'   => $treeTags->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'treeTags.create',
+            'group_name'  => 'treeTags',
+            'description' => 'Can create new treeTags.',
+            'parent_id'   => $treeTags->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'treeTags.delete',
+            'group_name'  => 'treeTags',
+            'description' => 'Can delete treeTags.',
+            'parent_id'   => $treeTags->id
+        ]);
+
+        // species permissions
+        $species = Permission::firstOrCreate([
+            'name'       => 'species',
+            'group_name' => 'species'
+        ]);
+
+        Permission::firstOrCreate([
+            'name'        => 'species.view',
+            'group_name'  => 'species',
+            'description' => 'Can view species.',
+            'parent_id'   => $species->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'species.edit',
+            'group_name'  => 'species',
+            'description' => 'Can edit existing species.',
+            'parent_id'   => $species->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'species.create',
+            'group_name'  => 'species',
+            'description' => 'Can create new species.',
+            'parent_id'   => $species->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'species.delete',
+            'group_name'  => 'species',
+            'description' => 'Can delete species.',
+            'parent_id'   => $species->id
+        ]);
+
         // // log permissions
         // $logs = Permission::firstOrCreate([
         //     'name'       => 'logs',
@@ -143,6 +234,9 @@ class RolePermissionSeeder extends Seeder
         $admin->givePermissionTo([$users->children]);
         $admin->givePermissionTo([$permissions->children]);
         $admin->givePermissionTo([$roles->children]);
+        $admin->givePermissionTo([$trees->children]);
+        $admin->givePermissionTo([$treeTags->children]);
+        $admin->givePermissionTo([$species->children]);
 
 
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
