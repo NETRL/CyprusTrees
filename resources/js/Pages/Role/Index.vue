@@ -35,7 +35,7 @@
                 <Column :exportable="false">
                     <template #body="slotProps">
                         <Button v-has-permission="{ props: $page.props, permissions: ['roles.edit'] }"
-                            class="p-button-rounded mr-2 max-sm:text-sm! max-sm:mb-2" severity="primary"
+                            class="p-button-rounded mr-2 max-sm:text-sm! my-1" severity="primary"
                             icon="pi pi-pencil" @click="editResource(slotProps.data)" />
                         <Button v-has-permission="{ props: $page.props, permissions: ['roles.delete'] }"
                             class="p-button-rounded max-sm:text-sm!" severity="danger" icon="pi pi-trash" iconPos="left"
@@ -86,16 +86,7 @@ export default {
                 header: 'Confirmation',
                 icon: 'pi pi-exclamation-triangle',
                 accept: () => {
-                    this.$inertia.delete(route('roles.destroy', id), {
-                        onSuccess: () => {
-                            this.$toast.add({
-                                severity: 'success',
-                                summary: 'Success',
-                                detail: 'Role deleted successfuly!',
-                                life: 3000
-                            });
-                        }
-                    })
+                    this.$inertia.delete(route('roles.destroy', id))
                 },
                 reject: () => {
                 }
@@ -123,12 +114,6 @@ export default {
                         {
                             onSuccess: () => {
                                 this.selected = [];
-                                this.$toast.add({
-                                    severity: 'success',
-                                    summary: 'Success',
-                                    detail: 'Roles deleted successfuly!',
-                                    life: 3000
-                                });
                             },
                         })
                 },

@@ -86,10 +86,10 @@ class NavlinkSeeder extends Seeder
             ['key' => 'tree_management-tags'],
             [
                 'name'        => 'Tree Tags',
-                'permissions' => 'treeTags.view',
+                'permissions' => 'tags.view',
                 'icon'        => 'pi pi-tags',
                 'parent_id'   => $tree_management->id,
-                'route_name'  => 'treeTags.index'
+                'route_name'  => 'tags.index'
 
 
             ]

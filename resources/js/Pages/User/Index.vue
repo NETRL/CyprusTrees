@@ -38,7 +38,7 @@
                 <Column :exportable="false">
                     <template #body="slotProps">
                         <Button v-has-permission="{ props: $page.props, permissions: ['users.edit'] }"
-                            class="p-button-rounded mr-2 max-sm:text-sm!" severity="primary" icon="pi pi-pencil"
+                            class="p-button-rounded mr-2 max-sm:text-sm! my-1" severity="primary" icon="pi pi-pencil"
                             @click="editResource(slotProps.data)" />
                         <Button v-has-permission="{ props: $page.props, permissions: ['users.delete'] }"
                             class="p-button-rounded max-sm:text-sm!" severity="danger" icon="pi pi-trash" iconPos="left"
@@ -90,12 +90,6 @@ export default {
                 accept: () => {
                     this.$inertia.delete(route('users.destroy', id), {
                         onSuccess: () => {
-                            this.$toast.add({
-                                severity: 'success',
-                                summary: 'Success',
-                                detail: 'User deleted successfuly!',
-                                life: 3000
-                            });
                         }
                     })
                 },
@@ -125,12 +119,6 @@ export default {
                         {
                             onSuccess: () => {
                                 this.selected = [];
-                                this.$toast.add({
-                                    severity: 'success',
-                                    summary: 'Success',
-                                    detail: ' Users deleted successfuly!',
-                                    life: 3000
-                                });
                             },
                         })
                 },

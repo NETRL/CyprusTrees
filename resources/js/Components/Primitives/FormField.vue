@@ -23,14 +23,11 @@
         </template>
     </Password>
     <Dropdown v-else-if="component === 'Dropdown'" :id="name"
-        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle]" v-bind="$attrs" />
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', inputBase]" v-bind="$attrs"/>
     <MultiSelect v-else-if="component === 'MultiSelect'" :id="name"
-        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : 'items-center', inputBase]" v-bind="$attrs"
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : 'items-center', inputBase, 'custom-multiselect' ]" v-bind="$attrs"
         :maxSelectedLabels="1" panelClass="custom-multiselect-panel"/>
-
-
-
-
+        
     <InputNumber v-else-if="component === 'Number'" :id="name"
         :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle]" v-bind="$attrs" />
     <Textarea v-else-if="component === 'Textarea'" :id="name"
@@ -39,7 +36,7 @@
         :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle]" style="width:130px;"
         v-bind="$attrs" />
     <Calendar v-else-if="component === 'Calendar'" :id="name"
-        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle]" locale="en-GB" v-bind="$attrs" />
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', inputBase]" showIcon showTime hourFormat="24"  locale="en-GB" v-bind="$attrs" inputClass="w-full border-y-transparent! border-l-transparent! border-r-gray-700! focus:border-brand-300! focus:outline-hidden! focus:ring-1! focus:ring-brand-500/60! text-sm!text-gray-800! placeholder:text-gray-400! dark:text-white/90! dark:placeholder:text-white/30! dark:focus:border-brand-800!"/>
     <InputSwitch v-else-if="component === 'InputSwitch'" :id="name"
         :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle]" v-bind="$attrs" />
     <Checkbox v-else-if="component === 'Checkbox'" :id="name"
@@ -76,7 +73,7 @@ const shouldDisplayErrors = computed(() => {
     return !!props.displayErrors && !!props.name && !!errors[props.name]
 })
 
-const inputBase = 'h-11! w-full! rounded-lg! border! border-gray-300! bg-transparent! text-sm! text-gray-800! shadow-theme-xs! placeholder:text-gray-400! focus:border-brand-300! focus:outline-hidden! focus:ring-1! focus:ring-brand-500/60! dark:border-gray-700! dark:bg-gray-900! dark:text-white/90! dark:placeholder:text-white/30! dark:focus:border-brand-800!'
+const inputBase = 'h-11! w-full! rounded-lg! border! border-gray-300! bg-transparent! text-sm! text-gray-800! shadow-theme-xs! placeholder:text-gray-400! focus:border-brand-300! focus:outline-hidden! focus:ring-1! focus:ring-brand-500/60! dark:border-gray-700!  dark:text-white/90! dark:placeholder:text-white/30! dark:focus:border-brand-800!'
 
 const inputTextStyle = inputBase + 'px-4! py-2.5!'
 const passwordStyle = inputBase + 'bg-none!'

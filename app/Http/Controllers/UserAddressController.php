@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class UserAddressController extends Controller
 {
@@ -25,8 +26,18 @@ class UserAddressController extends Controller
                 $user->address()->create($validated);
             }
         } catch (\Exception $e) {
-            return back()->with('error', 'Could not update address due to an error.')->withInput();
+            $request->session()->flash('message', [
+                'type'    => 'error',
+                'message' => __('Could not update address due to an error.'),
+            ]);
+            Log::error('Could not update address due to an error.', $e);
+            return back();
         }
-        return back()->with('success', 'Your address has been updated successfully!');
+
+        $request->session()->flash('message', [
+            'type'    => 'success',
+            'message' => __('Address has been updated.'),
+        ]);
+        return back();
     }
 }

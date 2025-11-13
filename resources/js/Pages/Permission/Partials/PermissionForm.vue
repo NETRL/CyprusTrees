@@ -54,12 +54,6 @@ export default {
                         preserveScroll: true,
                         onSuccess: () => {
                             this.closeForm();
-                            this.$toast.add({
-                                severity: 'success',
-                                summary: 'Success',
-                                detail: 'Permission created successfuly!',
-                                life: 3000
-                            });
                         },
                         onFinish: () => this.displayErrors = true,
                     }
@@ -73,12 +67,6 @@ export default {
                             preserveScroll: true,
                             onSuccess: () => {
                                 this.closeForm();
-                                this.$toast.add({
-                                    severity: 'success',
-                                    summary: 'Success',
-                                    detail: 'Permission updated successfuly!',
-                                    life: 3000
-                                });
                             },
                             onFinish: () => this.displayErrors = true,
                         }

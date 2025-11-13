@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Traits\BaseModelTrait;
+use App\Models\Traits\Paginatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Tree extends Model
 {
     /** @use HasFactory<\Database\Factories\TreeFactory> */
-    use HasFactory;
+    use HasFactory, BaseModelTrait, Paginatable;
 
+    protected $appends = ['species_label'];
 
     protected $fillable = [
         'species_id',
@@ -28,15 +31,69 @@ class Tree extends Model
         'source',
     ];
 
-    protected $casts = [
-        'planted_at' => 'date',
-        'last_inspected_at' => 'datetime',
-        'height_m' => 'float',
-        'dbh_cm' => 'float',
-        'canopy_diameter_m' => 'float',
-        'lat' => 'float',
-        'lon' => 'float',
+
+    protected array $tableColumns = [
+        'id',
+        'species_label',
+        'lat',
+        'lon',
+        'address',
+        'planted_at',
+        'status',
+        'health_status',
+        'height_m',
+        'dbh_cm',
+        'canopy_diameter_m',
+        'last_inspected_at',
+        'owner_type',
+        'source',
     ];
+
+    protected array $searchable = [
+        'id',
+        'species_label',
+        'address',
+        'status',
+        'health_status',
+        'owner_type',
+        'source',
+    ];
+
+    protected array $sortable = [
+        'id',
+        'species_label',
+        'planted_at',
+        'last_inspected_at',
+        'height_m',
+        'dbh_cm',
+        'canopy_diameter_m',
+    ];
+
+
+    protected $casts = [
+        'lat'               => 'float',
+        'lon'               => 'float',
+        'height_m'          => 'float',
+        'dbh_cm'            => 'float',
+        'canopy_diameter_m' => 'float',
+        'planted_at'        => 'date',
+        'last_inspected_at' => 'datetime',
+    ];
+
+    public static function relationships(): array
+    {
+        return [
+            'species',
+            'neighborhood',
+            'plantingEvents',
+            'maintenanceEvents',
+            'healthAssessments',
+            'citizenReports',
+            'photos',
+            'tags',
+        ];
+    }
+
 
     public function species()
     {
@@ -76,5 +133,12 @@ class Tree extends Model
     public function tags()
     {
         return $this->belongsToMany(Tag::class, 'tree_tags', 'tree_id', 'tag_id')->withTimestamps();
+    }
+
+    public function getSpeciesLabelAttribute()
+    {
+        return $this->species
+            ? "{$this->species->common_name} ({$this->species->latin_name})"
+            : '-';
     }
 }

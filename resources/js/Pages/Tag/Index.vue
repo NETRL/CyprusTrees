@@ -1,0 +1,74 @@
+<template>
+  <div>
+    <ReusableDataTable resourceName="tags" :columns="columns" :tableData="tagData" inertiaKey="tagData" pageTitle="Manage Tree Tags"
+      @create="openCreateForm" @edit="openEditForm" @afterDelete="onAfterDelete" @afterMassDelete="onAfterMassDelete"
+      >
+    </ReusableDataTable>
+
+    <!-- <SpeFciesorm v-model:visible="formVisible" :action="formAction" :dataRow="formRow" @updated="reloadTable"
+      @created="reloadTable" /> -->
+
+      <TagForm v-model:visible="formVisible" :action="formAction" :dataRow="formRow" @updated="reloadTable"
+      @created="reloadTable"/>
+  </div>
+</template>
+
+<script setup>
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+
+import ReusableDataTable from "@/Components/ReusableDataTable.vue";
+import { router } from "@inertiajs/vue3";
+import { ref, defineOptions, defineProps } from "vue";
+import { useRenamedHeaders } from "@/Composables/useRenamedHeaders";
+import TagForm from "./Partials/TagForm.vue";
+
+defineOptions({
+  layout: AuthenticatedLayout,
+});
+
+const props = defineProps({
+  tagData: {
+    type: Object,
+    required: true,
+  },
+  dataColumns: {
+    type: Object,
+  },
+});
+
+console.log(props.dataColumns)
+
+const { columns } = useRenamedHeaders(props.dataColumns, {
+  Trees_count: 'Tree Count',
+})
+
+// --- form state ---
+const formVisible = ref(false);
+const formAction = ref('');      // 'Create' or 'Edit'
+const formRow = ref(null);       // current row
+
+const openCreateForm = () => {
+  formRow.value = null;
+  formAction.value = 'Create';
+  formVisible.value = true;
+};
+
+const openEditForm = (row) => {
+  formRow.value = row;
+  formAction.value = 'Edit';
+  formVisible.value = true;
+};
+
+// optional: reload table when form finishes
+const reloadTable = () => {
+  router.reload({ only: ['tagData'] });
+};
+
+const onAfterDelete = () => {
+  reloadTable();
+};
+
+const onAfterMassDelete = () => {
+  reloadTable();
+};
+</script>

@@ -18,5 +18,6 @@ class DatabaseSeeder extends Seeder
         $this->call(NavlinkSeeder::class);
         $this->call(RolePermissionSeeder::class);
         $this->call(UserSeeder::class);
+        $this->call(SpeciesSeeder::class);
     }
 }

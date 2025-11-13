@@ -152,7 +152,7 @@ class RolePermissionSeeder extends Seeder
             'parent_id'   => $trees->id
         ]);
 
-        // treeTass permissions
+        // treeTags permissions
         $treeTags = Permission::firstOrCreate([
             'name'       => 'treeTags',
             'group_name' => 'treeTags'
@@ -181,6 +181,37 @@ class RolePermissionSeeder extends Seeder
             'group_name'  => 'treeTags',
             'description' => 'Can delete treeTags.',
             'parent_id'   => $treeTags->id
+        ]);
+
+        // tags permissions
+        $tags = Permission::firstOrCreate([
+            'name'       => 'tags',
+            'group_name' => 'tags'
+        ]);
+
+        Permission::firstOrCreate([
+            'name'        => 'tags.view',
+            'group_name'  => 'tags',
+            'description' => 'Can view tags.',
+            'parent_id'   => $tags->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'tags.edit',
+            'group_name'  => 'tags',
+            'description' => 'Can edit existing tags.',
+            'parent_id'   => $tags->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'tags.create',
+            'group_name'  => 'tags',
+            'description' => 'Can create new tags.',
+            'parent_id'   => $tags->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'tags.delete',
+            'group_name'  => 'tags',
+            'description' => 'Can delete tags.',
+            'parent_id'   => $tags->id
         ]);
 
         // species permissions
@@ -236,6 +267,7 @@ class RolePermissionSeeder extends Seeder
         $admin->givePermissionTo([$roles->children]);
         $admin->givePermissionTo([$trees->children]);
         $admin->givePermissionTo([$treeTags->children]);
+        $admin->givePermissionTo([$tags->children]);
         $admin->givePermissionTo([$species->children]);
 
 

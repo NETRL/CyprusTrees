@@ -120,11 +120,9 @@ import { computed, ref } from 'vue'
 import Modal from '@/Components/Modal.vue'
 import { useForm, usePage } from '@inertiajs/vue3'
 import ComponentCard from '@/Components/Common/ComponentCard.vue'
-import { useToast } from 'primevue'
 
 const page = usePage()
 const user = computed(() => page.props.auth?.user)
-const toast = useToast();
 
 const form = useForm({
   'country': user.value.address?.country,
@@ -140,12 +138,6 @@ const saveAddress = () => {
     preserveScroll: true,
     onSuccess: () => {
       closeModal();
-      toast.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Information updated successfuly!',
-        life: 3000
-      });
     },
     onFinish: () => form.reset(),
   });

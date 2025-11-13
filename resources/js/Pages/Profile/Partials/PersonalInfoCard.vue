@@ -171,12 +171,10 @@ import { computed, ref } from 'vue'
 import Modal from '@/Components/Modal.vue'
 import { useForm, usePage } from '@inertiajs/vue3'
 import InputError from '@/Components/InputError.vue';
-import { useToast } from 'primevue/usetoast';
 import ComponentCard from '@/Components/Common/ComponentCard.vue';
 
 const page = usePage()
 const user = computed(() => page.props.auth?.user)
-const toast = useToast();
 
 
 
@@ -203,12 +201,6 @@ const updatePassword = () => {
     preserveScroll: true,
     onSuccess: () => {
       closeModal();
-       toast.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Password updated successfuly!',
-        life: 3000
-      });
     },
     onError: () => {
       if (passwordForm.errors.password) {
@@ -227,12 +219,6 @@ const updateProfile = () => {
     preserveScroll: true,
     onSuccess: () => {
       closeModal();
-      toast.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Information updated successfuly!',
-        life: 3000
-      });
     },
     onFinish: () => infoForm.reset(),
   });

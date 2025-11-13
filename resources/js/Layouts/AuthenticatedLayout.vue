@@ -1,13 +1,13 @@
 <template>
     <Toast :breakpoints="{'920px': {width: '100%', right: '0', left: '0'}}" position="bottom-right"/>
     <ConfirmDialog></ConfirmDialog>
-    <div class="min-h-screen xl:flex" >
+    <div class="min-h-screen " >
         <AppSidebar />
         <Backdrop/>
         <div class="flex-1 transition-all duration-300 ease-in-out"
             :class="[isExpanded || isHovered ? 'lg:ml-[290px]' : 'lg:ml-[90px]']">
             <AppHeader/>
-            <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
+            <div class="p-4 mx-auto md:p-6">
                 <slot/>
             </div>
         </div>
@@ -20,6 +20,7 @@ import AppSidebar from '@/Layouts/AppSidebar.vue';
 import AppHeader from '@/Layouts/AppHeader.vue';
 import { useSidebar } from '@/Composables/useSidebar';
 import Backdrop from '@/Components/Layout/Backdrop.vue';
+import { useCustomToast } from '@/Composables/useCustomToast';
 
 
 const darkMode = 'class';
@@ -42,6 +43,9 @@ defineProps({
 });
 
 const { isExpanded, isHovered } = useSidebar()
+
+useCustomToast();
+
 
 
 </script>

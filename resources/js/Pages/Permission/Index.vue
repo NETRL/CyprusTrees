@@ -40,7 +40,7 @@ l<template>
                 <Column :exportable="false">
                     <template #body="slotProps">
                         <Button v-has-permission="{ props: $page.props, permissions: ['permissions.edit'] }"
-                            class="p-button-rounded mr-2 max-sm:text-sm! max-sm:mb-2" severity="primary"
+                            class="p-button-rounded mr-2 max-sm:text-sm! my-1" severity="primary"
                             icon="pi pi-pencil" @click="editGroup(slotProps.data)" />
                         <Button v-has-permission="{ props: $page.props, permissions: ['permissions.delete'] }"
                             class="p-button-rounded max-sm:text-sm!" severity="danger" icon="pi pi-trash" iconPos="left"
@@ -60,7 +60,7 @@ l<template>
                         <Column :exportable="false">
                             <template #body="slotProps">
                                 <Button v-has-permission="{ props: $page.props, permissions: ['permissions.edit'] }"
-                                    severity="primary" class="p-button-rounded mr-2 max-sm:text-sm! max-sm:mb-2"
+                                    severity="primary" class="p-button-rounded mr-2 max-sm:text-sm! my-1"
                                     icon="pi pi-pencil" @click="editPermission(slotProps.data)" />
                                 <Button v-has-permission="{ props: $page.props, permissions: ['permissions.delete'] }"
                                     severity="danger" class="p-button-rounded max-sm:text-sm!" icon="pi pi-trash"
@@ -117,16 +117,7 @@ export default {
                 header: 'Confirmation',
                 icon: 'pi pi-exclamation-triangle',
                 accept: () => {
-                    this.$inertia.delete(route('permissions.destroy', id), {
-                        onSuccess: () => {
-                            this.$toast.add({
-                                severity: 'success',
-                                summary: 'Success',
-                                detail: 'Permission deleted successfuly!',
-                                life: 3000
-                            });
-                        },
-                    })
+                    this.$inertia.delete(route('permissions.destroy', id))
                 },
                 reject: () => {
                 }

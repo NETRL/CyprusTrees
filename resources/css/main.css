@@ -6,7 +6,17 @@ layer(base);
 @custom-variant dark (&:is(.dark *));
 
 
+
+.p-focus {
+    @apply border-brand-300! outline-hidden! ring-1! ring-brand-500/60! dark:border-brand-500!
+}
+
 /* PrimeVue MultiSelect Customizations */
+.custom-multiselect {
+     @apply border-gray-300! dark:border-gray-800! 
+}
+
+/* MultiSelect Panel */
 .custom-multiselect-panel {
     @apply bg-white! dark:bg-gray-900!;
 }.custom-multiselect-panel .p-checkbox-box {
@@ -16,6 +26,19 @@ layer(base);
 }.custom-multiselect-panel .p-checkbox-icon {
     @apply text-white! w-3! h-3! font-bold! stroke-3!;
 }
+
+/* PrimeVue Dropdown */
+.p-select-overlay {
+    @apply  dark:border-transparent!;
+}.p-select-list-container{
+    @apply bg-white! dark:bg-gray-900! border-gray-300! dark:border-gray-700! rounded-md border  transition-colors!;
+}
+
+/* PrimeVue Calendar */
+.p-datepicker-dropdown {
+   @apply bg-transparent! border-none!;
+}
+
 
 /* PrimeVue DataTable */
 .p-datatable {
