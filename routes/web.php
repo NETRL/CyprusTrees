@@ -4,7 +4,7 @@ use App\Http\Controllers\Dashboard\PermissionController;
 use App\Http\Controllers\Dashboard\RoleController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\NeigborhoodController;
-use App\Http\Controllers\PhotosController;
+use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SpeciesController;
 use App\Http\Controllers\TagController;
@@ -60,8 +60,8 @@ Route::middleware('auth', '2fa')->group(function () {
     Route::resource('neighborhoods', NeigborhoodController::class);
     Route::post('/neighborhoods/mass-destroy', [NeigborhoodController::class, 'massDestroy'])->name('neighborhoods.massDestroy');
 
-    Route::resource('photos', PhotosController::class);
-    Route::post('/photos/mass-destroy', [PhotosController::class, 'massDestroy'])->name('photos.massDestroy');
+    Route::resource('photos', PhotoController::class);
+    Route::post('/photos/mass-destroy', [PhotoController::class, 'massDestroy'])->name('photos.massDestroy');
 });
 
 require __DIR__ . '/auth.php';

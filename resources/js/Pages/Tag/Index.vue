@@ -5,9 +5,6 @@
       >
     </ReusableDataTable>
 
-    <!-- <SpeFciesorm v-model:visible="formVisible" :action="formAction" :dataRow="formRow" @updated="reloadTable"
-      @created="reloadTable" /> -->
-
       <TagForm v-model:visible="formVisible" routeResource="tags" :action="formAction" :dataRow="formRow" @updated="reloadTable"
       @created="reloadTable"/>
   </div>

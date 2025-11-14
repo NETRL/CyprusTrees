@@ -2,7 +2,7 @@
 
     <Head title="Welcome" />
     <div class="min-h-dvh h-dvh flex flex-col">
-        <!-- <AppSidebar /> -->
+        <AppSidebar />
         <Backdrop />
         <header class="shrink-0 relative ">
             <AppHeader :with-sidebar="false" />

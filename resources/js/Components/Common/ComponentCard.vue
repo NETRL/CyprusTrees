@@ -1,6 +1,6 @@
 <template>
   <div :class="[
-    'rounded-2xl border border-gray-200 dark:border-gray-800 ',
+    'rounded-2xl border border-gray-200 dark:border-gray-800 flex flex-col',
     className,
    transparent ? 'bg-transparent!' : 'bg-white dark:bg-white/3'
   ]">
@@ -12,9 +12,8 @@
         {{ desc }}
       </p>
     </div>
-
-    <div class="p-4 border-gray-100 dark:border-gray-800 sm:p-6">
-      <div class="space-y-5">
+    <div class="p-4 border-gray-100 dark:border-gray-800 sm:p-6 flex-1 flex flex-col">
+      <div class="space-y-5 flex-1 flex flex-col">
         <slot></slot>
       </div>
     </div>

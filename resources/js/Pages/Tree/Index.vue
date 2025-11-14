@@ -7,7 +7,7 @@
             <template>
                 <Column header="Photos">
                     <template #body="slotProps">
-                        <NavLinkButton class="text-nowrap" title="Manage photos">Manage {{ slotProps.data.photos_count
+                        <NavLinkButton class="text-nowrap" title="Manage photos" :href="route('photos.index', { tree_id: slotProps.data.id})">Manage {{ slotProps.data.photos_count
                             ?? 0 }} photos</NavLinkButton>
                     </template>
                 </Column>
