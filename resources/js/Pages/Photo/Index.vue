@@ -1,10 +1,10 @@
 <template>
     <ComponentCard class="w-full flex-1 flex flex-col" title="Manage Tree Photos">
         <form class="space-x-3 flex-nowrap max-sm:space-y-3" @submit.prevent="loadPhotos">
-                <FormField v-model="formData.tree_id" class="max-w-3xs" name="tree_id" component="Number"
+            <FormField v-model="formData.tree_id" class="max-w-3xs" name="tree_id" component="Number"
                 label="Enter Tree ID" type="text" :displayErrors="true" placeholder="E.g. 123" :useGrouping="false" />
-                
-                <Button class="text-nowrap h-10!" icon="pi pi-sync" label="Load Photos" type="submit"
+
+            <Button class="text-nowrap h-10!" icon="pi pi-sync" label="Load Photos" type="submit"
                 :disabled="!formData.tree_id" />
         </form>
 
@@ -22,10 +22,29 @@
             </template>
 
             <template v-else>
-                <p class="mb-2 text-xl text-gray-600" v-if="selectedTree">
-                    Showing photos for tree <strong>#{{ selectedTree.id }}</strong>
-                    ({{ selectedTree.species_label ?? selectedTree.id }}).
-                </p>
+                <div>
+
+                    <p class="mb-2 text-xl text-gray-600" v-if="selectedTree">
+                        Showing photos for tree <strong>#{{ selectedTree.id }}</strong>
+                        ({{ selectedTree.species_label ?? selectedTree.id }}).
+                    </p>
+
+                    <div class="m-5">
+
+                        <div class="flex flex-col justify-center items-center w-60 h-[300px]
+                        text-brand-500 
+                        bg-brand-500/5 dark:bg-brand-700/10
+                        rounded-2xl 
+                        border border-brand-700 dark:border-brand-700 border-dashed
+                        hover:bg-brand-500/10 dark:hover:bg-brand-700/20
+                        hover:border-brand-500
+                        cursor-pointer transition">
+                            <i class="pi pi-plus"></i>
+                            <span class="mt-2">Add Photo</span>
+                        </div>
+                    </div>
+
+                </div>
 
             </template>
         </div>

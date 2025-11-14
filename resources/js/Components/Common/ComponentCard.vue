@@ -13,7 +13,7 @@
       </p>
     </div>
     <div class="p-4 border-gray-100 dark:border-gray-800 sm:p-6 flex-1 flex flex-col">
-      <div class="space-y-5 flex-1 flex flex-col">
+      <div class="space-y-5">
         <slot></slot>
       </div>
     </div>

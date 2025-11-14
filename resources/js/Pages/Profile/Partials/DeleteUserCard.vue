@@ -1,8 +1,8 @@
 <template>
     <div>
-        <ComponentCard :transparent="true" :title="'Delete Account'"
+        <ComponentCard :transparent="true" :title="'Delete Account'" 
             :desc="'Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.'">
-            <DangerButton @click="openModal">Delete Account</DangerButton>
+            <DangerButton @click="openModal" class="mx-auto">Delete Account</DangerButton>
         </ComponentCard>
         <Modal v-if="confirmingUserDeletion" @close="closeModal">
             <template #body>
