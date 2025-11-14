@@ -1,6 +1,6 @@
 <template>
   <div>
-    <ReusableDataTable resourceName="tags" :columns="columns" :tableData="tagData" inertiaKey="tagData" pageTitle="Manage Tree Tags"
+    <ReusableDataTable routeResource="tags" :columns="columns" :tableData="tableData" inertiaKey="tableData" pageTitle="Manage Tree Tags"
       @create="openCreateForm" @edit="openEditForm" @afterDelete="onAfterDelete" @afterMassDelete="onAfterMassDelete"
       >
     </ReusableDataTable>
@@ -8,7 +8,7 @@
     <!-- <SpeFciesorm v-model:visible="formVisible" :action="formAction" :dataRow="formRow" @updated="reloadTable"
       @created="reloadTable" /> -->
 
-      <TagForm v-model:visible="formVisible" :action="formAction" :dataRow="formRow" @updated="reloadTable"
+      <TagForm v-model:visible="formVisible" routeResource="tags" :action="formAction" :dataRow="formRow" @updated="reloadTable"
       @created="reloadTable"/>
   </div>
 </template>
@@ -27,7 +27,7 @@ defineOptions({
 });
 
 const props = defineProps({
-  tagData: {
+  tableData: {
     type: Object,
     required: true,
   },
@@ -61,7 +61,7 @@ const openEditForm = (row) => {
 
 // optional: reload table when form finishes
 const reloadTable = () => {
-  router.reload({ only: ['tagData'] });
+  router.reload({ only: ['tableData'] });
 };
 
 const onAfterDelete = () => {

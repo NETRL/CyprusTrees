@@ -17,7 +17,7 @@
           : 'menu-item-icon-inactive',
       ]">
         <!-- PrimeVue icon -->
-        <i v-if="isPrimeIcon" :class="item.icon"></i>
+        <i v-if="isPrimeIcon" :class="item.icon" class="w-5 h-5 "></i>
         <!-- Custom Vue SVG icon -->
         <component v-else-if="customIconComponent" :is="customIconComponent" class="w-5 h-5" />
       </span>

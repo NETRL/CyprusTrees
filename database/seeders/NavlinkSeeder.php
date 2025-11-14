@@ -69,7 +69,7 @@ class NavlinkSeeder extends Seeder
             ]
         );
 
-       $this->createOrUpdateNavlink(
+        $this->createOrUpdateNavlink(
             ['key' => 'tree_management-trees'],
             [
                 'name'        => 'Trees',
@@ -94,7 +94,7 @@ class NavlinkSeeder extends Seeder
 
             ]
         );
-         $this->createOrUpdateNavlink(
+        $this->createOrUpdateNavlink(
             ['key' => 'tree_management-species'],
             [
                 'name'        => 'Species',
@@ -102,6 +102,31 @@ class NavlinkSeeder extends Seeder
                 'icon'        => 'SpeciesIcon',
                 'parent_id'   => $tree_management->id,
                 'route_name'  => 'species.index'
+
+
+            ]
+        );
+
+        $this->createOrUpdateNavlink(
+            ['key' => 'tree_management-photos'],
+            [
+                'name'        => 'Photos',
+                'permissions' => 'photos.view',
+                'icon'        => 'pi pi-images',
+                'parent_id'   => $tree_management->id,
+                'route_name'  => 'photos.index'
+
+
+            ]
+        );
+
+        $this->createOrUpdateNavlink(
+            ['key' => 'neighborhood_management'],
+            [
+                'name'        => 'Neighborhoods',
+                'permissions' => 'neighborhoods.view',
+                'icon'        => 'NeigborhoodIcon',
+                'route_name'  => 'neighborhoods.index'
 
 
             ]

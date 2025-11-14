@@ -28,14 +28,18 @@ class TreeController extends Controller
 
         $perPage = $request->integer('per_page', 25); // default 25
 
-        return Inertia::render('Tree/Index1', [
-            'treeData' => Tree::with('species')
-                ->paginate($perPage)
-                ->withQueryString(),
+
+        $query = Tree::query()
+            ->with('species')
+            ->withCount('photos')
+            ->setUpQuery();
+
+        return Inertia::render('Tree/Index', [
+            'tableData' => $query->paginate($perPage)->withQueryString(),
             'speciesData' => Species::orderBy('common_name')
                 ->get(['id', 'latin_name', 'common_name']),
-                'neighborhoodData' => Neighborhood::orderBy('name')->get(['id', 'name', 'city']),
-            'dataColumns' => Tree::getDataColumns(),
+            'neighborhoodData' => Neighborhood::orderBy('name')->get(['id', 'name', 'city']),
+            'dataColumns' => Tree::getDataColumns()
 
         ]);
     }

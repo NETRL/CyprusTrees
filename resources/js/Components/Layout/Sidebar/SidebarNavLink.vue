@@ -2,7 +2,7 @@
   <component :is="componentType" :href="linkHref" :class="linkClasses">
     <!-- PrimeVue icon -->
     <span v-if="isPrimeIcon" :class="iconClasses">
-      <i :class="item.icon"></i>
+      <i :class="item.icon" class="w-5 h-5 "></i>
     </span>
     <!-- Custom Vue SVG icon -->
     <span v-else-if="customIconComponent" :class="iconClasses">

@@ -3,6 +3,8 @@
 use App\Http\Controllers\Dashboard\PermissionController;
 use App\Http\Controllers\Dashboard\RoleController;
 use App\Http\Controllers\Dashboard\UserController;
+use App\Http\Controllers\NeigborhoodController;
+use App\Http\Controllers\PhotosController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SpeciesController;
 use App\Http\Controllers\TagController;
@@ -52,8 +54,14 @@ Route::middleware('auth', '2fa')->group(function () {
     Route::resource('tags', TagController::class);
     Route::post('/tags/mass-destroy', [TagController::class, 'massDestroy'])->name('tags.massDestroy');
 
-    Route::post('/species/mass-destroy', [SpeciesController::class, 'massDestroy'])->name('species.massDestroy');
     Route::resource('species', SpeciesController::class);
+    Route::post('/species/mass-destroy', [SpeciesController::class, 'massDestroy'])->name('species.massDestroy');
+
+    Route::resource('neighborhoods', NeigborhoodController::class);
+    Route::post('/neighborhoods/mass-destroy', [NeigborhoodController::class, 'massDestroy'])->name('neighborhoods.massDestroy');
+
+    Route::resource('photos', PhotosController::class);
+    Route::post('/photos/mass-destroy', [PhotosController::class, 'massDestroy'])->name('photos.massDestroy');
 });
 
 require __DIR__ . '/auth.php';

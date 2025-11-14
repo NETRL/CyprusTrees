@@ -51,10 +51,17 @@ class Tree extends Model
 
     protected array $searchable = [
         'id',
-        'species_label',
+        'species.common_name',
+        'lat',
+        'lon',
         'address',
+        'planted_at',
         'status',
         'health_status',
+        'height_m',
+        'dbh_cm',
+        'canopy_diameter_m',
+        'last_inspected_at',
         'owner_type',
         'source',
     ];
@@ -87,7 +94,7 @@ class Tree extends Model
             'neighborhood',
             'plantingEvents',
             'maintenanceEvents',
-            'healthAssessments',
+            // 'healthAssessments',
             'citizenReports',
             'photos',
             'tags',

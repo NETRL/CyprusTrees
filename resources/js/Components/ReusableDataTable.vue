@@ -58,9 +58,9 @@
             {{ slotProps.data[col.value] }}
           </template>
         </Column>
-
-        <!-- default slot -->
+        
         <slot></slot>
+        <!-- default slot -->
         <Column :exportable="false">
           <template #body="slotProps">
             <Button v-if="showEditButton" v-has-permission="{ props: $page.props, permissions: [finalPermissionEdit] }"
@@ -124,7 +124,7 @@ const props = defineProps({
     type: String,
     default: 'tableData',
   },
-  resourceName: {
+  routeResource: {
     type: String,
     required: true,
   },
@@ -177,16 +177,16 @@ const emit = defineEmits([
   'afterMassDelete'
 ]);
 
-const finalRouteDestroy = props.routeDestroy ?? props.resourceName + ".destroy";
-const finalRouteMassDestroy = props.routeMassDestroy ?? props.resourceName + ".massDestroy";
-const finalPermissionCreate = props.permissionCreate ?? props.resourceName + ".create";
-const finalPermissionMassDelete = props.permissionMassDelete ?? props.resourceName + ".delete";
-const finalPermissionEdit = props.permissionEdit ?? props.resourceName + ".edit";
-const finalPermissionDelete = props.permissionDelete ?? props.resourceName + ".delete";
-const finalPermissionView = props.permissionView ?? props.resourceName + ".view";
+const finalRouteDestroy = props.routeDestroy ?? props.routeResource + ".destroy";
+const finalRouteMassDestroy = props.routeMassDestroy ?? props.routeResource + ".massDestroy";
+const finalPermissionCreate = props.permissionCreate ?? props.routeResource + ".create";
+const finalPermissionMassDelete = props.permissionMassDelete ?? props.routeResource + ".delete";
+const finalPermissionEdit = props.permissionEdit ?? props.routeResource + ".edit";
+const finalPermissionDelete = props.permissionDelete ?? props.routeResource + ".delete";
+const finalPermissionView = props.permissionView ?? props.routeResource + ".view";
 
-const STORAGE_KEY = `selectedColumns_` + props.resourceName
-const PER_PAGE_KEY = props.resourceName + `_per_page`
+const STORAGE_KEY = `selectedColumns_` + props.routeResource
+const PER_PAGE_KEY = props.routeResource + `_per_page`
 
 const columnsToShow = computed(() =>
   props.columns.items.map(item => ({
@@ -251,7 +251,7 @@ const asSearchParam = (val) => {
 // ---- Debounced search ----
 const debouncedSearch = debounce((value) => {
   router.get(
-    route(props.resourceName + '.index'),
+    route(props.routeResource + '.index'),
     {
       search: asSearchParam(value),
       page: 1,
@@ -276,7 +276,7 @@ const onPageButton = (pageNum) => {
 
   currentPage.value = desired
   router.get(
-    route(props.resourceName + '.index'),
+    route(props.routeResource + '.index'),
     {
       page: desired,
       per_page: perPage.value,
@@ -294,7 +294,7 @@ const onPage = (event) => {
   currentPage.value = pageNumber
 
   router.get(
-    route(props.resourceName + '.index'),
+    route(props.routeResource + '.index'),
     {
       page: pageNumber,
       per_page: perPage.value,
@@ -311,7 +311,7 @@ const onPage = (event) => {
 // ---- Sorting ----
 const onSort = (event) => {
   router.get(
-    route(props.resourceName + '.index'),
+    route(props.routeResource + '.index'),
     {
       sortField: event.sortField,
       sortOrder: event.sortOrder === 1 ? 'asc' : 'desc',
@@ -335,7 +335,7 @@ const refreshData = () => {
   router.reload({ only: [props.inertiaKey] })
 }
 
-const { deleteOne, massDelete } = useCrudOperations(props.resourceName);
+const { deleteOne, massDelete } = useCrudOperations(props.routeResource);
 
 // ---- CRUD helpers ----
 

@@ -1,7 +1,8 @@
 <template>
     <Dialog :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :modal="true" :style="{ width: '450px' }"
-        :visible="visible" header="Species Details" @show="initForm" @update:visible="emit('update:visible', $event)" class="dark:bg-gray-900!">
-        <form class="grid grid-cols-12 w-full" @submit.prevent="submit">
+        :visible="visible" header="Species Details" @show="initForm" @update:visible="emit('update:visible', $event)"
+        class="dark:bg-gray-900!">
+        <form class="grid grid-cols-12 w-full gap-3" @submit.prevent="submit">
             <!-- Latin Name -->
             <div class="col-span-12">
                 <FormField v-model="formData.latin_name" :displayErrors="displayErrors" label="Latin Name"
@@ -65,6 +66,10 @@ const props = defineProps({
         type: String,
         default: '',
     },
+    routeResource: {
+        type: String,
+        required: true,
+    },
 })
 
 const emit = defineEmits(['update:visible'])
@@ -114,7 +119,7 @@ const initForm = () => {
 
 const submit = () => {
     if (props.action === 'Create') {
-        router.post(route('species.store'), { ...formData }, {
+        router.post(route(props.routeResource + '.store'), { ...formData }, {
             preserveScroll: true,
             onSuccess: () => {
                 closeForm()
@@ -124,7 +129,7 @@ const submit = () => {
             },
         })
     } else if (props.action === 'Edit') {
-        router.patch(route('species.update', formData.id), { ...formData }, {
+        router.patch(route(props.routeResource + '.update', formData.id), { ...formData }, {
             preserveScroll: true,
             onSuccess: () => {
                 closeForm()

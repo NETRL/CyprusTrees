@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Traits\BaseModelTrait;
+use App\Models\Traits\Paginatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Photo extends Model
 {
     /** @use HasFactory<\Database\Factories\PhotoFactory> */
-    use HasFactory;
+    use HasFactory, BaseModelTrait, Paginatable;
 
     protected $fillable = [
         'tree_id',

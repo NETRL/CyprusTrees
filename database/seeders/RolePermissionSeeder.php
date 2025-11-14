@@ -245,6 +245,68 @@ class RolePermissionSeeder extends Seeder
             'parent_id'   => $species->id
         ]);
 
+        // photos permissions
+        $photos = Permission::firstOrCreate([
+            'name'       => 'photos',
+            'group_name' => 'photos'
+        ]);
+
+        Permission::firstOrCreate([
+            'name'        => 'photos.view',
+            'group_name'  => 'photos',
+            'description' => 'Can view photos.',
+            'parent_id'   => $photos->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'photos.edit',
+            'group_name'  => 'photos',
+            'description' => 'Can edit existing photos.',
+            'parent_id'   => $photos->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'photos.create',
+            'group_name'  => 'photos',
+            'description' => 'Can create new photos.',
+            'parent_id'   => $photos->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'photos.delete',
+            'group_name'  => 'photos',
+            'description' => 'Can delete photos.',
+            'parent_id'   => $photos->id
+        ]);
+
+         // neighborhoods permissions
+        $neighborhoods = Permission::firstOrCreate([
+            'name'       => 'neighborhoods',
+            'group_name' => 'neighborhoods'
+        ]);
+
+        Permission::firstOrCreate([
+            'name'        => 'neighborhoods.view',
+            'group_name'  => 'neighborhoods',
+            'description' => 'Can view neighborhoods.',
+            'parent_id'   => $neighborhoods->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'neighborhoods.edit',
+            'group_name'  => 'neighborhoods',
+            'description' => 'Can edit existing neighborhoods.',
+            'parent_id'   => $neighborhoods->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'neighborhoods.create',
+            'group_name'  => 'neighborhoods',
+            'description' => 'Can create new neighborhoods.',
+            'parent_id'   => $neighborhoods->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'neighborhoods.delete',
+            'group_name'  => 'neighborhoods',
+            'description' => 'Can delete neighborhoods.',
+            'parent_id'   => $neighborhoods->id
+        ]);
+
         // // log permissions
         // $logs = Permission::firstOrCreate([
         //     'name'       => 'logs',
@@ -269,6 +331,8 @@ class RolePermissionSeeder extends Seeder
         $admin->givePermissionTo([$treeTags->children]);
         $admin->givePermissionTo([$tags->children]);
         $admin->givePermissionTo([$species->children]);
+        $admin->givePermissionTo([$photos->children]);
+        $admin->givePermissionTo([$neighborhoods->children]);
 
 
         app()[PermissionRegistrar::class]->forgetCachedPermissions();

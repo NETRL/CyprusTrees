@@ -32,8 +32,7 @@ class StoreTreeRequest extends FormRequest
             'status'            => ['nullable', 'string', 'max:20'],
             'health_status'     => ['nullable', 'string', 'max:20'],
 
-            // Measurements (optional but must be positive & reasonable)
-            // use `between` instead of separate min/max so we align with DB range
+            // Use realisctic measurements
             'height_m'          => ['nullable', 'numeric', 'between:0,999.99'],
             'dbh_cm'            => ['nullable', 'numeric', 'between:0,999.9'],
             'canopy_diameter_m' => ['nullable', 'numeric', 'between:0,999.99'],
@@ -43,50 +42,6 @@ class StoreTreeRequest extends FormRequest
             'source'            => ['nullable', 'string', 'max:60'],
         ];
     }
-
-    /**
-     * Normalize numeric fields before validation:
-     * - "" -> null
-     * - "1,23" -> "1.23"
-     * - cast numeric values to float so Eloquent sends proper types to DB.
-     */
-    protected function prepareForValidation(): void
-    {
-        $numericFields = [
-            'lat'               => 6,
-            'lon'               => 6,
-            'height_m'          => 2,
-            'dbh_cm'            => 1,
-            'canopy_diameter_m' => 2,
-        ];
-
-        $normalized = [];
-
-        foreach ($numericFields as $field => $scale) {
-            $value = $this->input($field);
-
-            // Treat empty string as null
-            if ($value === '' || $value === null) {
-                $normalized[$field] = null;
-                continue;
-            }
-
-            // Replace comma decimals for EU-style input (e.g. "1,5")
-            $value = str_replace(',', '.', $value);
-
-            if (is_numeric($value)) {
-                // Ensure proper rounding and padding
-                $formatted = number_format((float) $value, $scale, '.', '');
-                // Convert back to float for safe DB binding
-                $normalized[$field] = (float) $formatted;
-            } else {
-                $normalized[$field] = $value;
-            }
-        }
-
-        $this->merge($normalized);
-    }
-
 
     public function messages(): array
     {

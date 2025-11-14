@@ -1,22 +1,22 @@
 <template>
   <div>
-    <ReusableDataTable routeResource="species" :columns="columns" :tableData="tableData" inertiaKey="tableData" pageTitle="Manage Species"
+    <ReusableDataTable routeResource="neighborhoods" :columns="columns" :tableData="tableData" inertiaKey="tableData" pageTitle="Manage Neigborhoods"
       @create="openCreateForm" @edit="openEditForm" @afterDelete="onAfterDelete" @afterMassDelete="onAfterMassDelete"
       >
     </ReusableDataTable>
 
-    <SpeciesForm v-model:visible="formVisible" routeResource="species" :action="formAction" :dataRow="formRow" @updated="reloadTable"
+    <NeighborhoodForm v-model:visible="formVisible" routeResource="neighborhoods" :action="formAction" :dataRow="formRow" @updated="reloadTable"
       @created="reloadTable" />
   </div>
 </template>
 
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import SpeciesForm from "@/Pages/Species/Partials/SpeciesForm.vue";
 import ReusableDataTable from "@/Components/ReusableDataTable.vue";
 import { router } from "@inertiajs/vue3";
 import { ref, defineOptions, defineProps } from "vue";
 import { useRenamedHeaders } from "@/Composables/useRenamedHeaders";
+import NeighborhoodForm from "@/Pages/Neighborhood/Partials/NeighborhoodForm.vue";
 
 defineOptions({
   layout: AuthenticatedLayout,

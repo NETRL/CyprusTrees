@@ -29,7 +29,7 @@ class TagController extends Controller
             ->setUpQuery();        // this applies search + sort based on request params
 
         return Inertia::render('Tag/Index', [
-            'tagData' => $query->paginate($perPage)->withQueryString(),
+            'tableData' => $query->paginate($perPage)->withQueryString(),
             'dataColumns' => Tag::getDataColumns(),
         ]);
     }

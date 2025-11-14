@@ -1,6 +1,7 @@
 <template>
     <Dialog :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :modal="true" :style="{ width: '450px' }"
-        :visible="visible" header="Species Details" @update:visible="emit('update:visible', $event)" class="dark:bg-gray-900!">
+        :visible="visible" header="Species Details" @update:visible="emit('update:visible', $event)"
+        class="dark:bg-gray-900!">
         <form class="grid grid-cols-12 w-full gap-3" @submit.prevent="submit">
             <!-- Species -->
             <div class="col-span-12">
@@ -11,7 +12,8 @@
 
             <!-- Neighborhood -->
             <div class="col-span-12">
-                <FormField component="Dropdown" v-model="formData.neighborhood_id" :displayErrors="displayErrors" label="Neighborhood"
+                <FormField component="Dropdown" v-model="formData.neighborhood_id" :displayErrors="displayErrors"
+                    :options="neighborhoodOptions" optionLabel="label" optionValue="value" label="Neighborhood"
                     name="neighborhood_id" />
             </div>
 
@@ -96,11 +98,20 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    neighborhoodData: {
+        type: Array,
+        default: () => [],
+    },
     action: {
         type: String,
         default: '',
     },
+    routeResource: {
+        type: String,
+        required: true
+    }
 })
+
 
 const emit = defineEmits(['update:visible'])
 
@@ -160,11 +171,22 @@ const resetForm = () => {
 }
 
 const speciesOptions = computed(() =>
-    props.speciesData.map(s => ({
-        label: `${s.common_name} (${s.latin_name})`,
-        value: s.id,
+    props.speciesData.map(index => ({
+        label: `${index.common_name} (${index.latin_name})`,
+        value: index.id,
     }))
 )
+
+const neighborhoodOptions = computed(() =>
+    props.neighborhoodData.map(index => ({
+        label: `${index.name} (${index.city})`,
+        value: index.id,
+    }))
+)
+
+
+
+watch(neighborhoodOptions, v => console.log(v))
 
 const initForm = () => {
     displayErrors.value = false
@@ -202,7 +224,7 @@ watch(() => props.visible, (newVal) => {
 
 const submit = () => {
     if (props.action === 'Create') {
-        router.post(route('trees.store'), { ...formData }, {
+        router.post(route(props.routeResource + '.store'), { ...formData }, {
             preserveScroll: true,
             onSuccess: () => {
                 closeForm()
@@ -212,7 +234,7 @@ const submit = () => {
             },
         })
     } else if (props.action === 'Edit') {
-        router.patch(route('trees.update', formData.id), { ...formData }, {
+        router.patch(route(props.routeResource + '.update', formData.id), { ...formData }, {
             preserveScroll: true,
             onSuccess: () => {
                 closeForm()

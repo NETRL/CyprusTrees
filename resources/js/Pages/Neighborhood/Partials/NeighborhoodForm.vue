@@ -7,6 +7,24 @@
             <div class="col-span-12">
                 <FormField v-model="formData.name" :displayErrors="displayErrors" label="Name" name="name" />
             </div>
+
+            <!-- City -->
+            <div class="col-span-12">
+                <FormField v-model="formData.city" :displayErrors="displayErrors" label="City" name="city" />
+            </div>
+
+            <!-- District -->
+            <div class="col-span-12">
+                <FormField v-model="formData.district" :displayErrors="displayErrors" label="District"
+                    name="district" />
+            </div>
+
+            <!-- Geom Ref -->
+            <div class="col-span-12">
+                <FormField v-model="formData.geom_ref" :displayErrors="displayErrors" label="Geometric Reference"
+                    name="geom_ref" />
+
+            </div>
         </form>
 
         <template #footer>
@@ -47,6 +65,11 @@ const emit = defineEmits(['update:visible'])
 const formData = reactive({
     id: null,
     name: '',
+    city: '',
+    district: '',
+    geom_ref: null,
+    canopy_class: null,
+    notes: '',
 })
 
 const displayErrors = ref(false)
@@ -61,6 +84,11 @@ const initForm = () => {
 
     formData.id = props.dataRow?.id ?? null
     formData.name = props.dataRow?.name ?? ''
+    formData.city = props.dataRow?.city ?? ''
+    formData.district = props.dataRow?.district ?? ''
+    formData.geom_ref = props.dataRow?.geom_ref ?? null
+    formData.canopy_class = props.dataRow?.canopy_class ?? null
+    formData.notes = props.dataRow?.notes ?? ''
 }
 
 const submit = () => {
