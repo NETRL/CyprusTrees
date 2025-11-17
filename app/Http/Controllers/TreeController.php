@@ -6,6 +6,7 @@ use App\Http\Requests\Tree\StoreTreeRequest;
 use App\Http\Requests\Tree\UpdateTreeRequest;
 use App\Models\Neighborhood;
 use App\Models\Species;
+use App\Models\Tag;
 use App\Models\Tree;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,7 +31,7 @@ class TreeController extends Controller
 
 
         $query = Tree::query()
-            ->with('species')
+            ->with('species', 'tags')
             ->withCount('photos')
             ->setUpQuery();
 
@@ -39,14 +40,26 @@ class TreeController extends Controller
             'speciesData' => Species::orderBy('common_name')
                 ->get(['id', 'latin_name', 'common_name']),
             'neighborhoodData' => Neighborhood::orderBy('name')->get(['id', 'name', 'city']),
-            'dataColumns' => Tree::getDataColumns()
+            'tagData' => Tag::all(),
+            'dataColumns' => Tree::getDataColumns(),
 
         ]);
     }
 
     public function store(StoreTreeRequest $request): RedirectResponse
     {
-        Tree::create($request->validated());
+
+        $data = $request->validated();
+
+        $tagIdsPresent  = array_key_exists('tag_ids', $data);
+        $tagIds         = $tagIdsPresent ? $data['tag_ids'] : null;
+        unset($data['tag_ids']);
+
+        $tree = Tree::create($data);
+
+        if ($tagIdsPresent) {
+            $tree->tags()->sync($tagIds);
+        }
 
         $request->session()->flash('message', [
             'type'    => 'success',
@@ -59,7 +72,18 @@ class TreeController extends Controller
 
     public function update(UpdateTreeRequest $request, Tree $tree): RedirectResponse
     {
-        $tree->update($request->validated());
+        $data = $request->validated();
+        
+        $tagIdsPresent  = array_key_exists('tag_ids', $data);
+        $tagIds         = $tagIdsPresent ? $data['tag_ids'] : null;
+        
+        unset($data['tag_ids']);
+
+        $tree->update($data);
+
+        if ($tagIdsPresent) {
+            $tree->tags()->sync($tagIds ?? []);
+        }
 
         $request->session()->flash('message', [
             'type'    => 'success',

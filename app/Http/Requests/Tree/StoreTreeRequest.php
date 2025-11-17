@@ -18,6 +18,8 @@ class StoreTreeRequest extends FormRequest
             // Foreign keys
             'species_id'        => ['required', 'exists:species,id'],
             'neighborhood_id'   => ['nullable', 'exists:neighborhoods,id'],
+            'tag_ids'   => ['nullable', 'array'],
+            'tag_ids.*' => ['integer', 'exists:tags,id'],
 
             // Location
             'lat'               => ['nullable', 'numeric', 'between:-90,90'],

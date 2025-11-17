@@ -10,6 +10,12 @@
                     name="species_id" />
             </div>
 
+            <!-- Tag -->
+            <div class="col-span-12">
+                <FormField component="MultiSelect" v-model="formData.tag_ids" :displayErrors="displayErrors"
+                    :options="tagOptions" optionLabel="label" optionValue="value" label="Tag" name="tag_ids" />
+            </div>
+
             <!-- Neighborhood -->
             <div class="col-span-12">
                 <FormField component="Dropdown" v-model="formData.neighborhood_id" :displayErrors="displayErrors"
@@ -102,6 +108,10 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    tagData: {
+        type: Array,
+        default: () => [],
+    },
     action: {
         type: String,
         default: '',
@@ -119,6 +129,7 @@ const emit = defineEmits(['update:visible'])
 const formData = reactive({
     id: null,
     species_id: null,
+    tag_ids: null,
     neighborhood_id: null,
     lat: null,
     lon: null,
@@ -155,6 +166,7 @@ const closeForm = () => {
 const resetForm = () => {
     formData.id = null
     formData.species_id = null
+    formData.tag_ids = null
     formData.neighborhood_id = null
     formData.lat = null
     formData.lon = null
@@ -183,6 +195,12 @@ const neighborhoodOptions = computed(() =>
         value: index.id,
     }))
 )
+const tagOptions = computed(() =>
+    props.tagData.map(index => ({
+        label: index.name,
+        value: index.id,
+    }))
+)
 
 
 
@@ -198,6 +216,9 @@ const initForm = () => {
 
     formData.id = props.dataRow.id ?? null
     formData.species_id = props.dataRow.species_id ?? null
+    formData.tag_ids = props.dataRow.tags
+        ? props.dataRow.tags.map(t => t.id)
+        : []
     formData.neighborhood_id = props.dataRow.neighborhood_id ?? null
     formData.lat = props.dataRow.lat ?? null
     formData.lon = props.dataRow.lon ?? null

@@ -12,7 +12,7 @@ class Tree extends Model
     /** @use HasFactory<\Database\Factories\TreeFactory> */
     use HasFactory, BaseModelTrait, Paginatable;
 
-    protected $appends = ['species_label'];
+    protected $appends = ['species_label', 'tags_label'];
 
     protected $fillable = [
         'species_id',
@@ -35,6 +35,7 @@ class Tree extends Model
     protected array $tableColumns = [
         'id',
         'species_label',
+        'tags_label',
         'lat',
         'lon',
         'address',
@@ -52,6 +53,7 @@ class Tree extends Model
     protected array $searchable = [
         'id',
         'species.common_name',
+        'tags.name',
         'lat',
         'lon',
         'address',
@@ -69,6 +71,7 @@ class Tree extends Model
     protected array $sortable = [
         'id',
         'species_label',
+        'tags_label',
         'planted_at',
         'last_inspected_at',
         'height_m',
@@ -147,5 +150,17 @@ class Tree extends Model
         return $this->species
             ? "{$this->species->common_name} ({$this->species->latin_name})"
             : '-';
+    }
+
+    public function getTagsLabelAttribute(): string
+    {
+        $tags = $this->tags;
+
+        // If relation isn't loaded yet, lazy-load it
+        if (!$tags || $tags->isEmpty()) {
+            return '-';
+        }
+
+        return $tags->pluck('name')->join(', ');
     }
 }

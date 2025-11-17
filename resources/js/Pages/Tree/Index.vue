@@ -7,14 +7,17 @@
             <template>
                 <Column header="Photos">
                     <template #body="slotProps">
-                        <NavLinkButton class="text-nowrap" title="Manage photos" :href="route('photos.index', { tree_id: slotProps.data.id})">Manage {{ slotProps.data.photos_count
+                        <NavLinkButton class="text-nowrap" title="Manage photos"
+                            :href="route('photos.index', { tree_id: slotProps.data.id })">Manage {{
+                                slotProps.data.photos_count
                             ?? 0 }} photos</NavLinkButton>
                     </template>
                 </Column>
             </template>
         </ReusableDataTable>
         <TreeForm v-model:visible="formVisible" routeResource="trees" :action="formAction" :dataRow="formRow"
-            :speciesData="speciesData" :neighborhoodData="neighborhoodData" @updated="reloadTable" @created="reloadTable" />
+            :speciesData="speciesData" :neighborhoodData="neighborhoodData" :tagData="tagData" @updated="reloadTable"
+            @created="reloadTable" />
 
     </div>
 </template>
@@ -45,15 +48,19 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    tagData: {
+        type: Object,
+        required: true,
+    },
     dataColumns: {
         type: Object,
         required: true,
     },
 });
 
-
 const { columns } = useRenamedHeaders(props.dataColumns, {
     Species_label: 'Species',
+    Tags_label: 'Tags',
 })
 
 // --- form state ---

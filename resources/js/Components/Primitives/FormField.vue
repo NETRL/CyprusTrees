@@ -6,8 +6,9 @@
     <InputText v-if="component === 'InputText'" :id="name"
         :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', inputTextStyle]" v-bind="$attrs" />
     <Password v-else-if="component === 'Password'" :id="name"
-        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', passwordStyle]" v-bind="$attrs" inputClass="w-full border-transparent! focus:border-brand-300! focus:outline-hidden! focus:ring-1! focus:ring-brand-500/60! rounded-lg! text-sm! text-gray-800! placeholder:text-gray-400! dark:text-white/90! dark:placeholder:text-white/30! dark:focus:border-brand-800!">
- >
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', passwordStyle]" v-bind="$attrs"
+        inputClass="w-full border-transparent! focus:border-brand-300! focus:outline-hidden! focus:ring-1! focus:ring-brand-500/60! rounded-lg! text-sm! text-gray-800! placeholder:text-gray-400! dark:text-white/90! dark:placeholder:text-white/30! dark:focus:border-brand-800!">
+        >
         <template #header>
             <h3>Pick a password</h3>
         </template>
@@ -23,24 +24,27 @@
         </template>
     </Password>
     <Dropdown v-else-if="component === 'Dropdown'" :id="name"
-        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', inputBase]" v-bind="$attrs"/>
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', inputBase]" v-bind="$attrs" />
     <MultiSelect v-else-if="component === 'MultiSelect'" :id="name"
-        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : 'items-center', inputBase, 'custom-multiselect' ]" v-bind="$attrs"
-        :maxSelectedLabels="1" panelClass="custom-multiselect-panel"/>
-        
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : 'items-center', inputBase, 'custom-multiselect']"
+        v-bind="$attrs" :maxSelectedLabels="1" panelClass="custom-multiselect-panel" />
+
     <InputNumber v-else-if="component === 'Number'" :id="name"
-        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', inputBase]" v-bind="$attrs" inputClass="w-full border-transparent! focus:border-brand-300! focus:outline-hidden! focus:ring-1! focus:ring-brand-500/60! rounded-lg! text-sm! text-gray-800! placeholder:text-gray-400! dark:text-white/90! dark:placeholder:text-white/30! dark:focus:border-brand-800!"/>
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', inputBase]" v-bind="$attrs"
+        inputClass="w-full border-transparent! focus:border-brand-300! focus:outline-hidden! focus:ring-1! focus:ring-brand-500/60! rounded-lg! text-sm! text-gray-800! placeholder:text-gray-400! dark:text-white/90! dark:placeholder:text-white/30! dark:focus:border-brand-800!" />
     <Textarea v-else-if="component === 'Textarea'" :id="name"
         :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle]" v-bind="$attrs" />
     <FileUpload v-else-if="component === 'File'" :id="name"
         :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle]" style="width:130px;"
         v-bind="$attrs" />
     <Calendar v-else-if="component === 'Calendar'" :id="name"
-        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', inputBase]" showIcon showTime hourFormat="24"  locale="en-GB" v-bind="$attrs" inputClass="w-full border-y-transparent! border-l-transparent! border-r-gray-700! focus:border-brand-300! focus:outline-hidden! focus:ring-1! focus:ring-brand-500/60! text-sm!text-gray-800! placeholder:text-gray-400! dark:text-white/90! dark:placeholder:text-white/30! dark:focus:border-brand-800!"/>
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', inputBase]" showIcon showTime hourFormat="24"
+        locale="en-GB" v-bind="$attrs"
+        inputClass="w-full border-y-transparent! border-l-transparent! border-r-gray-700! focus:border-brand-300! focus:outline-hidden! focus:ring-1! focus:ring-brand-500/60! text-sm!text-gray-800! placeholder:text-gray-400! dark:text-white/90! dark:placeholder:text-white/30! dark:focus:border-brand-800!" />
     <InputSwitch v-else-if="component === 'InputSwitch'" :id="name"
         :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle]" v-bind="$attrs" />
     <Checkbox v-else-if="component === 'Checkbox'" :id="name"
-        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', ]" v-bind="$attrs" />
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '',]" v-bind="$attrs" />
     <InputError v-if="shouldDisplayErrors" :id="name + '-help'" class="mt-2" :message="$page.props.errors[name]" />
 </template>
 

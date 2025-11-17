@@ -90,7 +90,7 @@ import { useCrudOperations } from "@/Composables/useCrudOperations";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { router } from "@inertiajs/vue3";
 import { FilterMatchMode } from '@primevue/core/api';
-import { ref, defineOptions, defineProps, watch, computed } from "vue";
+import { ref, watch, computed } from "vue";
 import { debounce } from 'lodash';
 import FormField from "@/Components/Primitives/FormField.vue";
 import { useDateFormatter } from "@/Composables/useDateFormatter";
