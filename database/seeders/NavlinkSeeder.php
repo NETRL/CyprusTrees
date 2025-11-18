@@ -72,7 +72,7 @@ class NavlinkSeeder extends Seeder
         $this->createOrUpdateNavlink(
             ['key' => 'tree_management-trees'],
             [
-                'name'        => 'Trees',
+                'name'        => 'Tree Registry',
                 'permissions' => 'trees.view',
                 'icon'        => 'TreeIcon',
                 'parent_id'   => $tree_management->id,
@@ -97,7 +97,7 @@ class NavlinkSeeder extends Seeder
         $this->createOrUpdateNavlink(
             ['key' => 'tree_management-species'],
             [
-                'name'        => 'Species',
+                'name'        => 'Species Catalogue',
                 'permissions' => 'species.view',
                 'icon'        => 'SpeciesIcon',
                 'parent_id'   => $tree_management->id,
@@ -127,8 +127,37 @@ class NavlinkSeeder extends Seeder
                 'permissions' => 'neighborhoods.view',
                 'icon'        => 'NeigborhoodIcon',
                 'route_name'  => 'neighborhoods.index'
+            ]
+        );
 
+        $events = $this->createOrUpdateNavlink(
+            ['key' => 'events'],
+            [
+                'name'        => 'Events',
+                'permissions' => 'events.view',
+                'icon'        => 'EventIcon',
+            ]
+        );
 
+        $this->createOrUpdateNavlink(
+            ['key' => 'events-planting'],
+            [
+                'name'        => 'Planting Events',
+                'permissions' => 'plantingEvents.view',
+                'icon'        => 'PlantIcon',
+                'parent_id'   => $events->id,
+                'route_name'  => 'plantingEvents.index'
+            ]
+        );
+
+        $this->createOrUpdateNavlink(
+            ['key' => 'events-campaign'],
+            [
+                'name'        => 'Campaigns',
+                'permissions' => 'campaigns.view',
+                'icon'        => 'CampaignIcon',
+                'parent_id'   => $events->id,
+                'route_name'  => 'campaigns.index'
             ]
         );
 

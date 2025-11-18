@@ -276,7 +276,7 @@ class RolePermissionSeeder extends Seeder
             'parent_id'   => $photos->id
         ]);
 
-         // neighborhoods permissions
+        // neighborhoods permissions
         $neighborhoods = Permission::firstOrCreate([
             'name'       => 'neighborhoods',
             'group_name' => 'neighborhoods'
@@ -307,6 +307,100 @@ class RolePermissionSeeder extends Seeder
             'parent_id'   => $neighborhoods->id
         ]);
 
+        // events permissions
+        $events = Permission::firstOrCreate([
+            'name'       => 'events',
+            'group_name' => 'events'
+        ]);
+
+        Permission::firstOrCreate([
+            'name'        => 'events.view',
+            'group_name'  => 'events',
+            'description' => 'Can view events.',
+            'parent_id'   => $events->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'events.edit',
+            'group_name'  => 'events',
+            'description' => 'Can edit existing events.',
+            'parent_id'   => $events->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'events.create',
+            'group_name'  => 'events',
+            'description' => 'Can create new events.',
+            'parent_id'   => $events->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'events.delete',
+            'group_name'  => 'events',
+            'description' => 'Can delete events.',
+            'parent_id'   => $events->id
+        ]);
+
+        // plantingEvents permissions
+        $plantingEvents = Permission::firstOrCreate([
+            'name'       => 'plantingEvents',
+            'group_name' => 'plantingEvents'
+        ]);
+
+        Permission::firstOrCreate([
+            'name'        => 'plantingEvents.view',
+            'group_name'  => 'plantingEvents',
+            'description' => 'Can view plantingEvents.',
+            'parent_id'   => $plantingEvents->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'plantingEvents.edit',
+            'group_name'  => 'plantingEvents',
+            'description' => 'Can edit existing plantingEvents.',
+            'parent_id'   => $plantingEvents->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'plantingEvents.create',
+            'group_name'  => 'plantingEvents',
+            'description' => 'Can create new plantingEvents.',
+            'parent_id'   => $plantingEvents->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'plantingEvents.delete',
+            'group_name'  => 'plantingEvents',
+            'description' => 'Can delete plantingEvents.',
+            'parent_id'   => $plantingEvents->id
+        ]);
+
+        // campaigns permissions
+        $campaigns = Permission::firstOrCreate([
+            'name'       => 'campaigns',
+            'group_name' => 'campaigns'
+        ]);
+
+        Permission::firstOrCreate([
+            'name'        => 'campaigns.view',
+            'group_name'  => 'campaigns',
+            'description' => 'Can view campaigns.',
+            'parent_id'   => $campaigns->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'campaigns.edit',
+            'group_name'  => 'campaigns',
+            'description' => 'Can edit existing campaigns.',
+            'parent_id'   => $campaigns->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'campaigns.create',
+            'group_name'  => 'campaigns',
+            'description' => 'Can create new campaigns.',
+            'parent_id'   => $campaigns->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'campaigns.delete',
+            'group_name'  => 'campaigns',
+            'description' => 'Can delete campaigns.',
+            'parent_id'   => $campaigns->id
+        ]);
+
+
         // // log permissions
         // $logs = Permission::firstOrCreate([
         //     'name'       => 'logs',
@@ -333,6 +427,9 @@ class RolePermissionSeeder extends Seeder
         $admin->givePermissionTo([$species->children]);
         $admin->givePermissionTo([$photos->children]);
         $admin->givePermissionTo([$neighborhoods->children]);
+        $admin->givePermissionTo([$events->children]);
+        $admin->givePermissionTo([$plantingEvents->children]);
+        $admin->givePermissionTo([$campaigns->children]);
 
 
         app()[PermissionRegistrar::class]->forgetCachedPermissions();

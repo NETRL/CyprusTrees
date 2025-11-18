@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Traits\BaseModelTrait;
+use App\Models\Traits\Paginatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class PlantingEvent extends Model
 {
     /** @use HasFactory<\Database\Factories\PlantingEventFactory> */
-    use HasFactory;
+    use HasFactory, BaseModelTrait, Paginatable;
 
     protected $fillable = [
         'tree_id',
@@ -18,6 +20,36 @@ class PlantingEvent extends Model
         'method',
         'notes',
     ];
+
+    protected array  $searchable = [
+        'id',
+        'tree_id',
+        'campaign_id',
+        'planted_by',
+        'planted_at',
+        'method',
+        'notes',
+    ];
+
+    protected array $sortable = [
+        'id',
+        'tree_id',
+        'campaign_id',
+        'planted_by',
+        'planted_at',
+        'method',
+        'notes',
+    ];
+
+
+    public static function relationships(): array
+    {
+        return [
+            'trees',
+            'campaigns',
+            // 'users',
+        ];
+    }
 
     protected $casts = [
         'planted_at' => 'datetime',

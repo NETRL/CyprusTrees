@@ -57,6 +57,9 @@ import LogoIcon from "./LogoIcon.vue";
 import TreeIcon from "./TreeIcon.vue";
 import SpeciesIcon from "./SpeciesIcon.vue";
 import NeigborhoodIcon from "./NeigborhoodIcon.vue";
+import EventIcon from "./EventIcon.vue";
+import PlantIcon from "./PlantIcon.vue";
+import CampaignIcon from "./CampaignIcon.vue";
 
 export {
   BellIcon,
@@ -118,4 +121,7 @@ export {
   TreeIcon,
   SpeciesIcon,
   NeigborhoodIcon,
+  EventIcon,
+  PlantIcon,
+  CampaignIcon,
 };
