@@ -18,6 +18,9 @@ class Photo extends Model
         'caption',
         'captured_at',
         'source',
+        'path',     
+        'status',  
+        'error_message',
     ];
 
     protected $casts = [

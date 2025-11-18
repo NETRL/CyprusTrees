@@ -21,6 +21,9 @@ return new class extends Migration
             $table->string('caption', 255)->nullable();
             $table->timestamp('captured_at')->nullable();
             $table->string('source', 60)->nullable();
+            $table->string('path')->nullable();
+            $table->string('status')->default('processing');
+            $table->string('error_message')->nullable();
 
             $table->timestamps();
         });

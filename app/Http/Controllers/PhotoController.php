@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ProcessPhotoUpload;
 use App\Models\Photo;
 use App\Models\Tree;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\LaravelImageOptimizer\Facades\ImageOptimizer;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class PhotoController extends Controller
@@ -51,115 +54,159 @@ class PhotoController extends Controller
         ]);
     }
 
+
     public function store(Request $request)
     {
         $validated = $request->validate([
             'tree_id' => ['required', 'exists:trees,id'],
             'caption' => ['nullable', 'string', 'max:255'],
             'source'  => ['nullable', 'in:camera,upload'],
-            'photos'  => ['required', 'array'],
-            'photos.*' => ['image'], // max:5120
+            'photos'  => ['required', 'array', 'max:20'],
+            'photos.*' => [
+                'image',
+                'mimes:jpeg,jpg,png,webp',
+                'max:15360',
+            ],
         ]);
 
-        $treeId = $validated['tree_id'];
-        $caption = $validated['caption'] ?? null;
-        $source = $validated['source'] ?? 'upload';
+        $photoCount = 0;
+        $jobs = [];
 
-        foreach ($validated['photos'] as $file) {
-            // Store file under public disk
-            $path = $file->store('tree-photos', 'public');
-            $url  = Storage::disk('public')->url($path);
 
-            // Try to read EXIF datetime
-            $capturedAt = null;
-            try {
-                $exif = @exif_read_data($file->getPathname());
-                if (!empty($exif['DateTimeOriginal'])) {
-                    $capturedAt = Carbon::createFromFormat('Y:m:d H:i:s', $exif['DateTimeOriginal']);
-                }
-            } catch (\Throwable $e) {
-                // silently ignore if EXIF missing/invalid
+        DB::transaction(function () use ($validated, &$jobs, &$photoCount) {
+            $treeId = $validated['tree_id'];
+            $caption = $validated['caption'] ?? null;
+            $source = $validated['source'] ?? 'upload';
+
+            foreach ($validated['photos'] as $file) {
+                $capturedAt = $this->extractCapturedAt($file);
+
+                // Store with .jpg extension to match job output
+                $filename = uniqid('photo_', true) . '.jpg';
+                $path = $file->storeAs('tree-photos', $filename, 'public');
+
+                $photo = Photo::create([
+                    'tree_id'     => $treeId,
+                    'caption'     => $caption,
+                    'url'         => null,
+                    'captured_at' => $capturedAt,
+                    'source'      => $source,
+                    'path'        => $path,
+                    'status'      => 'processing',
+                ]);
+
+                $jobs[] = new ProcessPhotoUpload($photo->id);
+                $photoCount++;
             }
+        });
 
-            Photo::create([
-                'tree_id'     => $treeId,
-                'caption'     => $caption,     // same caption for all, or null
-                'url'         => $url,
-                'captured_at' => $capturedAt,
-                'source'      => $source,
-            ]);
-        }
+        // Dispatch all jobs as a batch
+        Bus::batch($jobs)->dispatch();
 
         return back()->with('message', [
             'type'    => 'success',
-            'message' => __('Photos uploaded successfully.'),
+            'message' => trans_choice(
+                '{1} :count photo uploaded, processing in background.|[2,*] :count photos uploaded, processing in background.',
+                $photoCount,
+                ['count' => $photoCount]
+            ),
         ]);
     }
+
+    /**
+     * Extract captured_at timestamp from EXIF data
+     */
+    private function extractCapturedAt($file): ?Carbon
+    {
+        try {
+            $exif = @exif_read_data($file->getPathname());
+
+            if (empty($exif['DateTimeOriginal'])) {
+                return null;
+            }
+
+            return Carbon::createFromFormat('Y:m:d H:i:s', $exif['DateTimeOriginal']);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
 
     public function update(Request $request, Photo $photo)
     {
         $validated = $request->validate([
-            'caption' => ['nullable', 'string', 'max:255'],
-            'photo'   => ['nullable', 'image', 'max:5120'],
-            'source'  => ['nullable', 'in:camera,upload'],
-            'captured_at' => ['nullable', 'date'],
+            'caption'      => ['nullable', 'string', 'max:255'],
+            'photo'        => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:15360'],
+            'source'       => ['nullable', 'in:camera,upload'],
+            'captured_at'  => ['nullable', 'date'],
         ]);
 
+        // keep track of the old original path so we can delete it *after* everything succeeds
+        $oldPath = $photo->path;
 
-        // Keep old path (if any) so we can delete it *after* new upload
-        $oldPath = null;
-        if ($photo->url) {
-            // "/storage/tree-photos/xxx.jpg" → "tree-photos/xxx.jpg"
-            $oldPath = ltrim(str_replace('/storage/', '', parse_url($photo->url, PHP_URL_PATH)), '/');
-        }
-        // If a new file is uploaded, store it first
-        if ($request->hasFile('photo')) {
+        $hasNewFile = $request->hasFile('photo');
+
+        if ($hasNewFile) {
+            /** @var \Illuminate\Http\UploadedFile $file */
             $file = $validated['photo'];
-            // Store new file
-            $newPath = $file->store('tree-photos', 'public');
-            $newUrl  = Storage::disk('public')->url($newPath);
 
-            // Extract EXIF date if possible
-            $capturedAt = $photo->captured_at; // fallback to existing
+            $filename = uniqid('photo_', true) . '.jpg';
+            $path     = $file->storeAs('tree-photos', $filename, 'public');
+
+            // EXIF date, fallback to existing captured_at if EXIF missing
+            $capturedAt = $photo->captured_at;
             try {
                 $exif = @exif_read_data($file->getPathname());
                 if (!empty($exif['DateTimeOriginal'])) {
                     $capturedAt = Carbon::createFromFormat('Y:m:d H:i:s', $exif['DateTimeOriginal']);
                 }
             } catch (\Throwable $e) {
+                // ignore EXIF errors, keep fallback
             }
 
-            // Update model to new file
-            $photo->url         = $newUrl;
+            // set new path & reset URL/status so the job can take over
+            $photo->path        = $path;
+            $photo->url         = null;
+            $photo->status      = 'processing';
             $photo->captured_at = $capturedAt;
+            $photo->error_message = null; // clear previous error if any
         }
 
-        // Other fields
+        // other fields (caption, source, manual captured_at override)
         if (array_key_exists('caption', $validated)) {
             $photo->caption = $validated['caption'];
         }
+
         if (!empty($validated['source'])) {
             $photo->source = $validated['source'];
         }
+
         if (!empty($validated['captured_at'])) {
-            // allow manual override
+            // allow manual override even if EXIF was used above
             $photo->captured_at = $validated['captured_at'];
         }
 
         $photo->save();
 
-        // Now that everything succeeded, delete old file (if any)
-        if ($oldPath) {
-            try {
-                Storage::disk('public')->delete($oldPath);
-            } catch (\Throwable $e) {
-                // log this, but don't break the request
-                Log::warning('Failed to delete old photo', ['path' => $oldPath, 'error' => $e->getMessage()]);
+        // if a new file was uploaded, queue the same processing job as in store()
+        if ($hasNewFile) {
+            ProcessPhotoUpload::dispatch($photo->id);
+
+            // delete old original file if it exists and differs from new path
+            if ($oldPath && $oldPath !== $photo->path) {
+                try {
+                    Storage::disk('public')->delete($oldPath);
+                } catch (\Throwable $e) {
+                    Log::warning('Failed to delete old photo', [
+                        'path'  => $oldPath,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
         }
 
         return back()->with('message', [
-            'type' => 'success',
+            'type'    => 'success',
             'message' => __('Photo updated successfully.'),
         ]);
     }

@@ -40,6 +40,9 @@ RUN docker-php-ext-install pdo_mysql pdo_pgsql mbstring zip exif pcntl && \
 
 # Install composer (php package manager)
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    
+# spatie/laravel-image-optimizer required binaries.
+RUN apt-get jpegoptim optipng pngquant gifsicle -y
 
 RUN if [ "$user" != "root" ] ; then \
     useradd -G www-data,root -u $uid -d /home/$user $user && \

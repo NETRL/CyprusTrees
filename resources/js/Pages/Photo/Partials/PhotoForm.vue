@@ -1,71 +1,130 @@
 <template>
-    <Dialog :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :modal="true" :style="{ width: '450px' }"
-        :visible="visible" header="Photo Details" @show="initForm" @update:visible="emit('update:visible', $event)"
-        class="dark:bg-gray-900!">
-        <form class="grid grid-cols-12 w-full gap-3" @submit.prevent="submit">
-            <!-- Caption (applied to all in Create, or to single in Edit) -->
+    <Dialog :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :modal="true" :style="{ width: '550px' }"
+        :visible="visible" :header="action === 'Create' ? 'Add Photos' : 'Edit Photo'" @show="initForm"
+        @update:visible="emit('update:visible', $event)" class="dark:bg-gray-900!">
+
+        <form class="grid grid-cols-12 w-full gap-4" @submit.prevent="submit">
+            <!-- Caption -->
             <div class="col-span-12">
-                <FormField v-model="formData.caption" :displayErrors="displayErrors" label="Caption" name="caption" />
-            </div>
-
-            <!-- Photo upload / camera -->
-            <div class="col-span-12">
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Photo <span class="text-error-500">*</span>
-                </label>
-
-                <div class="flex flex-wrap gap-2">
-                    <!-- Upload from device -->
-                    <Button type="button" icon="pi pi-upload" label="Upload from device"
-                        @click="uploadInput?.click()" />
-
-                    <!-- Use camera (mobile-friendly) -->
-                    <Button type="button" icon="pi pi-camera" label="Use camera" class="p-button-secondary"
-                        @click="cameraInput?.click()" />
-
-                    <!-- Hidden file inputs -->
-                    <input ref="uploadInput" type="file" accept="image/*" class="hidden" multiple
-                        @change="(e) => onFileChange(e, 'upload')" />
-                    <input ref="cameraInput" type="file" accept="image/*" capture="environment" class="hidden"
-                        @change="(e) => onFileChange(e, 'camera')" />
-                </div>
-
-                <p v-if="formData.photos.length" class="mt-2 text-xs text-gray-500">
-                    Selected {{ formData.photos.length }} photo{{ formData.photos.length > 1 ? 's' : '' }}
+                <FormField v-model="formData.caption" :displayErrors="displayErrors" label="Caption" name="caption"
+                    placeholder="Enter a description for the photo(s)" />
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    {{ action === 'Create' ? 'This caption will be applied to all uploaded photos' : 'Update the caption for this photo' }}
                 </p>
             </div>
 
-            <!-- Preview (existing or newly selected) -->
-            <div v-if="previewUrls.length || formData.url" class="col-span-12">
-                <!-- Existing photo (Edit, no new file yet) -->
-                <img v-if="!previewUrls.length && formData.url" :src="formData.url"
-                    class="w-full max-h-64 rounded-xl object-cover" alt="Photo preview" />
+            <!-- Photo Upload Section -->
+            <div class="col-span-12">
+                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {{ action === 'Create' ? 'Select Photos' : 'Replace Photo' }}
+                    <span v-if="action === 'Create'" class="text-error-500">*</span>
+                </label>
 
-                <!-- New selection (Create or Edit with new file[s]) -->
-                <div v-else class="grid grid-cols-3 gap-2">
-                    <div v-for="(src, idx) in previewUrls" :key="idx"
-                        class="w-full h-24 relative rounded-lg overflow-hidden group">
+                <!-- Upload Buttons -->
+                <div class="flex flex-col sm:flex-row gap-2 mb-3">
+                    <Button type="button" icon="pi pi-upload" label="Upload from Device" class="flex-1 justify-center"
+                        @click="uploadInput?.click()" />
+
+                    <Button type="button" icon="pi pi-camera" label="Use Camera" severity="secondary"
+                        class="flex-1 justify-center" @click="cameraInput?.click()" />
+
+                    <!-- Hidden file inputs -->
+                    <input ref="uploadInput" type="file" accept="image/jpeg,image/jpg,image/png,image/webp"
+                        class="hidden" :multiple="action === 'Create'" @change="(e) => onFileChange(e, 'upload')" />
+                    <input ref="cameraInput" type="file" accept="image/*" capture="environment" class="hidden"
+                        :multiple="action === 'Create'" @change="(e) => onFileChange(e, 'camera')" />
+                </div>
+                <!-- File Info -->
+                <div v-if="formData.photos.length > 0" class="flex items-center gap-2 p-3 bg-brand-50 dark:bg-brand-900/20 
+                        border border-brand-200 dark:border-brand-800 rounded-lg">
+                    <i class="pi pi-check-circle text-brand-500"></i>
+                    <span class="text-sm text-gray-700 dark:text-gray-300">
+                        {{ formData.photos.length }} {{ formData.photos.length === 1 ? 'photo' : 'photos' }} selected
+                    </span>
+                </div>
+                <!-- Requirements -->
+                <div class="mt-2 text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                    <p><i class="pi pi-info-circle"></i> Accepted formats: JPEG, JPG, PNG, WebP</p>
+                    <p><i class="pi pi-info-circle"></i> Maximum file size: 15MB per photo</p>
+                    <p><i class="pi pi-info-circle"></i> Maximum dimensions: 6000x6000 pixels</p>
+                    <p v-if="action === 'Create'"><i class="pi pi-info-circle"></i> You can select up to 20 photos at
+                        once</p>
+                </div>
+
+                <!-- Validation Error -->
+                <InputError id="photos-help" class="mt-2"
+                    :message="$page.props.errors['photos'] || $page.props.errors['photos.0'] || $page.props.errors['photos.*']" />
+            </div>
+
+            <!-- Preview Section -->
+            <div v-if="previewUrls.length > 0 || formData.url" class="col-span-12">
+                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Preview
+                </label>
+
+                <!-- Single Photo Preview (Edit mode, no new files) -->
+                <div v-if="!previewUrls.length && formData.url"
+                    class="relative rounded-xl overflow-hidden border-2 border-gray-200 dark:border-gray-700">
+                    <img :src="formData.url" class="w-full max-h-80 object-contain bg-gray-50 dark:bg-gray-800"
+                        alt="Current photo" />
+                    <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
+                        <p class="text-white text-xs">Current photo</p>
+                    </div>
+                </div>
+
+                <!-- Multiple Photos Preview Grid -->
+                <div v-else class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    <div v-for="(src, idx) in previewUrls" :key="idx" class="relative aspect-square rounded-lg overflow-hidden group
+                            border-2 border-gray-200 dark:border-gray-700 hover:border-brand-500
+                            transition-all duration-200">
                         <img :src="src" class="w-full h-full object-cover" alt="Selected photo preview" />
-                        <!-- Hover overlay with remove button -->
-                        <div class="absolute inset-0 bg-white/70 dark:bg-black/70 rounded-lg opacity-0
-                   transition-opacity duration-200 group-hover:opacity-100
-                   flex items-center justify-center" @click="removePhoto(idx)">
-                            <Button icon="pi pi-times"
-                                class="border-transparent! bg-brand-600! w-8! h-8! p-0! min-w-0! rounded-full!"
+
+                        <!-- Remove button overlay -->
+                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100
+                                transition-opacity duration-200 flex items-center justify-center cursor-pointer"
+                            @click="removePhoto(idx)">
+                            <Button icon="pi pi-times" severity="danger" rounded class="!w-10 !h-10 !p-0"
                                 @click.stop="removePhoto(idx)" />
+                        </div>
+
+                        <!-- Photo number badge -->
+                        <div class="absolute top-1 left-1 bg-black/70 text-white px-2 py-0.5 rounded text-xs">
+                            {{ idx + 1 }}
                         </div>
                     </div>
                 </div>
+                <!-- Helpful hint -->
+                <p v-if="previewUrls.length > 1" class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    <i class="pi pi-info-circle"></i> Hover over a photo to remove it
+                </p>
             </div>
-
-            <InputError id="photos-help" class="mt-2 col-span-12"
-                :message="$page.props.errors['photos'] || $page.props.errors['photos.0']" />
-
+            <!-- Processing Note -->
+            <div v-if="formData.photos.length > 0" class="col-span-12 p-3 bg-blue-50 dark:bg-blue-900/20 
+                    border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div class="flex gap-2">
+                    <i class="pi pi-info-circle text-blue-500 mt-0.5"></i>
+                    <div class="text-sm text-gray-700 dark:text-gray-300">
+                        <p class="font-medium mb-1">Photos will be processed automatically:</p>
+                        <ul class="list-disc list-inside space-y-0.5 text-xs">
+                            <li>Converted to JPEG format</li>
+                            <li>Optimized for web display</li>
+                            <li>Rotated to correct orientation</li>
+                            <li>Resized if larger than 2560px</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </form>
 
         <template #footer>
-            <Button class="p-button-text" icon="pi pi-times" label="Cancel" @click="closeForm" />
-            <Button :label="action" class="p-button-text" icon="pi pi-check" @click="submit" />
+            <div class="flex justify-between items-center w-full">
+                <Button text icon="pi pi-times" label="Cancel" severity="secondary" @click="closeForm"
+                    :disabled="isSubmitting" />
+                <Button
+                    :label="isSubmitting ? 'Uploading...' : (action === 'Create' ? 'Upload Photos' : 'Save Changes')"
+                    icon="pi pi-check" :loading="isSubmitting" @click="submit"
+                    :disabled="isSubmitting || (action === 'Create' && formData.photos.length === 0)" />
+            </div>
         </template>
     </Dialog>
 </template>
@@ -75,6 +134,8 @@ import { reactive, ref, computed } from 'vue'
 import { router } from '@inertiajs/vue3'
 import FormField from '@/Components/Primitives/FormField.vue'
 import InputError from '@/Components/InputError.vue'
+
+const MAX_BATCH_BYTES = 60 * 1024 * 1024; // 50MB, below nginx 64MB
 
 // props & emits
 const props = defineProps({
@@ -100,133 +161,183 @@ const props = defineProps({
     },
 })
 
-const emit = defineEmits(['update:visible'])
+const emit = defineEmits(['update:visible', 'created', 'updated']);
+
+const uploadInput = ref(null);
+const cameraInput = ref(null);
+const isSubmitting = ref(false);
+const displayErrors = ref(false);
+const previewUrls = ref([]);
 
 // state
-const formData = reactive({
-    id: null,
-    tree_id: null,
+const formData = ref({
     caption: '',
-    url: '',
-    captured_at: null,
+    photos: [],
+    url: null,
     source: '',
-    photos: [], // File object for upload
-})
-
-
-const displayErrors = ref(false)
-
-// refs to hidden inputs
-const uploadInput = ref(null)
-const cameraInput = ref(null)
-
-// preview URL for selected File or existing URL
-const previewUrls = computed(() => {
-    if (!formData.photos.length) return []
-    return formData.photos.map(f => URL.createObjectURL(f))
-})
-
-// methods
-const closeForm = () => {
-    emit('update:visible', false)
-}
+});
 
 const initForm = () => {
-    displayErrors.value = false
-
-    formData.id = props.dataRow?.id ?? null
-    formData.tree_id = props.dataRow?.tree_id ?? props.treeId ?? null
-    formData.caption = props.dataRow?.caption ?? ''
-    formData.url = props.dataRow?.url ?? ''
-    formData.captured_at = props.dataRow?.captured_at ?? null
-    formData.source = props.dataRow?.source ?? ''
-    formData.photos = [] // reset file on open
-}
-
-const removePhoto = (index) => {
-    if (index < 0 || index >= formData.photos.length) return
-
-    // revoke object URL to be super clean
-    const file = formData.photos[index]
-    const url = URL.createObjectURL(file)
-    URL.revokeObjectURL(url)
-
-    formData.photos.splice(index, 1)
-}
-
+    if (props.action === 'Edit' && props.dataRow) {
+        formData.value = {
+            caption: props.dataRow.caption || '',
+            photos: [],
+            url: props.dataRow.url,
+        };
+    } else {
+        formData.value = {
+            caption: '',
+            photos: [],
+            url: null,
+        };
+    }
+    previewUrls.value = [];
+    displayErrors.value = false;
+};
 
 const onFileChange = (event, source) => {
-    const files = event.target.files ? Array.from(event.target.files) : []
-    if (!files.length) return
+    const files = Array.from(event.target.files || []);
 
-    formData.source = source // 'upload' | 'camera'
+    formData.value.source = source
 
     if (props.action === 'Edit') {
-        // For Edit: only allow one replacement; take first file
-        formData.photos = [files[0]]
+        // In edit mode, only allow one file
+        if (files.length > 0) {
+            formData.value.photos = [files[0]];
+            generatePreviews([files[0]]);
+        }
     } else {
-        // For Create: allow multi-upload
-        formData.photos = files
+        // In create mode, allow multiple (up to 20)
+        const totalFiles = formData.value.photos.length + files.length;
+        if (totalFiles > 20) {
+            alert('You can only upload up to 20 photos at once.');
+            return;
+        }
+        formData.value.photos.push(...files);
+        generatePreviews(formData.value.photos);
     }
 
-    // reset input so selecting the same file again works
-    event.target.value = ''
-}
+    // Clear input
+    event.target.value = '';
+};
 
-const submit = () => {
-    displayErrors.value = false
+const generatePreviews = (files) => {
+    previewUrls.value = [];
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewUrls.value.push(e.target.result);
+        };
+        reader.readAsDataURL(file);
+    });
+};
 
-    if (!formData.tree_id) {
-        displayErrors.value = true
-        return
-    }
+const removePhoto = (index) => {
+    formData.value.photos.splice(index, 1);
+    previewUrls.value.splice(index, 1);
+};
 
-    if (props.action === 'Create') {
-        // Mass import: multiple photos
-        const payload = {
-            tree_id: formData.tree_id,
-            caption: formData.caption,
-            source: formData.source,
-            photos: formData.photos, // array of Files
+const chunkFilesBySize = (files, maxBytes) => {
+    const chunks = [];
+    let currentChunk = [];
+    let currentSize = 0;
+
+    for (const file of files) {
+        // If single file itself is > maxBytes, just put it alone in its own chunk
+        if (file.size > maxBytes) {
+            if (currentChunk.length) {
+                chunks.push(currentChunk);
+                currentChunk = [];
+                currentSize = 0;
+            }
+            chunks.push([file]);
+            continue;
         }
 
-        router.post(
-            route(props.routeResource + '.store'),
-            payload,
-            {
-                preserveScroll: true,
-                onSuccess: () => {
-                    closeForm()
-                },
-                onFinish: () => {
-                    displayErrors.value = true
-                },
-            }
-        )
-    } else if (props.action === 'Edit') {
-        // Single replace + caption update
-        const payload = {
-            id: formData.id,
-            tree_id: formData.tree_id,
-            caption: formData.caption,
-            source: formData.source,
-            captured_at: formData.captured_at,
-            photo: formData.photos[0] ?? null, // single file or null
+        if (currentSize + file.size > maxBytes && currentChunk.length) {
+            chunks.push(currentChunk);
+            currentChunk = [];
+            currentSize = 0;
         }
 
-        router.post(
-            route(props.routeResource + '.update', formData.id),
-            { ...payload, _method: 'PATCH' },
-            {
-                preserveScroll: true,
-                onSuccess: () => {
-                    closeForm()
-                },
-                onFinish: () => {
-                    displayErrors.value = true
-                },
-            }
-        )
+        currentChunk.push(file);
+        currentSize += file.size;
     }
-}
+
+    if (currentChunk.length) {
+        chunks.push(currentChunk);
+    }
+
+    return chunks;
+};
+
+const submit = async () => {
+    if (isSubmitting.value) return;
+
+    if (props.action === 'Create' && formData.value.photos.length === 0) {
+        displayErrors.value = true;
+        return;
+    }
+
+    isSubmitting.value = true;
+    displayErrors.value = true;
+
+    try {
+        if (props.action === 'Create') {
+            const files = formData.value.photos;
+
+            // Split into size-aware batches
+            const batches = chunkFilesBySize(files, MAX_BATCH_BYTES);
+
+            for (const batch of batches) {
+                const formDataObj = new FormData();
+                formDataObj.append('tree_id', props.treeId);
+                formDataObj.append('caption', formData.value.caption || '');
+                formDataObj.append('source', formData.value.source || '');
+
+                batch.forEach((file, index) => {
+                    formDataObj.append(`photos[${index}]`, file);
+                });
+
+                await axios.post(route(`${props.routeResource}.store`), formDataObj, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                    // you can also add onUploadProgress here if you want progress UI
+                });
+            }
+
+            emit('created');
+        } else {
+            // EDIT: still single file update as before
+            const formDataObj = new FormData();
+            formDataObj.append('tree_id', props.treeId);
+            formDataObj.append('caption', formData.value.caption || '');
+            formDataObj.append('source', formData.value.source || '');
+
+            if (formData.value.photos[0]) {
+                formDataObj.append('photo', formData.value.photos[0]);
+            }
+
+            formDataObj.append('_method', 'PUT');
+            await axios.post(route(`${props.routeResource}.update`, props.dataRow.id), formDataObj, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            emit('updated');
+        }
+
+        closeForm();
+    } catch (error) {
+        console.error('Upload error:', error);
+        // optional: show toast
+    } finally {
+        isSubmitting.value = false;
+    }
+};
+
+const closeForm = () => {
+    emit('update:visible', false);
+    formData.value = { caption: '', photos: [], url: null };
+    previewUrls.value = [];
+};
+
 </script>
