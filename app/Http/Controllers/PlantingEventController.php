@@ -49,12 +49,12 @@ class PlantingEventController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            "tree_id" => 'required|exists:trees,id',
-            "campaign_id" => 'nullable|exists:campaigns,id',
-            "planted_by" => 'nullable|exists:users,id',
+            "tree_id" => 'required|integer|exists:trees,id',
+            "campaign_id" => 'nullable|integer|exists:campaigns,id',
+            "planted_by" => 'nullable|integer|exists:users,id',
             "planted_at" => 'nullable|date',
-            "method" => 'nullable|string',
-            "notes" => 'nullable|string',
+            "method" => 'nullable|string|max:60',
+            "notes" => 'nullable|string|max:5000',
         ]);
 
         PlantingEvent::create($validated);
@@ -71,11 +71,12 @@ class PlantingEventController extends Controller
     public function update(Request $request, PlantingEvent $plantingEvent): RedirectResponse
     {
         $validated = $request->validate([
-            "name" => 'required|string',
-            "sponsor" => 'nullable|string',
-            "start_date" => 'nullable|date',
-            "end_date" => 'nullable|date',
-            "notes" => 'nullable|string',
+            "tree_id" => 'required|integer|exists:trees,id',
+            "campaign_id" => 'nullable|integer|exists:campaigns,id',
+            "planted_by" => 'nullable|integer|exists:users,id',
+            "planted_at" => 'nullable|date',
+            "method" => 'nullable|string|max:60',
+            "notes" => 'nullable|string|max:5000',
         ]);
 
         $plantingEvent->update($validated);

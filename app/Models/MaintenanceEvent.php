@@ -2,16 +2,19 @@
 
 namespace App\Models;
 
+use App\Models\Traits\BaseModelTrait;
+use App\Models\Traits\Paginatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class MaintenanceEvent extends Model
 {
     /** @use HasFactory<\Database\Factories\MaintenanceEventFactory> */
-    use HasFactory;
+    use HasFactory, BaseModelTrait, Paginatable;
 
     protected $primaryKey = 'event_id';
 
+    protected $appends = ['id'];
 
     protected $fillable = [
         'tree_id',
@@ -23,11 +26,59 @@ class MaintenanceEvent extends Model
         'notes',
     ];
 
+    protected $tableColumns = [
+        'event_id',
+        'tree_id',
+        'type_id',
+        'performed_by',
+        'performed_at',
+        'quantity',
+        'cost',
+        'notes',
+
+    ];
+    protected $searchable = [
+        'event_id',
+        'tree_id',
+        'type_id',
+        'performed_by',
+        'performed_at',
+        'quantity',
+        'cost',
+        'notes',
+    ];
+
+    protected $sortable = [
+        'event_id',
+        'tree_id',
+        'type_id',
+        'performed_by',
+        'performed_at',
+        'quantity',
+        'cost',
+        'notes',
+    ];
+
+    public static function relationships(): array
+    {
+        return [
+            'tree',
+            'type',
+            'performer',
+        ];
+    }
+
     protected $casts = [
         'performed_at' => 'datetime',
         'quantity'     => 'float',
         'cost'         => 'float',
     ];
+
+
+    public function getIdAttribute()
+    {
+        return $this->attributes['event_id'] ?? null;
+    }
 
     public function tree()
     {
@@ -36,7 +87,7 @@ class MaintenanceEvent extends Model
 
     public function type()
     {
-        return $this->belongsTo(MaintenanceType::class);
+        return $this->belongsTo(MaintenanceType::class, 'type_id', 'type_id');
     }
 
     public function performer()

@@ -5,14 +5,14 @@
       @afterMassDelete="onAfterMassDelete">
 
       <template #columns>
-        <!-- Planting ID -->
-        <Column field="planting_id" header="Planting Id" sortable>
+        <!-- Planting-->
+        <Column field="planting_id" header="Id" sortable>
           <template #body="{ data }">
             {{ data.planting_id }}
           </template>
         </Column>
 
-        <!-- Tree ID (you can later expand to show tree label) -->
+        <!-- Tree -->
         <Column field="tree_id" header="Tree" sortable>
           <template #body="{ data }">
             {{ treeLabel(data) }}
@@ -147,7 +147,6 @@ const campaignLabel = (row) => {
   return parts.join(' ');
 };
 
-console.log(props.tableData)
 
 const { columns } = useRenamedHeaders(props.dataColumns, {
   Trees_count: 'Tree Count',

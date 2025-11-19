@@ -1,11 +1,11 @@
 <template>
   <div>
-    <ReusableDataTable routeResource="tags" :columns="columns" :tableData="tableData" inertiaKey="tableData" pageTitle="Manage Tree Tags"
+    <ReusableDataTable routeResource="maintenanceTypes" :columns="columns" :tableData="tableData" inertiaKey="tableData" pageTitle="Manage Maintenance Types"
       @create="openCreateForm" @edit="openEditForm" @afterDelete="onAfterDelete" @afterMassDelete="onAfterMassDelete"
       >
     </ReusableDataTable>
 
-      <TagForm v-model:visible="formVisible" routeResource="tags" :action="formAction" :dataRow="formRow" @updated="reloadTable"
+      <MaintenanceTypeForm v-model:visible="formVisible" routeResource="maintenanceTypes" :action="formAction" :dataRow="formRow" @updated="reloadTable"
       @created="reloadTable"/>
   </div>
 </template>
@@ -17,7 +17,7 @@ import ReusableDataTable from "@/Components/ReusableDataTable.vue";
 import { router } from "@inertiajs/vue3";
 import { ref, defineOptions, defineProps } from "vue";
 import { useRenamedHeaders } from "@/Composables/useRenamedHeaders";
-import TagForm from "@/Pages/Tag/Partials/TagForm.vue";
+import MaintenanceTypeForm from "@/Pages/MaintenanceType/Partials/MaintenanceTypeForm.vue";
 
 defineOptions({
   layout: AuthenticatedLayout,
@@ -31,10 +31,12 @@ const props = defineProps({
   dataColumns: {
     type: Object,
   },
+    
 });
 
+
 const { columns } = useRenamedHeaders(props.dataColumns, {
-  Trees_count: 'Tree Count',
+  Events_count: 'Event Count',
 })
 
 // --- form state ---

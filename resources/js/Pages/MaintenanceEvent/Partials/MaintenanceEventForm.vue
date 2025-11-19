@@ -1,39 +1,41 @@
 <template>
     <Dialog :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :modal="true" :style="{ width: '450px' }"
-        :visible="visible" header="Planting Event Details" @show="initForm"
+        :visible="visible" header="Maintenance Event Details" @show="initForm"
         @update:visible="emit('update:visible', $event)" class="dark:bg-gray-900! select-none">
         <form class="grid grid-cols-12 w-full gap-3" @submit.prevent="submit">
             <!-- Tree -->
             <div class="col-span-12">
-                <FormField component="Dropdown" v-model="formData.tree_id" :displayErrors="displayErrors" label="Tree"
-                    name="tree_id" :options="treeOptions" optionLabel="label" optionValue="value" filter />
+                <FormField component="Dropdown" filter v-model="formData.tree_id" :displayErrors="displayErrors" label="Name" name="tree_id" 
+                :options="treeOptions"  optionLabel="label" optionValue="value"/>
             </div>
-            <!-- Campaign -->
+            <!-- Type -->
             <div class="col-span-12">
-                <FormField component="Dropdown" v-model="formData.campaign_id" :displayErrors="displayErrors"
-                    label="Campaign" name="campaign_id" :options="campaignOptions" optionLabel="label"
-                    optionValue="value" filter />
+                <FormField component="Dropdown" filter v-model="formData.type_id" :displayErrors="displayErrors" label="Type" name="type_id" 
+                 :options="typeOptions"  optionLabel="label" optionValue="value"/>
             </div>
-            <!-- Planted By -->
+            <!-- Performed By -->
             <div class="col-span-6">
-                <FormField component="Dropdown" v-model="formData.planted_by" :displayErrors="displayErrors"
-                    label="Planted By" name="planted_by" :options="userOptions" optionLabel="label" optionValue="value"
-                    filter />
+                <FormField component="Dropdown" filter v-model="formData.performed_by" :displayErrors="displayErrors" label="Performed By"
+                    name="performed_by"  :options="userOptions"  optionLabel="label" optionValue="value"/>
             </div>
-            <!-- Planted At -->
+            <!-- Performed At -->
             <div class="col-span-6">
-                <FormField component="Calendar" v-model="formData.planted_at" :displayErrors="displayErrors"
-                    label="Planted At" name="planted_at" />
+                <FormField component="Calendar" v-model="formData.performed_at" :displayErrors="displayErrors" label="Performed At"
+                    name="performed_at" />
             </div>
-            <!-- Method -->
+            <!-- Quantity -->
             <div class="col-span-12">
-                <FormField v-model="formData.method" :displayErrors="displayErrors" label="Method" name="method" />
+                <FormField v-model="formData.quantity" :displayErrors="displayErrors" label="Quantity"
+                    name="quantity" />
+            </div>
+            <!-- Cost -->
+            <div class="col-span-12">
+                <FormField v-model="formData.cost" :displayErrors="displayErrors" label="Cost" name="cost" />
             </div>
             <!-- Notes -->
             <div class="col-span-12">
-                <FormField v-model="formData.notes" :displayErrors="displayErrors" label="Notes" name="notes" />
+                <FormField v-model="formData.notes" :displayErrors="displayErrors" label="Notes" name="quantity" />
             </div>
-
         </form>
 
         <template #footer>
@@ -44,10 +46,9 @@
 </template>
 
 <script setup>
-import { reactive, ref, computed } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 import FormField from '@/Components/Primitives/FormField.vue'
-import { useDateFormatter } from '@/Composables/useDateFormatter'
 import { useDateParser } from '@/Composables/useDateParser'
 
 // props & emits
@@ -70,34 +71,19 @@ const props = defineProps({
     },
     trees: {
         type: Array,
-        default: () => [],
+         default: () => [],
     },
-    campaigns: {
+    types: {
         type: Array,
-        default: () => [],
+         default: () => [],
     },
     users: {
         type: Array,
-        default: () => [],
-    }
+         default: () => [],
+    },
 })
-
-const { formatDate } = useDateFormatter();
 
 const emit = defineEmits(['update:visible'])
-
-// state
-const formData = reactive({
-    planting_id: null,
-    tree_id: null,
-    campaign_id: null,
-    planted_by: null,
-    planted_at: new Date(),
-    method: '',
-    notes: '',
-})
-
-const displayErrors = ref(false)
 
 const { parseDate } = useDateParser();
 
@@ -113,22 +99,19 @@ const treeOptions = computed(() =>
     }))
 )
 
-const campaignOptions = computed(() =>
-    (props.campaigns ?? []).map(index => {
-        const start = index.start_date ?? '';
-        const end = index.end_date ?? null;
-        const sponsor = index.sponsor ?? null;
+const typeOptions = computed(() =>
+    (props.types ?? []).map(index => {
+        const name = index.name ?? '';
 
-        const label = sponsor
-            ? `${index.name} (${sponsor}) — ${formatDate(start)} → ${formatDate(end) ?? 'Ongoing'}`
-            : `${index.name} — ${formatDate(start)} → ${formatDate(end) ?? 'Ongoing'}`;
+        const label = name
 
         return {
-            value: index.id,
+            value: index.type_id,
             label,
         };
     })
 );
+
 
 const userOptions = computed(() => (props.users ?? []).map(index => {
     const firstName = index.first_name ?? '';
@@ -145,22 +128,38 @@ const userOptions = computed(() => (props.users ?? []).map(index => {
     };
 }))
 
+
+// state
+const formData = reactive({
+    event_id: null,
+    tree_id: null,
+    type_id: null,
+    performed_by: null,
+    performed_at: new Date(),
+    quantity: '',
+    cost: '',
+    notes: '',
+})
+
+const displayErrors = ref(false)
+
 // methods
 const closeForm = () => {
     emit('update:visible', false)
 }
 
 const initForm = () => {
-    const row = props.dataRow;
+    const row = props.dataRow
 
     displayErrors.value = false
 
-    formData.planting_id = row?.planting_id ?? null
+    formData.event_id = row?.event_id ?? null
     formData.tree_id = row?.tree_id ?? null
-    formData.campaign_id = row?.campaign_id ?? null
-    formData.planted_by = row?.planted_by ?? null
-    formData.planted_at = parseDate(row?.planted_at)
-    formData.method = row?.method ?? ''
+    formData.type_id = row?.type_id ?? null
+    formData.performed_by = row?.performed_by ?? null
+    formData.performed_at = parseDate(row?.performed_at)
+    formData.quantity = row?.quantity ?? ''
+    formData.cost = row?.cost ?? ''
     formData.notes = row?.notes ?? ''
 }
 
@@ -176,7 +175,7 @@ const submit = () => {
             },
         })
     } else if (props.action === 'Edit') {
-        router.patch(route(props.routeResource + '.update', formData.planting_id), { ...formData }, {
+        router.patch(route(props.routeResource + '.update', formData.event_id), { ...formData }, {
             preserveScroll: true,
             onSuccess: () => {
                 closeForm()

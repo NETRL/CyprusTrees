@@ -4,6 +4,8 @@ use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\Dashboard\PermissionController;
 use App\Http\Controllers\Dashboard\RoleController;
 use App\Http\Controllers\Dashboard\UserController;
+use App\Http\Controllers\MaintenanceEventsController;
+use App\Http\Controllers\MaintenanceTypesController;
 use App\Http\Controllers\NeigborhoodController;
 use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\PlantingEventController;
@@ -70,6 +72,13 @@ Route::middleware('auth', '2fa')->group(function () {
 
     Route::resource('plantingEvents', PlantingEventController::class);
     Route::post('/plantingEvents/mass-destroy', [PlantingEventController::class, 'massDestroy'])->name('plantingEvents.massDestroy');
+   
+    Route::resource('maintenanceEvents', MaintenanceEventsController::class);
+    Route::post('/maintenanceEvents/mass-destroy', [MaintenanceEventsController::class, 'massDestroy'])->name('maintenanceEvents.massDestroy');
+    
+    Route::resource('maintenanceTypes', MaintenanceTypesController::class);
+    Route::post('/maintenanceTypes/mass-destroy', [MaintenanceTypesController::class, 'massDestroy'])->name('maintenanceTypes.massDestroy');
+
 });
 
 require __DIR__ . '/auth.php';

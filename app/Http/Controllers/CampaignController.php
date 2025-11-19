@@ -37,11 +37,11 @@ class CampaignController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            "name" => 'required|string',
-            "sponsor" => 'nullable|string',
+            "name" => 'required|string|max:160',
+            "sponsor" => 'nullable|string|max:160',
             "start_date" => 'nullable|date',
             "end_date" => 'nullable|date',
-            "notes" => 'nullable|string',
+            "notes" => 'nullable|string|max:5000',
         ]);
 
         Campaign::create($validated);
@@ -57,12 +57,12 @@ class CampaignController extends Controller
 
     public function update(Request $request, Campaign $campaign): RedirectResponse
     {
-         $validated = $request->validate([
-            "name" => 'required|string',
-            "sponsor" => 'nullable|string',
+        $validated = $request->validate([
+            "name" => 'required|string|max:160',
+            "sponsor" => 'nullable|string|max:160',
             "start_date" => 'nullable|date',
             "end_date" => 'nullable|date',
-            "notes" => 'nullable|string',
+            "notes" => 'nullable|string|max:5000',
         ]);
 
         $campaign->update($validated);

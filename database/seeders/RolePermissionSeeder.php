@@ -400,6 +400,98 @@ class RolePermissionSeeder extends Seeder
             'parent_id'   => $campaigns->id
         ]);
 
+        // maintenance permissions
+        $maintenance = Permission::firstOrCreate([
+            'name'       => 'maintenance',
+            'group_name' => 'maintenance'
+        ]);
+
+        Permission::firstOrCreate([
+            'name'        => 'maintenance.view',
+            'group_name'  => 'maintenance',
+            'description' => 'Can view maintenance.',
+            'parent_id'   => $maintenance->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'maintenance.edit',
+            'group_name'  => 'maintenance',
+            'description' => 'Can edit existing maintenance.',
+            'parent_id'   => $maintenance->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'maintenance.create',
+            'group_name'  => 'maintenance',
+            'description' => 'Can create new maintenance.',
+            'parent_id'   => $maintenance->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'maintenance.delete',
+            'group_name'  => 'maintenance',
+            'description' => 'Can delete maintenance.',
+            'parent_id'   => $maintenance->id
+        ]);
+
+        // maintenanceEvents permissions
+        $maintenanceEvents = Permission::firstOrCreate([
+            'name'       => 'maintenanceEvents',
+            'group_name' => 'maintenanceEvents'
+        ]);
+
+        Permission::firstOrCreate([
+            'name'        => 'maintenanceEvents.view',
+            'group_name'  => 'maintenanceEvents',
+            'description' => 'Can view maintenanceEvents.',
+            'parent_id'   => $maintenanceEvents->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'maintenanceEvents.edit',
+            'group_name'  => 'maintenanceEvents',
+            'description' => 'Can edit existing maintenanceEvents.',
+            'parent_id'   => $maintenanceEvents->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'maintenanceEvents.create',
+            'group_name'  => 'maintenanceEvents',
+            'description' => 'Can create new maintenanceEvents.',
+            'parent_id'   => $maintenanceEvents->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'maintenanceEvents.delete',
+            'group_name'  => 'maintenanceEvents',
+            'description' => 'Can delete maintenanceEvents.',
+            'parent_id'   => $maintenanceEvents->id
+        ]);
+        
+        // maintenanceTypes permissions
+        $maintenanceTypes = Permission::firstOrCreate([
+            'name'       => 'maintenanceTypes',
+            'group_name' => 'maintenanceTypes'
+        ]);
+
+        Permission::firstOrCreate([
+            'name'        => 'maintenanceTypes.view',
+            'group_name'  => 'maintenanceTypes',
+            'description' => 'Can view maintenanceTypes.',
+            'parent_id'   => $maintenanceTypes->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'maintenanceTypes.edit',
+            'group_name'  => 'maintenanceTypes',
+            'description' => 'Can edit existing maintenanceTypes.',
+            'parent_id'   => $maintenanceTypes->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'maintenanceTypes.create',
+            'group_name'  => 'maintenanceTypes',
+            'description' => 'Can create new maintenanceTypes.',
+            'parent_id'   => $maintenanceTypes->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'maintenanceTypes.delete',
+            'group_name'  => 'maintenanceTypes',
+            'description' => 'Can delete maintenanceTypes.',
+            'parent_id'   => $maintenanceTypes->id
+        ]);
 
         // // log permissions
         // $logs = Permission::firstOrCreate([
@@ -430,6 +522,9 @@ class RolePermissionSeeder extends Seeder
         $admin->givePermissionTo([$events->children]);
         $admin->givePermissionTo([$plantingEvents->children]);
         $admin->givePermissionTo([$campaigns->children]);
+        $admin->givePermissionTo([$maintenance->children]);
+        $admin->givePermissionTo([$maintenanceEvents->children]);
+        $admin->givePermissionTo([$maintenanceTypes->children]);
 
 
         app()[PermissionRegistrar::class]->forgetCachedPermissions();

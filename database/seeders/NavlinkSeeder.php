@@ -161,6 +161,39 @@ class NavlinkSeeder extends Seeder
             ]
         );
 
+        $maintenance = $this->createOrUpdateNavlink(
+            ['key' => 'maintenance'],
+            [
+                'name'        => 'Maintenance',
+                'permissions' => 'maintenance.view',
+                'icon'        => 'pi pi-wrench',
+            ]
+        );
+
+        $this->createOrUpdateNavlink(
+            ['key' => 'maintenance-events'],
+            [
+                'name'        => 'Maintenance Events',
+                'permissions' => 'maintenanceEvents.view',
+                'icon'        => 'MaintenanceEventIcon',
+                'parent_id'   => $maintenance->id,
+                'route_name'  => 'maintenanceEvents.index'
+            ]
+        );
+
+        $this->createOrUpdateNavlink(
+            ['key' => 'maintenance-types'],
+            [
+                'name'        => 'Maintenance Types',
+                'permissions' => 'maintenanceTypes.view',
+                'icon'        => 'MaintenanceTypeIcon',
+                'parent_id'   => $maintenance->id,
+                'route_name'  => 'maintenanceTypes.index'
+            ]
+        );
+
+
+
         // $this->createOrUpdateNavlink([
         //     'name'        => 'Log Viewer',
         //     'icon'        => 'pi pi-book',

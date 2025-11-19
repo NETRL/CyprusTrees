@@ -60,6 +60,9 @@ import NeigborhoodIcon from "./NeigborhoodIcon.vue";
 import EventIcon from "./EventIcon.vue";
 import PlantIcon from "./PlantIcon.vue";
 import CampaignIcon from "./CampaignIcon.vue";
+import MaintenanceTypeIcon from "./MaintenanceTypeIcon.vue";
+import MaintenanceEventIcon from "./MaintenanceEventIcon.vue";
+
 
 export {
   BellIcon,
@@ -124,4 +127,6 @@ export {
   EventIcon,
   PlantIcon,
   CampaignIcon,
+  MaintenanceTypeIcon,
+  MaintenanceEventIcon,
 };
