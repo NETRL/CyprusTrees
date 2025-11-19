@@ -192,6 +192,26 @@ class NavlinkSeeder extends Seeder
             ]
         );
 
+        $health = $this->createOrUpdateNavlink(
+            ['key' => 'health'],
+            [
+                'name'        => 'Health & Assessments',
+                'permissions' => 'health.view',
+                'icon'        => 'HealthIcon',
+            ]
+        );
+
+        $this->createOrUpdateNavlink(
+            ['key' => 'health-healthAssessments'],
+            [
+                'name'        => 'Health Assessments',
+                'permissions' => 'healthAssessments.view',
+                'icon'        => 'HealthAssessmentIcon',
+                'parent_id'   => $health->id,
+                'route_name'  => 'healthAssessments.index'
+            ]
+        );
+
 
 
         // $this->createOrUpdateNavlink([

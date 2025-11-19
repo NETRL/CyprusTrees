@@ -62,6 +62,9 @@ import PlantIcon from "./PlantIcon.vue";
 import CampaignIcon from "./CampaignIcon.vue";
 import MaintenanceTypeIcon from "./MaintenanceTypeIcon.vue";
 import MaintenanceEventIcon from "./MaintenanceEventIcon.vue";
+import HealthIcon from "./HealthIcon.vue";
+import HealthAssessmentIcon from "./HealthAssessmentIcon.vue";
+
 
 
 export {
@@ -129,4 +132,6 @@ export {
   CampaignIcon,
   MaintenanceTypeIcon,
   MaintenanceEventIcon,
+  HealthAssessmentIcon,
+  HealthIcon,
 };

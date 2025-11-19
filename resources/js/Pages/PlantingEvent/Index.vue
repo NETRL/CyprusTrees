@@ -122,11 +122,14 @@ const plantedByLabel = (row) => {
 
   if (!planter) return id;
 
+  const roles = Array.isArray(performer.roles) ? performer.roles : [];
+  const roleNames = roles.length ? roles.map(r => r.name).join(', ') : 'No role';
+
   const firstName = planter.first_name ?? '';
   const lastName = planter.last_name ?? '';
   const fullName = [firstName, lastName].filter(Boolean).join(' ');
 
-  return fullName ? `${id} - ${fullName}` : `${id}`;
+  return fullName ? `${id} - ${fullName} (${roleNames})` : `${id}`;
 };
 
 const campaignLabel = (row) => {

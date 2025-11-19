@@ -6,7 +6,7 @@
 
 
       <template #columns>
-         <!-- Event-->
+        <!-- Event-->
         <Column field="event_id" header="Id" sortable>
           <template #body="{ data }">
             {{ data.event_id }}
@@ -18,7 +18,7 @@
             {{ treeLabel(data) }}
           </template>
         </Column>
-       <!-- Type-->
+        <!-- Type-->
         <Column field="type_id" header="Type" sortable>
           <template #body="{ data }">
             {{ typeLabel(data) }}
@@ -30,28 +30,28 @@
             {{ performedByLabel(data) }}
           </template>
         </Column>
-         <!-- Performed At-->
+        <!-- Performed At-->
         <Column field="performed_at" header="Performed At" sortable>
           <template #body="{ data }">
             {{ formatDate(data.performed_at) }}
           </template>
         </Column>
-         <!-- Quantity-->
+        <!-- Quantity-->
         <Column field="quantity" header="Quantity" sortable>
           <template #body="{ data }">
-            {{ data.quantity}}
+            {{ data.quantity }}
           </template>
         </Column>
-         <!-- Cost-->
+        <!-- Cost-->
         <Column field="cost" header="Cost" sortable>
           <template #body="{ data }">
-            {{ data.cost}}
+            {{ data.cost }}
           </template>
         </Column>
-         <!-- Notes-->
+        <!-- Notes-->
         <Column field="notes" header="Notes" sortable>
           <template #body="{ data }">
-            {{ data.notes}}
+            {{ data.notes }}
           </template>
         </Column>
       </template>
@@ -87,13 +87,16 @@ const props = defineProps({
     type: Object,
   },
   treeData: {
-    type: Object,
+    type: Array,
+    default: () => [],
   },
   typeData: {
-    type: Object,
+    type: Array,
+    default: () => [],
   },
   userData: {
-    type: Object,
+    type: Array,
+    default: () => [],
   },
 
 });
@@ -135,11 +138,14 @@ const performedByLabel = (row) => {
 
   if (!performer) return id;
 
+  const roles = Array.isArray(performer.roles) ? performer.roles : [];
+  const roleNames = roles.length ? roles.map(r => r.name).join(', ') : 'No role';
+
   const firstName = performer.first_name ?? '';
   const lastName = performer.last_name ?? '';
   const fullName = [firstName, lastName].filter(Boolean).join(' ');
 
-  return fullName ? `${id} - ${fullName}` : `${id}`;
+  return fullName ? `${id} - ${fullName} (${roleNames})` : `${id}`;
 };
 
 // --- form state ---

@@ -69,7 +69,7 @@ class MaintenanceEventsController extends Controller
 
     public function update(Request $request, MaintenanceEvent $maintenanceEvent): RedirectResponse
     {
-         $validated = $request->validate([
+        $validated = $request->validate([
             "tree_id"       => 'required|integer|exists:trees,id',
             "type_id"       => 'required|integer|exists:maintenance_types,type_id',
             "performed_by"  => 'nullable|integer|exists:users,id',

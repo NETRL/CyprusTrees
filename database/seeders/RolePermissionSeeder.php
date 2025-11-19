@@ -461,7 +461,7 @@ class RolePermissionSeeder extends Seeder
             'description' => 'Can delete maintenanceEvents.',
             'parent_id'   => $maintenanceEvents->id
         ]);
-        
+
         // maintenanceTypes permissions
         $maintenanceTypes = Permission::firstOrCreate([
             'name'       => 'maintenanceTypes',
@@ -491,6 +491,68 @@ class RolePermissionSeeder extends Seeder
             'group_name'  => 'maintenanceTypes',
             'description' => 'Can delete maintenanceTypes.',
             'parent_id'   => $maintenanceTypes->id
+        ]);
+
+        // health permissions
+        $health = Permission::firstOrCreate([
+            'name'       => 'health',
+            'group_name' => 'health'
+        ]);
+
+        Permission::firstOrCreate([
+            'name'        => 'health.view',
+            'group_name'  => 'health',
+            'description' => 'Can view health.',
+            'parent_id'   => $health->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'health.edit',
+            'group_name'  => 'health',
+            'description' => 'Can edit existing health.',
+            'parent_id'   => $health->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'health.create',
+            'group_name'  => 'health',
+            'description' => 'Can create new health.',
+            'parent_id'   => $health->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'health.delete',
+            'group_name'  => 'health',
+            'description' => 'Can delete health.',
+            'parent_id'   => $health->id
+        ]);
+
+         // healthAssessments permissions
+        $healthAssessments = Permission::firstOrCreate([
+            'name'       => 'healthAssessments',
+            'group_name' => 'healthAssessments'
+        ]);
+
+        Permission::firstOrCreate([
+            'name'        => 'healthAssessments.view',
+            'group_name'  => 'healthAssessments',
+            'description' => 'Can view healthAssessments.',
+            'parent_id'   => $healthAssessments->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'healthAssessments.edit',
+            'group_name'  => 'healthAssessments',
+            'description' => 'Can edit existing healthAssessments.',
+            'parent_id'   => $healthAssessments->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'healthAssessments.create',
+            'group_name'  => 'healthAssessments',
+            'description' => 'Can create new healthAssessments.',
+            'parent_id'   => $healthAssessments->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'healthAssessments.delete',
+            'group_name'  => 'healthAssessments',
+            'description' => 'Can delete healthAssessments.',
+            'parent_id'   => $healthAssessments->id
         ]);
 
         // // log permissions
