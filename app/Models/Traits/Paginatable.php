@@ -25,7 +25,8 @@ trait Paginatable
             $baseQuery->customSort($sortField, $sortOrder);
         } else {
             // default ordering when nothing provided
-            $baseQuery->orderBy('id', self::ASC);
+            $defaultSortField = $this->getDefaultSortField();
+            $baseQuery->orderBy($defaultSortField, self::ASC);
         }
 
         // optional: apply search only if not empty
@@ -117,5 +118,21 @@ trait Paginatable
         }
 
         return true;
+    }
+
+    private function getDefaultSortField(): string
+    {
+        // If the model defines a default sort field, use it
+        if (property_exists($this, 'defaultSortField') && !empty($this->defaultSortField)) {
+            return $this->defaultSortField;
+        }
+
+        // Otherwise, if it has a $sortable array, use the first one
+        if (property_exists($this, 'sortable') && !empty($this->sortable)) {
+            return $this->sortable[0];
+        }
+
+        // Fallback to the model's primary key (handles non default ids)
+        return $this->getKeyName();
     }
 }

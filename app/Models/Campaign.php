@@ -20,6 +20,23 @@ class Campaign extends Model
         'notes',
     ];
 
+    protected array  $tableColumns = [
+        'id',
+        'name',
+        'sponsor',
+        'start_date',
+        'end_date',
+        'notes',
+    ];
+
+    protected array  $formColumns = [
+        'id',
+        'name',
+        'sponsor',
+        'start_date',
+        'end_date',
+        'notes',
+    ];
 
     protected array  $searchable = [
         'id',

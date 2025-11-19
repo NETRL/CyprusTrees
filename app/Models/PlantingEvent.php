@@ -23,8 +23,29 @@ class PlantingEvent extends Model
         'notes',
     ];
 
+    protected array  $tableColumns = [
+        'planting_id',
+        'tree_id',
+        'campaign_id',
+        'planted_by',
+        'planted_at',
+        'method',
+        'notes',
+    ];
+
+
+    protected array  $formColumns = [
+        'planting_id',
+        'tree_id',
+        'campaign_id',
+        'planted_by',
+        'planted_at',
+        'method',
+        'notes',
+    ];
+
     protected array  $searchable = [
-        'id',
+        'planting_id',
         'tree_id',
         'campaign_id',
         'planted_by',
@@ -34,7 +55,7 @@ class PlantingEvent extends Model
     ];
 
     protected array $sortable = [
-        'id',
+        'planting_id',
         'tree_id',
         'campaign_id',
         'planted_by',
@@ -47,9 +68,9 @@ class PlantingEvent extends Model
     public static function relationships(): array
     {
         return [
-            'trees',
-            'campaigns',
-            // 'users',
+            'tree',
+            'campaign',
+            'planter',
         ];
     }
 

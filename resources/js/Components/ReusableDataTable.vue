@@ -42,28 +42,39 @@
           {{ emptyMessage }}
         </template>
 
-        <Column :exportable="false" selectionMode="multiple" style="width: 3rem"></Column>
+        <!-- selection column -->
+          <Column :exportable="false" selectionMode="multiple" style="width: 3rem"></Column>
 
-        <!-- Dynamic visible columns -->
-        <Column v-for="col in selectedColumnDefs" :key="col.value" :field="col.value" :header="col.label"
-          :sortable="true">
+        <!-- If parent provides #columns, use that -->
+        <template v-if="$slots.columns">
+          <slot name="columns" />
+        </template>
 
-          <!-- for date columns -->
-          <template #body="slotProps" v-if="dateColumns.includes(col.value)">
-            {{ formatDate(slotProps.data[col.value]) }}
-          </template>
+        <!-- Otherwise use the existing auto-generated columns -->
+        <template v-else>
+          <!-- Dynamic visible columns -->
+          <Column v-for="col in selectedColumnDefs" :key="col.value" :field="col.value" :header="col.label"
+            :sortable="true">
 
-          <!-- default (non-date columns) -->
-          <template #body="slotProps" v-else>
-            {{ slotProps.data[col.value] }}
-          </template>
-        </Column>
-        
-        <slot></slot>
-        <!-- default slot -->
+            <!-- for date columns -->
+            <template #body="slotProps" v-if="dateColumns.includes(col.value)">
+              {{ formatDate(slotProps.data[col.value]) }}
+            </template>
+
+            <!-- default (non-date columns) -->
+            <template #body="slotProps" v-else>
+              {{ slotProps.data[col.value] }}
+            </template>
+          </Column>
+
+          <!-- default slot -->
+          <slot></slot>
+        </template>
+        <!-- actions column -->
         <Column :exportable="false">
           <template #body="slotProps">
-            <Button v-if="showEditButton" v-has-permission="{ props: $page.props, permissions: [finalPermissionEdit] }"
+            <Button v-if="showEditButton"
+              v-has-permission="{ props: $page.props, permissions: [finalPermissionEdit] }"
               class="p-button-rounded mr-2 max-sm:text-sm! my-1" severity="primary" icon="pi pi-pencil"
               @click="onEditClick(slotProps.data)" />
             <Button v-if="showDeleteButton"

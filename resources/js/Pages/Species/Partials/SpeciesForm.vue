@@ -106,15 +106,17 @@ const closeForm = () => {
 }
 
 const initForm = () => {
+    const row = props.dataRow
+
     displayErrors.value = false
 
-    formData.id = props.dataRow?.id ?? null
-    formData.latin_name = props.dataRow?.latin_name ?? ''
-    formData.common_name = props.dataRow?.common_name ?? ''
-    formData.family = props.dataRow?.family ?? ''
-    formData.drought_tolerance = props.dataRow?.drought_tolerance ?? null
-    formData.canopy_class = props.dataRow?.canopy_class ?? null
-    formData.notes = props.dataRow?.notes ?? ''
+    formData.id = row?.id ?? null
+    formData.latin_name = row?.latin_name ?? ''
+    formData.common_name = row?.common_name ?? ''
+    formData.family = row?.family ?? ''
+    formData.drought_tolerance = row?.drought_tolerance ?? null
+    formData.canopy_class = row?.canopy_class ?? null
+    formData.notes = row?.notes ?? ''
 }
 
 const submit = () => {

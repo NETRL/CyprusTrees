@@ -48,6 +48,7 @@ import { reactive, ref, computed } from 'vue'
 import { router } from '@inertiajs/vue3'
 import FormField from '@/Components/Primitives/FormField.vue'
 import { useDateFormatter } from '@/Composables/useDateFormatter'
+import { useDateParser } from '@/Composables/useDateParser'
 
 // props & emits
 const props = defineProps({
@@ -87,16 +88,18 @@ const emit = defineEmits(['update:visible'])
 
 // state
 const formData = reactive({
-    id: null,
+    planting_id: null,
     tree_id: null,
     campaign_id: null,
     planted_by: null,
-    planted_at: null,
+    planted_at: new Date(),
     method: '',
     notes: '',
 })
 
 const displayErrors = ref(false)
+
+const { parseDate } = useDateParser();
 
 const treeOptions = computed(() =>
     props.trees.map(tree => ({
@@ -148,15 +151,17 @@ const closeForm = () => {
 }
 
 const initForm = () => {
+    const row = props.dataRow;
+
     displayErrors.value = false
 
-    formData.id = props.dataRow?.id ?? null
-    formData.tree_id = props.dataRow?.tree_id ?? null
-    formData.campaign_id = props.dataRow?.campaign_id ?? null
-    formData.planted_at = props.dataRow?.planted_at ?? null
-    formData.planted_by = props.dataRow?.planted_by ?? null
-    formData.method = props.dataRow?.method ?? ''
-    formData.notes = props.dataRow?.notes ?? ''
+    formData.planting_id = row?.planting_id ?? null
+    formData.tree_id = row?.tree_id ?? null
+    formData.campaign_id = row?.campaign_id ?? null
+    formData.planted_by = row?.planted_by ?? null
+    formData.planted_at = parseDate(row?.planted_at)
+    formData.method = row?.method ?? ''
+    formData.notes = row?.notes ?? ''
 }
 
 const submit = () => {
@@ -171,7 +176,7 @@ const submit = () => {
             },
         })
     } else if (props.action === 'Edit') {
-        router.patch(route(props.routeResource + '.update', formData.id), { ...formData }, {
+        router.patch(route(props.routeResource + '.update', formData.planting_id), { ...formData }, {
             preserveScroll: true,
             onSuccess: () => {
                 closeForm()

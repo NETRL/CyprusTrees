@@ -57,10 +57,12 @@ const closeForm = () => {
 }
 
 const initForm = () => {
+    const row = props.dataRow
+
     displayErrors.value = false
 
-    formData.id = props.dataRow?.id ?? null
-    formData.name = props.dataRow?.name ?? ''
+    formData.id = row?.id ?? null
+    formData.name = row?.name ?? ''
 }
 
 const submit = () => {

@@ -39,6 +39,7 @@
 import { reactive, ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 import FormField from '@/Components/Primitives/FormField.vue'
+import { useDateParser } from '@/Composables/useDateParser'
 
 // props & emits
 const props = defineProps({
@@ -67,12 +68,14 @@ const formData = reactive({
     id: null,
     name: '',
     sponsor: '',
-    start_date: null,
-    end_date: null,
+    start_date: new Date(),
+    end_date: new Date(),
     notes: '',
 })
 
 const displayErrors = ref(false)
+
+const { parseDate } = useDateParser();
 
 // methods
 const closeForm = () => {
@@ -80,14 +83,16 @@ const closeForm = () => {
 }
 
 const initForm = () => {
+    const row = props.dataRow;
+
     displayErrors.value = false
 
-    formData.id = props.dataRow?.id ?? null
-    formData.name = props.dataRow?.name ?? ''
-    formData.sponsor = props.dataRow?.sponsor ?? ''
-    formData.start_date = props.dataRow?.start_date ?? null
-    formData.end_date = props.dataRow?.end_date ?? null
-    formData.notes = props.dataRow?.notes ?? ''
+    formData.id = row?.id ?? null
+    formData.name = row?.name ?? ''
+    formData.sponsor = row?.sponsor ?? ''
+    formData.start_date = parseDate(row?.start_date)
+    formData.end_date = parseDate(row?.end_date)
+    formData.notes = row?.notes ?? ''
 }
 
 const submit = () => {

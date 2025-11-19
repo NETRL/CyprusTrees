@@ -1,7 +1,7 @@
 <template>
     <Dialog :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :modal="true" :style="{ width: '450px' }"
         :visible="visible" header="Species Details" @show="initForm" @update:visible="emit('update:visible', $event)"
-        class="dark:bg-gray-900!">
+        class="dark:bg-gray-900! select-none">
         <form class="grid grid-cols-12 w-full gap-3" @submit.prevent="submit">
             <!-- Name -->
             <div class="col-span-12">
@@ -80,20 +80,22 @@ const closeForm = () => {
 }
 
 const initForm = () => {
+    const row = props.dataRow
+
     displayErrors.value = false
 
-    formData.id = props.dataRow?.id ?? null
-    formData.name = props.dataRow?.name ?? ''
-    formData.city = props.dataRow?.city ?? ''
-    formData.district = props.dataRow?.district ?? ''
-    formData.geom_ref = props.dataRow?.geom_ref ?? null
-    formData.canopy_class = props.dataRow?.canopy_class ?? null
-    formData.notes = props.dataRow?.notes ?? ''
+    formData.id = row?.id ?? null
+    formData.name = row?.name ?? ''
+    formData.city = row?.city ?? ''
+    formData.district = row?.district ?? ''
+    formData.geom_ref = row?.geom_ref ?? null
+    formData.canopy_class = row?.canopy_class ?? null
+    formData.notes = row?.notes ?? ''
 }
 
 const submit = () => {
     if (props.action === 'Create') {
-        router.post(route(props.routeResource+'.store'), { ...formData }, {
+        router.post(route(props.routeResource + '.store'), { ...formData }, {
             preserveScroll: true,
             onSuccess: () => {
                 closeForm()
@@ -103,7 +105,7 @@ const submit = () => {
             },
         })
     } else if (props.action === 'Edit') {
-        router.patch(route(props.routeResource+'.update', formData.id), { ...formData }, {
+        router.patch(route(props.routeResource + '.update', formData.id), { ...formData }, {
             preserveScroll: true,
             onSuccess: () => {
                 closeForm()

@@ -89,6 +89,7 @@
 import { reactive, ref, computed, watch, nextTick } from 'vue'
 import { router } from '@inertiajs/vue3'
 import FormField from '@/Components/Primitives/FormField.vue'
+import { useDateParser } from '@/Composables/useDateParser'
 
 // props & emits
 const props = defineProps({
@@ -148,11 +149,7 @@ const formData = reactive({
 const displayErrors = ref(false)
 
 // Helper function to convert date string to Date object
-const parseDate = (dateString) => {
-    if (!dateString) return null
-    const date = new Date(dateString)
-    return isNaN(date.getTime()) ? null : date
-}
+const { parseDate } = useDateParser();
 
 // methods
 const closeForm = () => {
@@ -171,13 +168,13 @@ const resetForm = () => {
     formData.lat = null
     formData.lon = null
     formData.address = ''
-    formData.planted_at = null
+    formData.planted_at = new Date(),
     formData.status = ''
     formData.health_status = ''
     formData.height_m = null
     formData.dbh_cm = null
     formData.canopy_diameter_m = null
-    formData.last_inspected_at = null
+    formData.last_inspected_at = new Date(),
     formData.owner_type = ''
     formData.source = ''
 }
@@ -207,31 +204,32 @@ const tagOptions = computed(() =>
 watch(neighborhoodOptions, v => console.log(v))
 
 const initForm = () => {
+    const row = props.dataRow
     displayErrors.value = false
 
-    if (!props.dataRow) {
+    if (!row) {
         resetForm()
         return
     }
 
-    formData.id = props.dataRow.id ?? null
-    formData.species_id = props.dataRow.species_id ?? null
-    formData.tag_ids = props.dataRow.tags
-        ? props.dataRow.tags.map(t => t.id)
+    formData.id = row.id ?? null
+    formData.species_id = row.species_id ?? null
+    formData.tag_ids = row.tags
+        ? row.tags.map(t => t.id)
         : []
-    formData.neighborhood_id = props.dataRow.neighborhood_id ?? null
-    formData.lat = props.dataRow.lat ?? null
-    formData.lon = props.dataRow.lon ?? null
-    formData.address = props.dataRow.address ?? ''
-    formData.planted_at = parseDate(props.dataRow.planted_at)
-    formData.status = props.dataRow.status ?? ''
-    formData.health_status = props.dataRow.health_status ?? ''
-    formData.height_m = props.dataRow.height_m ?? null
-    formData.dbh_cm = props.dataRow.dbh_cm ?? null
-    formData.canopy_diameter_m = props.dataRow.canopy_diameter_m ?? null
-    formData.last_inspected_at = parseDate(props.dataRow.last_inspected_at)
-    formData.owner_type = props.dataRow.owner_type ?? ''
-    formData.source = props.dataRow.source ?? ''
+    formData.neighborhood_id = row.neighborhood_id ?? null
+    formData.lat = row.lat ?? null
+    formData.lon = row.lon ?? null
+    formData.address = row.address ?? ''
+    formData.planted_at = parseDate(row.planted_at)
+    formData.status = row.status ?? ''
+    formData.health_status = row.health_status ?? ''
+    formData.height_m = row.height_m ?? null
+    formData.dbh_cm = row.dbh_cm ?? null
+    formData.canopy_diameter_m = row.canopy_diameter_m ?? null
+    formData.last_inspected_at = parseDate(row.last_inspected_at)
+    formData.owner_type = row.owner_type ?? ''
+    formData.source = row.source ?? ''
 }
 
 // Watch for visibility changes
