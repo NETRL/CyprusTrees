@@ -10,6 +10,8 @@ class MaintenanceEvent extends Model
     /** @use HasFactory<\Database\Factories\MaintenanceEventFactory> */
     use HasFactory;
 
+    protected $primaryKey = 'event_id';
+
 
     protected $fillable = [
         'tree_id',

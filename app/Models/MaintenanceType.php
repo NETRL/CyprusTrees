@@ -9,6 +9,9 @@ class MaintenanceType extends Model
 {
     /** @use HasFactory<\Database\Factories\MaintenanceTypeFactory> */
     use HasFactory;
+
+    protected $primaryKey = 'type_id';
+
     protected $fillable = ['name'];
 
     public function events()

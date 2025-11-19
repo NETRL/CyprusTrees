@@ -12,6 +12,8 @@ class PlantingEvent extends Model
     /** @use HasFactory<\Database\Factories\PlantingEventFactory> */
     use HasFactory, BaseModelTrait, Paginatable;
 
+    protected $primaryKey = 'planting_id';
+
     protected $fillable = [
         'tree_id',
         'campaign_id',

@@ -10,6 +10,7 @@ class HealthAssesment extends Model
     /** @use HasFactory<\Database\Factories\HealthAssesmentFactory> */
     use HasFactory;
 
+       protected $primaryKey = 'assessment_id'; 
 
     protected $fillable = [
         'tree_id',

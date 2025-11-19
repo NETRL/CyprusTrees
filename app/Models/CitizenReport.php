@@ -10,6 +10,8 @@ class CitizenReport extends Model
     /** @use HasFactory<\Database\Factories\CitizenReportFactory> */
     use HasFactory;
 
+    protected $primaryKey = 'report_id';
+
     protected $fillable = [
         'report_type_id',
         'created_by',
