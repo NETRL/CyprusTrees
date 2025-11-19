@@ -1,7 +1,7 @@
 <template>
     <Dialog :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :modal="true" :style="{ width: '450px' }"
-        :visible="visible" header="Species Details" @show="initForm" @update:visible="emit('update:visible', $event)"
-        class="dark:bg-gray-900!">
+        :visible="visible" header="Tree Tag Details" @show="initForm" @update:visible="emit('update:visible', $event)"
+        class="dark:bg-gray-900! select-none">
         <form class="grid grid-cols-12 w-full gap-3" @submit.prevent="submit">
             <!-- Name -->
             <div class="col-span-12">

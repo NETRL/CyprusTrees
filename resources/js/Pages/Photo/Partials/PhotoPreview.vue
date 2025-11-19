@@ -1,7 +1,7 @@
 <template>
     <Dialog :breakpoints="{ '960px': '90vw', '640px': '100vw' }" :modal="true" :style="{ width: '800px' }"
         :visible="visible" :header="photo?.caption || `Photo #${photo?.id}`" @update:visible="close"
-        class="dark:bg-gray-900 photo-preview-dialog" :dismissableMask="true">
+        class="dark:bg-gray-900 photo-preview-dialog select-none" :dismissableMask="true">
         <div v-if="photo" class="space-y-6">
             <div class="relative bg-gray-100 dark:bg-gray-800 rounded-2xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 h-[500px] flex items-center justify-center group select-none"
                 @wheel.prevent="handleWheel">

@@ -1,7 +1,7 @@
 <template>
     <Dialog :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :modal="true" :style="{ width: '550px' }"
         :visible="visible" :header="action === 'Create' ? 'Add Photos' : 'Edit Photo'" @show="initForm"
-        @update:visible="emit('update:visible', $event)" class="dark:bg-gray-900!">
+        @update:visible="emit('update:visible', $event)" class="dark:bg-gray-900! select-none">
 
         <form class="grid grid-cols-12 w-full gap-4" @submit.prevent="submit">
             <!-- Caption -->

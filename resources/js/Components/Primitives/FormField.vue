@@ -1,5 +1,5 @@
 <template>
-    <label v-if="label" :for="name" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+    <label v-if="label" :for="name" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400 pointer-events-none select-none">
         {{ label }}
         <span v-if="required" class="text-error-500">*</span>
     </label>

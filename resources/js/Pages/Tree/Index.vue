@@ -26,7 +26,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import ReusableDataTable from "@/Components/ReusableDataTable.vue";
 import { router } from "@inertiajs/vue3";
-import { ref, defineOptions, defineProps, computed, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import { useRenamedHeaders } from "@/Composables/useRenamedHeaders";
 import TreeForm from "@/Pages/Tree/Partials/TreeForm.vue";
 import NavLinkButton from "@/Components/NavLinkButton.vue";

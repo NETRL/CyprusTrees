@@ -5,7 +5,7 @@
    transparent ? 'bg-transparent!' : 'bg-white dark:bg-white/3'
   ]">
     <div v-if="title || desc" class="px-6 pt-5">
-      <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90 select-none">
         {{ title }}
       </h3>
       <p v-if="desc" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
