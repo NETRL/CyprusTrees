@@ -4,6 +4,8 @@ namespace App\Enums;
 
 enum HealthStatus: string
 {
+    use HasLabel;
+    
     case HEALTHY   = 'healthy';
     case WATCH     = 'watch';
     case STRESSED  = 'stressed';

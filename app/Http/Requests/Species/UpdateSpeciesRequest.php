@@ -2,8 +2,11 @@
 
 namespace App\Http\Requests\Species;
 
+use App\Enums\CanopyClass;
+use App\Enums\DroughtTolerance;
 use App\Models\Species;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class UpdateSpeciesRequest extends FormRequest
 {
@@ -19,8 +22,8 @@ class UpdateSpeciesRequest extends FormRequest
             'latin_name'        => ['nullable', 'string', 'max:120'],
             'common_name'       => ['nullable', 'string', 'max:120'],
             'family'            => ['nullable', 'string', 'max:120'],
-            'drought_tolerance' => ['nullable', 'in:Low,Moderate,High'],
-            'canopy_class'      => ['nullable', 'in:S,M,L'],
+            'drought_tolerance' => ['nullable', new Enum(DroughtTolerance::class)],
+            'canopy_class'      => ['nullable', new Enum(CanopyClass::class)],
             'notes'             => ['nullable', 'string'],
         ];
     }

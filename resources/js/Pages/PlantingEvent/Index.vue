@@ -122,7 +122,7 @@ const plantedByLabel = (row) => {
 
   if (!planter) return id;
 
-  const roles = Array.isArray(performer.roles) ? performer.roles : [];
+  const roles = Array.isArray(planter.roles) ? planter.roles : [];
   const roleNames = roles.length ? roles.map(r => r.name).join(', ') : 'No role';
 
   const firstName = planter.first_name ?? '';

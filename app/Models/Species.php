@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\CanopyClass;
+use App\Enums\DroughtTolerance;
 use App\Models\Traits\BaseModelTrait;
 use App\Models\Traits\Paginatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -72,9 +74,18 @@ class Species extends Model
         ];
     }
 
-
     public function trees()
     {
         return $this->hasMany(Tree::class);
+    }
+
+    public static function getDroughtToleranceOptions(): array
+    {
+        return DroughtTolerance::options();
+    }
+
+    public static function getCanopyClassOptions(): array
+    {
+        return CanopyClass::options();
     }
 }

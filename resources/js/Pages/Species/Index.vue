@@ -1,12 +1,12 @@
 <template>
   <div>
-    <ReusableDataTable routeResource="species" :columns="columns" :tableData="tableData" inertiaKey="tableData" pageTitle="Manage Species"
-      @create="openCreateForm" @edit="openEditForm" @afterDelete="onAfterDelete" @afterMassDelete="onAfterMassDelete"
-      >
+    <ReusableDataTable routeResource="species" :columns="columns" :tableData="tableData" inertiaKey="tableData"
+      pageTitle="Manage Species" @create="openCreateForm" @edit="openEditForm" @afterDelete="onAfterDelete"
+      @afterMassDelete="onAfterMassDelete">
     </ReusableDataTable>
 
-    <SpeciesForm v-model:visible="formVisible" routeResource="species" :action="formAction" :dataRow="formRow" @updated="reloadTable"
-      @created="reloadTable" />
+    <SpeciesForm v-model:visible="formVisible" routeResource="species" :action="formAction" :dataRow="formRow"
+      @updated="reloadTable" @created="reloadTable" :droughtOptions="droughtOptions" :canopyOptions="canopyOptions" />
   </div>
 </template>
 
@@ -30,6 +30,14 @@ const props = defineProps({
   dataColumns: {
     type: Object,
   },
+  droughtOptions: {
+    type: Array,
+    default: () => [],
+  },
+  canopyOptions: {
+    type: Array,
+    default: () => [],
+  }
 });
 
 const { columns } = useRenamedHeaders(props.dataColumns, {

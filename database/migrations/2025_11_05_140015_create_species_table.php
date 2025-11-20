@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('latin_name', 120)->nullable();
             $table->string('common_name', 120)->nullable();
             $table->string('family', 120)->nullable();
-            $table->enum('drought_tolerance', ['Low', 'Moderate', 'High'])->nullable();
+            $table->string('drought_tolerance', 20)->nullable();
             $table->string('canopy_class', 10)->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();

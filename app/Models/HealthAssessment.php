@@ -91,11 +91,6 @@ class HealthAssessment extends Model
 
     public static function getHealthStatusOptions(): array
     {
-        return collect(HealthStatus::cases())
-            ->map(fn($case) => [
-                'value' => $case->value,
-                'label' => $case->label(), // ← use enum label()
-            ])
-            ->all();
+        return HealthStatus::options();
     }
 }

@@ -48,7 +48,7 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 import FormField from '@/Components/Primitives/FormField.vue'
 
@@ -70,6 +70,14 @@ const props = defineProps({
         type: String,
         required: true,
     },
+    droughtOptions: {
+        type: Array,
+        default: () => [],
+    },
+    canopyOptions: {
+        type: Array,
+        default: () => [],
+    }
 })
 
 const emit = defineEmits(['update:visible'])
@@ -88,17 +96,9 @@ const formData = reactive({
 const displayErrors = ref(false)
 
 // static options
-const droughtToleranceOptions = [
-    { label: 'Low', value: 'Low' },
-    { label: 'Moderate', value: 'Moderate' },
-    { label: 'High', value: 'High' },
-]
+const droughtToleranceOptions = computed(() => props.droughtOptions)
 
-const canopyClassOptions = [
-    { label: 'Small (S)', value: 'S' },
-    { label: 'Medium (M)', value: 'M' },
-    { label: 'Large (L)', value: 'L' },
-]
+const canopyClassOptions = computed(() => props.canopyOptions)
 
 // methods
 const closeForm = () => {

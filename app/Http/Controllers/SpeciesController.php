@@ -33,6 +33,8 @@ class SpeciesController extends Controller
         return Inertia::render('Species/Index', [
             'tableData' => $query->paginate($perPage)->withQueryString(),
             'dataColumns' => Species::getDataColumns(),
+            'droughtOptions' => Species::getDroughtToleranceOptions(),
+            'canopyOptions' => Species::getCanopyClassOptions(),
         ]);
     }
 

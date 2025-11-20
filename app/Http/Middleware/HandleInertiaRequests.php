@@ -17,8 +17,8 @@ class HandleInertiaRequests extends Middleware
      */
     protected $rootView = 'app';
 
-    
-    public function __construct(){}
+
+    public function __construct() {}
     /**
      * Determine the current asset version.
      */
@@ -36,12 +36,15 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            
-            'auth' => fn () => (new Auth($request))->toArray(),
-            'navbar'  => fn () => app(Navbar::class)->getNavbar(),
-            
-            'message' => fn () => app(Message::class)->getMessage(),
-            'flash' => [
+
+            'phpVersion'     => PHP_VERSION,
+            'laravelVersion' => \Illuminate\Foundation\Application::VERSION,
+
+            'auth'      => fn() => (new Auth($request))->toArray(),
+            'navbar'    => fn() => app(Navbar::class)->getNavbar(),
+
+            'message'   => fn() => app(Message::class)->getMessage(),
+            'flash'     => [
                 'success' => fn() => $request->session()->get('success'),
                 'error'   => fn() => $request->session()->get('error'),
             ],
