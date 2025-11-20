@@ -32,8 +32,8 @@
             </div>
             <!-- Risk Score -->
             <div class="col-span-6">
-                <FormField component="Number" v-model="formData.risk_score" :displayErrors="displayErrors"
-                    label="Risk Score (0-1)" name="risk_score" :min="0" :max="1" :step="0.01" />
+                <FormField component="Number" v-model="formData.risk_score" :displayErrors="displayErrors"  @input="formData.risk_score = $event.value" 
+                    label="Risk Score (0-1)" name="risk_score" inputId="minmax-buttons" mode="decimal" showButtons :min="0" :max="1" :step="0.1" fluid/>
             </div>
             <!-- Actions Recommended -->
             <div class="col-span-6">

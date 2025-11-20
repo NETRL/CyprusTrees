@@ -11,6 +11,18 @@ layer(base);
     @apply border-brand-300! outline-hidden! ring-1! ring-brand-500/60! dark:border-brand-500!
 }
 
+.p-inputtext{
+    @apply border-gray-300! dark:border-gray-800!;
+}
+
+/* .p-paginator-rpp-dropdown{
+    @apply border-gray-300! dark:border-gray-800!;
+} */
+
+.p-select.p-component.p-inputwrapper.p-inputwrapper-filled{
+  @apply border-gray-300! dark:border-gray-800! bg-transparent!;
+}
+
 /* PrimeVue MultiSelect Customizations */
 .custom-multiselect {
      @apply border-gray-300! dark:border-gray-800! 
@@ -29,14 +41,20 @@ layer(base);
 
 /* PrimeVue Dropdown */
 .p-select-overlay {
-    @apply  dark:border-transparent!;
-}.p-select-list-container{
-    @apply bg-white! dark:bg-gray-900! border-gray-300! dark:border-gray-700! rounded-md border  transition-colors!;
+    @apply bg-white! dark:bg-gray-900! dark:border-gray-700!
+}.p-inputtext.p-component.p-select-filter{
+    @apply dark:border-gray-700!
+}.p-select-option.p-focus{
+    @apply dark:bg-gray-800!;
 }
 
 /* PrimeVue Calendar */
 .p-datepicker-dropdown {
    @apply bg-transparent! border-none!;
+}.p-datepicker-input{
+    @apply border-none!;
+}.p-datepicker-panel{
+    @apply dark:bg-gray-900!;
 }
 
 

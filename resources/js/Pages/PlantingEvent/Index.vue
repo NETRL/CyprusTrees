@@ -29,7 +29,7 @@
         <!-- Planted By: 2 - Test User -->
         <Column field="planted_by" header="Planted By" sortable>
           <template #body="{ data }">
-            {{ plantedByLabel(data) }}
+            {{ userLabel(data) }}
           </template>
         </Column>
 
@@ -114,7 +114,7 @@ const treeLabel = (row) => {
   return parts.join(' ');
 }
 
-const plantedByLabel = (row) => {
+const userLabel = (row) => {
   const id = row.planted_by;
   const planter = row.planter;
 

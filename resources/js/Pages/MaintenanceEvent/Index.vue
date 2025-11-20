@@ -27,7 +27,7 @@
         <!-- Performed By-->
         <Column field="performed_by" header="Performed By" sortable>
           <template #body="{ data }">
-            {{ performedByLabel(data) }}
+            {{ userLabel(data) }}
           </template>
         </Column>
         <!-- Performed At-->
@@ -130,7 +130,7 @@ const typeLabel = (row) => {
   return `${id} - ${type.name}`;
 };
 
-const performedByLabel = (row) => {
+const userLabel = (row) => {
   const id = row.performed_by;
   const performer = row.performer;
 

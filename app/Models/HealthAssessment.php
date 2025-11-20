@@ -76,7 +76,7 @@ class HealthAssessment extends Model
 
     public function getIdAttribute()
     {
-        return $this->attributes('assessment_id') ?? null;
+        return $this->attributes['assessment_id'] ?? null;
     }
 
     public function tree()
