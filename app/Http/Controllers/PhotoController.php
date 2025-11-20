@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\ProcessPhotoUpload;
+use App\Models\Neighborhood;
 use App\Models\Photo;
+use App\Models\Species;
 use App\Models\Tree;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -29,38 +31,144 @@ class PhotoController extends Controller
         $this->authorize('viewAny', Photo::class);
 
         $perPage = $request->integer('per_page', 10);
+
+        // --- Filters from request ---
         if ($request->filled('tree_id')) {
             $treeId = (int) $request->input('tree_id');
         } else {
             $treeId = null;
         }
+        $search         = $request->string('search')->trim()->toString(); // global text search
+        $neighborhoodId = $request->integer('neighborhood_id');
+        $speciesId      = $request->integer('species_id');
+        $dateFrom       = $request->date('date_from'); // expects Y-m-d
+        $dateTo         = $request->date('date_to');   // expects Y-m-d
+        $sort           = $request->string('sort')->toString() ?: 'recent';
 
-        $tableData = null;
-        $tree      = null;
+        $tree = null;
 
+        $query = Photo::query()
+            ->with([
+                'tree',
+                'tree.species',
+                'tree.neighborhood',
+            ]);
+
+        // Filter: Tree ID (keeps your "tree mode" behavior)
         if ($treeId) {
-            // Specific tree mode
-            $query = Photo::query()
-                ->where('tree_id', $treeId)
-                ->setUpQuery();
-
-            $tableData = $query->paginate($perPage)->withQueryString();
-            $tree      = Tree::find($treeId);
-        } else {
-            // Explore mode (no tree requested): random or latest photos
-            $tableData = Photo::query()
-                ->with('tree')
-                ->setUpQuery()
-                ->latest()           
-                ->paginate($perPage)
-                ->withQueryString();
-
+            $query->where('tree_id', $treeId);
+            $tree = Tree::find($treeId);
         }
 
+        // Global text search:
+        // - caption
+        // - tree address
+        // - species name / latin name
+        // - neighborhood name
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('caption', 'like', "%{$search}%")
+                    ->orWhereHas('tree', function ($qt) use ($search) {
+                        $qt->where('address', 'like', "%{$search}%")
+                            ->orWhereHas('species', function ($qs) use ($search) {
+                                $qs->where('common_name', 'like', "%{$search}%")
+                                    ->orWhere('latin_name', 'like', "%{$search}%");
+                            })
+                            ->orWhereHas('neighborhood', function ($qn) use ($search) {
+                                $qn->where('name', 'like', "%{$search}%");
+                            });
+                    });
+            });
+        }
+
+        // Filter: Neighborhood
+        if ($neighborhoodId) {
+            $query->whereHas('tree', function ($qt) use ($neighborhoodId) {
+                $qt->where('neighborhood_id', $neighborhoodId);
+            });
+        }
+
+        // Filter: Species
+        if ($speciesId) {
+            $query->whereHas('tree', function ($qt) use ($speciesId) {
+                $qt->where('species_id', $speciesId);
+            });
+        }
+
+        // Filter: Date range (captured_at; fallback to created_at if you want)
+        if ($dateFrom) {
+            $query->whereDate('captured_at', '>=', $dateFrom);
+        }
+        if ($dateTo) {
+            $query->whereDate('captured_at', '<=', $dateTo);
+        }
+
+        // Sort:
+        // 1. recent      → captured_at desc
+        // 2. oldest      → captured_at asc
+        // 3. tree_id_asc → tree_id asc
+        // 4. tree_id_desc→ tree_id desc
+        switch ($sort) {
+            case 'oldest':
+                $query->orderBy('captured_at', 'asc');
+                break;
+            case 'tree_id_asc':
+                $query->orderBy('tree_id', 'asc');
+                break;
+            case 'tree_id_desc':
+                $query->orderBy('tree_id', 'desc');
+                break;
+            case 'recent':
+            default:
+                $query->orderBy('captured_at', 'desc');
+                break;
+        }
+
+        $tableData = $query
+            ->paginate($perPage)
+            ->appends($request->query());
+
+        // For dropdowns
+        $speciesOptions = Species::query()
+            ->leftJoin('trees', 'trees.species_id', '=', 'species.id')
+            ->leftJoin('photos', 'photos.tree_id', '=', 'trees.id')
+            ->groupBy('species.id', 'species.common_name', 'species.latin_name')
+            ->orderBy('species.common_name')
+            ->get([
+                'species.id',
+                'species.common_name',
+                'species.latin_name',
+                DB::raw('COUNT(photos.id) as photos_count'),
+            ]);
+        $neighborhoodOptions = Neighborhood::query()
+            ->leftJoin('trees', 'trees.neighborhood_id', '=', 'neighborhoods.id')
+            ->leftJoin('photos', 'photos.tree_id', '=', 'trees.id')
+            ->groupBy('neighborhoods.id', 'neighborhoods.name')
+            ->orderBy('neighborhoods.name')
+            ->get([
+                'neighborhoods.id',
+                'neighborhoods.name',
+                DB::raw('COUNT(photos.id) as photos_count'),
+            ]);
+
+        // Keep the last-used filters so Vue can pre-fill the form
+        $filters = $request->only([
+            'tree_id',
+            'search',
+            'neighborhood_id',
+            'species_id',
+            'date_from',
+            'date_to',
+            'sort',
+        ]);
+
         return Inertia::render('Photo/Index1', [
-            'tableData'     => $tableData,
-            'selectedTree'  => $tree,
-            'initialTreeId' => $treeId,
+            'tableData'           => $tableData,
+            'selectedTree'        => $tree,
+            'initialTreeId'       => $treeId,
+            'filters'             => $filters,
+            'speciesOptions'      => $speciesOptions,
+            'neighborhoodOptions' => $neighborhoodOptions,
         ]);
     }
 

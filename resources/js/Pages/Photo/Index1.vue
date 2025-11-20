@@ -1,25 +1,63 @@
 <template>
     <ComponentCard class="w-full flex-1 flex flex-col" title="Manage Tree Photos">
         <!-- Search & Actions Bar -->
-        <form class="flex flex-col sm:flex-row sm:flex-nowrap gap-3" @submit.prevent="loadPhotos">
-            <div class="relative flex-1 sm:flex-initial">
-                <FormField v-model="formData.tree_id" class="w-full sm:max-w-3xs" name="tree_id" component="Number"
-                    label="Enter Tree ID" :displayErrors="true" placeholder="E.g. 123" :useGrouping="false"
-                    @input="formData.tree_id = $event.value" />
-            </div>
-            <Button class="text-nowrap h-10 sm:h-10! sm:mt-auto" icon="pi pi-sync" label="Load Photos" type="submit"
-                :disabled="formData.tree_id === null || formData.tree_id === ''"
-                v-has-permission="{ props: $page.props, permissions: ['photos.view'] }" />
+        <form class="flex flex-col gap-3" @submit.prevent="loadPhotos">
+            <div class="flex flex-col sm:flex-row sm:flex-nowrap gap-3">
+                <!-- Tree ID -->
+                <div class="relative flex-1 sm:flex-initial">
+                    <FormField v-model="filters.tree_id" class="w-full sm:max-w-3xs" name="tree_id" component="Number"
+                        label="Tree ID" :displayErrors="true" placeholder="E.g. 123" :useGrouping="false"
+                        @input="filters.tree_id = $event.value" />
+                </div>
 
-            <Button v-if="selected.size > 0" v-has-permission="{ props: $page.props, permissions: ['photos.delete'] }"
-                severity="danger" class="text-nowrap h-10 sm:h-10! sm:mt-auto" icon="pi pi-trash"
-                :label="`Delete (${selected.size})`" @click="onMassDeleteClick" />
+                <!-- Global text search -->
+                <div class="flex-1">
+                    <FormField v-model="filters.search" class="w-full" name="search"
+                        label="Search caption / address / species / neighborhood"
+                        placeholder="e.g. oak, downtown, broken branch..." />
+                </div>
+
+                <!-- Sort dropdown -->
+                <div class="w-full sm:w-56">
+                    <FormField v-model="filters.sort" name="sort" component="Dropdown" label="Sort by"
+                        :options="sortOptions" optionLabel="label" optionValue="value" />
+                </div>
+
+                <!-- Actions -->
+                <div class="flex gap-2 sm:flex-col sm:justify-end">
+                    <Button class="text-nowrap h-10 sm:h-10! sm:mt-auto" icon="pi pi-search" label="Apply" type="submit"
+                        v-has-permission="{ props: $page.props, permissions: ['photos.view'] }" />
+                    <Button type="button" class="text-nowrap h-10 sm:h-10! sm:mt-auto" icon="pi pi-times"
+                        severity="secondary" label="Reset" @click="resetFilters" />
+                </div>
+            </div>
+
+            <!-- Advanced filters row -->
+            <div class="grid gap-3 sm:grid-cols-4">
+                <!-- Date from -->
+                <FormField v-model="filters.date_from" name="date_from" component="Calendar" label="Captured From"
+                    :showIcon="true" dateFormat="yy-mm-dd" />
+
+                <!-- Date to -->
+                <FormField v-model="filters.date_to" name="date_to" component="Calendar" label="Captured To"
+                    :showIcon="true" dateFormat="yy-mm-dd" />
+
+                <!-- Neighborhood -->
+                <FormField v-model="filters.neighborhood_id" name="neighborhood_id" component="Dropdown"
+                    label="Neighborhood" :options="neighborhoodFilterOptions" optionLabel="label" optionValue="id"
+                    placeholder="All neighborhoods" />
+
+                <!-- Species -->
+                <FormField v-model="filters.species_id" name="species_id" component="Dropdown" label="Species"
+                    :options="speciesFilterOptions" optionLabel="label"  optionValue="id" placeholder="All species" />
+            </div>
         </form>
+
 
         <!-- Content Area -->
         <div class="justify-start mt-6">
             <!-- No photos at all (DB empty, explore mode) -->
-            <template v-if="tableData && tableData.total === 0 && !props.initialTreeId">
+            <template v-if="tableData && tableData.total === 0 && !initialTreeId">
                 <div class="text-center py-12">
                     <i class="pi pi-image text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
                     <p class="text-lg sm:text-xl text-gray-500 mb-2">
@@ -32,11 +70,11 @@
             </template>
 
             <!-- Tree not found -->
-            <template v-else-if="props.initialTreeId && !selectedTree">
+            <template v-else-if="initialTreeId && !selectedTree">
                 <div class="text-center py-12">
                     <i class="pi pi-exclamation-circle text-6xl text-error-300 dark:text-error-600 mb-4"></i>
                     <p class="text-lg sm:text-xl text-gray-500">
-                        The tree with ID: <strong>{{ props.initialTreeId }}</strong> does not exist.
+                        The tree with ID: <strong>{{ initialTreeId }}</strong> does not exist.
                     </p>
                 </div>
             </template>
@@ -77,7 +115,7 @@
                     <div v-if="tableData.data.length > 0">
                         <div class="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                             <!-- Add Photo Card (tree mode only, first page only) -->
-                            <div v-if="selectedTree && props.tableData.current_page === 1 && tableData.data.length !== 0"
+                            <div v-if="selectedTree && tableData.current_page === 1 && tableData.data.length !== 0"
                                 class="flex flex-col justify-center items-center min-h-[200px] sm:min-h-[300px]
                                text-brand-500 
                                bg-brand-500/5 dark:bg-brand-700/10
@@ -93,7 +131,7 @@
                             </div>
 
                             <!-- Photo Cards -->
-                            <div v-for="image in props.tableData.data" :key="image.id" class="w-full relative group cursor-pointer rounded-xl sm:rounded-2xl overflow-hidden
+                            <div v-for="image in tableData.data" :key="image.id" class="w-full relative group cursor-pointer rounded-xl sm:rounded-2xl overflow-hidden
                                shadow-sm hover:shadow-md transition-shadow duration-200"
                                 @click="selectPhoto(image.id)">
                                 <!-- Optional badge to show tree for explore mode -->
@@ -167,7 +205,7 @@
             </template>
 
             <!-- Pagination -->
-            <div v-if="props.tableData && props.tableData.links && tableData.data.length !== 0 && selectedTree" class="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-between 
+            <div v-if="tableData && tableData.links && tableData.data.length !== 0 && selectedTree" class="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-between 
                     pt-6 border-t border-gray-200 dark:border-gray-700">
                 <!-- Per-page selector -->
                 <div class="flex items-center gap-2">
@@ -180,8 +218,7 @@
 
                 <!-- Pagination links -->
                 <nav class="inline-flex flex-wrap gap-1 sm:gap-2 justify-center">
-                    <Link v-for="link in props.tableData.links" :key="link.label + (link.url ?? '')"
-                        :href="link.url || '#'"
+                    <Link v-for="link in tableData.links" :key="link.label + (link.url ?? '')" :href="link.url || '#'"
                         class="px-3 py-2 text-xs sm:text-sm rounded-lg border transition-all duration-150" :class="[
                             link.active
                                 ? 'bg-brand-500 text-white border-brand-500 font-medium shadow-sm'
@@ -194,7 +231,7 @@
         </div>
     </ComponentCard>
     <PhotoForm v-if="formVisible" v-model:visible="formVisible" routeResource="photos" :action="formAction"
-        :dataRow="formRow" :treeId="props.initialTreeId" @updated="reloadTable" @created="reloadTable" />
+        :dataRow="formRow" :treeId="initialTreeId" @updated="reloadTable" @created="reloadTable" />
     <PhotoPreview v-model:visible="previewVisible" :photo="previewPhoto" />
 </template>
 
@@ -202,11 +239,12 @@
 import ComponentCard from '@/Components/Common/ComponentCard.vue'
 import FormField from '@/Components/Primitives/FormField.vue'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
-import { onUnmounted, reactive, ref, watch } from 'vue'
+import { computed, onUnmounted, reactive, ref, watch } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'
 import PhotoForm from './Partials/PhotoForm.vue'
 import { useCrudOperations } from '@/Composables/useCrudOperations'
 import PhotoPreview from './Partials/PhotoPreview.vue'
+import { useDateParser } from '@/Composables/useDateParser'
 
 defineOptions({
     layout: AuthenticatedLayout,
@@ -218,23 +256,57 @@ const page = usePage()
 const props = defineProps({
     tableData: {
         type: Object,
-        default: null
+        default: null,
     },
     selectedTree: {
         type: Object,
-        default: null
+        default: null,
     },
     initialTreeId: {
         type: Number,
-        default: null
-    }
+        default: null,
+    },
+    filters: {
+        type: Object,
+        default: () => ({}),
+    },
+    speciesOptions: {
+        type: Array,
+        default: () => [],
+    },
+    neighborhoodOptions: {
+        type: Array,
+        default: () => [],
+    },
+});
 
+const perPage = ref(props.tableData?.per_page ?? 10);
+
+const { parseDate } = useDateParser();
+
+const speciesFilterOptions = computed(() => {
+    return (props.speciesOptions || []).map(s => ({
+        ...s,
+        label: `${s.common_name} (${s.latin_name}) (${s.photos_count ?? 0})`,
+    }))
 })
 
-console.log(props.tableData.data.length)
-console.log(props.tableData)
+const neighborhoodFilterOptions = computed(() => {
+    return (props.neighborhoodOptions || []).map(n => ({
+        ...n,
+        label: `${n.name} (${n.photos_count ?? 0})`,
+    }))
+})
 
-const perPage = ref(props.tableData?.per_page ?? 10)
+const filters = reactive({
+    tree_id: props.filters.tree_id ?? props.initialTreeId ?? null,
+    search: props.filters.search ?? '',
+    neighborhood_id: props.filters.neighborhood_id ?? null,
+    species_id: props.filters.species_id ?? null,
+    date_from: parseDate(props.filters.date_from),
+    date_to: parseDate(props.filters.date_to),
+    sort: props.filters.sort ?? 'recent',
+});
 
 const perPageOptions = [
     { label: '5', value: 5 },
@@ -244,21 +316,59 @@ const perPageOptions = [
     { label: '100', value: 100 },
 ]
 
-const onPerPageChange = () => {
-    if (!formData.tree_id) return
+const sortOptions = [
+    { label: 'Most Recent', value: 'recent' },
+    { label: 'Oldest First', value: 'oldest' },
+    { label: 'Tree ID ↑', value: 'tree_id_asc' },
+    { label: 'Tree ID ↓', value: 'tree_id_desc' },
+];
 
+const toDateString = (value) => {
+    if (!value) return undefined
+    // YYYY-MM-DD
+    if (value instanceof Date) {
+        return value.toISOString().slice(0, 10)
+    }
+    return value // if somehow already string
+}
+
+const buildQuery = () => {
+    return {
+        tree_id: filters.tree_id || undefined,
+        search: filters.search || undefined,
+        neighborhood_id: filters.neighborhood_id || undefined,
+        species_id: filters.species_id || undefined,
+        date_from: toDateString(filters.date_from),
+        date_to: toDateString(filters.date_to),
+        sort: filters.sort || undefined,
+        per_page: perPage.value,
+    }
+}
+
+const onPerPageChange = () => {
     router.get(
         route('photos.index'),
-        {
-            tree_id: formData.tree_id,
-            per_page: perPage.value,
-        },
+        buildQuery(),
         {
             preserveState: true,
             replace: true,
-        }
-    )
-}
+            preserveScroll: true,
+        },
+    );
+};
+
+const resetFilters = () => {
+    filters.tree_id = null;
+    filters.search = '';
+    filters.neighborhood_id = null;
+    filters.species_id = null;
+    filters.date_from = null;
+    filters.date_to = null;
+    filters.sort = 'recent';
+
+    loadPhotos();
+};
+
 
 const polling = ref(false)
 let pollTimer = null
@@ -274,11 +384,6 @@ const formRow = ref(null);       // current row
 // --- preview state ---
 const previewVisible = ref(false)
 const previewPhoto = ref(null)
-
-
-const formData = reactive({
-    tree_id: page.props.initialTreeId ?? null,
-})
 
 
 const hasProcessingPhotos = () => {
@@ -385,20 +490,19 @@ const selectPhoto = (photoId) => {
 }
 
 const loadPhotos = () => {
-    if (!formData.tree_id) return
-
+    // You *can* allow empty tree_id now because we have global search,
+    // but if you want to force a filter, you can keep the guard.
     router.get(
         route('photos.index'),
-        {
-            tree_id: formData.tree_id,
-            per_page: perPage.value,
-        },
+        buildQuery(),
         {
             preserveState: true,
             replace: true,
-        }
-    )
-}
+            preserveScroll: true,
+        },
+    );
+};
+
 </script>
 <style scoped>
 @keyframes fade-in {
