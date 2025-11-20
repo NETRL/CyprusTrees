@@ -212,6 +212,35 @@ class NavlinkSeeder extends Seeder
             ]
         );
 
+        $reports = $this->createOrUpdateNavlink(
+            ['key' => 'reports'],
+            [
+                'name'        => 'Citizen Reports',
+                'permissions' => 'reports.view',
+                'icon'        => 'ReportsIcon',
+            ]
+        );
+        $this->createOrUpdateNavlink(
+            ['key' => 'reports-citizenReports'],
+            [
+                'name'        => 'Citizen Reports',
+                'permissions' => 'citizenReports.view',
+                'icon'        => 'CitizenReportIcon',
+                'parent_id'   => $reports->id,
+                'route_name'  => 'citizenReports.index'
+            ]
+        );
+        $this->createOrUpdateNavlink(
+            ['key' => 'reports-reportTypes'],
+            [
+                'name'        => 'Report Types',
+                'permissions' => 'reportTypes.view',
+                'icon'        => 'ReportTypeIcon',
+                'parent_id'   => $reports->id,
+                'route_name'  => 'reportTypes.index'
+            ]
+        );
+
 
 
         // $this->createOrUpdateNavlink([

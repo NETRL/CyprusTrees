@@ -64,6 +64,10 @@ import MaintenanceTypeIcon from "./MaintenanceTypeIcon.vue";
 import MaintenanceEventIcon from "./MaintenanceEventIcon.vue";
 import HealthIcon from "./HealthIcon.vue";
 import HealthAssessmentIcon from "./HealthAssessmentIcon.vue";
+import ReportsIcon from "./ReportsIcon.vue";
+import ReportTypeIcon from "./ReportTypeIcon.vue";
+import CitizenReportIcon from "./CitizenReportIcon.vue";
+
 
 
 
@@ -134,4 +138,7 @@ export {
   MaintenanceEventIcon,
   HealthAssessmentIcon,
   HealthIcon,
+  CitizenReportIcon,
+  ReportTypeIcon,
+  ReportsIcon,
 };

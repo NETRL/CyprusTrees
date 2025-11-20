@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CampaignController;
+use App\Http\Controllers\CitizenReportController;
 use App\Http\Controllers\Dashboard\PermissionController;
 use App\Http\Controllers\Dashboard\RoleController;
 use App\Http\Controllers\Dashboard\UserController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\NeigborhoodController;
 use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\PlantingEventController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportTypeController;
 use App\Http\Controllers\SpeciesController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TreeController;
@@ -73,16 +75,21 @@ Route::middleware('auth', '2fa')->group(function () {
 
     Route::resource('plantingEvents', PlantingEventController::class);
     Route::post('/plantingEvents/mass-destroy', [PlantingEventController::class, 'massDestroy'])->name('plantingEvents.massDestroy');
-   
+
     Route::resource('maintenanceEvents', MaintenanceEventsController::class);
     Route::post('/maintenanceEvents/mass-destroy', [MaintenanceEventsController::class, 'massDestroy'])->name('maintenanceEvents.massDestroy');
-    
+
     Route::resource('maintenanceTypes', MaintenanceTypesController::class);
     Route::post('/maintenanceTypes/mass-destroy', [MaintenanceTypesController::class, 'massDestroy'])->name('maintenanceTypes.massDestroy');
 
     Route::resource('healthAssessments', HealthAssessmentController::class);
     Route::post('/healthAssessments/mass-destroy', [HealthAssessmentController::class, 'massDestroy'])->name('healthAssessments.massDestroy');
 
+    Route::resource('reportTypes', ReportTypeController::class);
+    Route::post('/reportTypes/mass-destroy', [ReportTypeController::class, 'massDestroy'])->name('reportTypes.massDestroy');
+
+    Route::resource('citizenReports', CitizenReportController::class);
+    Route::post('/citizenReports/mass-destroy', [HealthAssessmentController::class, 'massDestroy'])->name('citizenReports.massDestroy');
 });
 
 require __DIR__ . '/auth.php';

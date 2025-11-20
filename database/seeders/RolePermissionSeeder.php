@@ -524,7 +524,7 @@ class RolePermissionSeeder extends Seeder
             'parent_id'   => $health->id
         ]);
 
-         // healthAssessments permissions
+        // healthAssessments permissions
         $healthAssessments = Permission::firstOrCreate([
             'name'       => 'healthAssessments',
             'group_name' => 'healthAssessments'
@@ -553,6 +553,99 @@ class RolePermissionSeeder extends Seeder
             'group_name'  => 'healthAssessments',
             'description' => 'Can delete healthAssessments.',
             'parent_id'   => $healthAssessments->id
+        ]);
+
+        // reports permissions
+        $reports = Permission::firstOrCreate([
+            'name'       => 'reports',
+            'group_name' => 'reports'
+        ]);
+
+        Permission::firstOrCreate([
+            'name'        => 'reports.view',
+            'group_name'  => 'reports',
+            'description' => 'Can view reports.',
+            'parent_id'   => $reports->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'reports.edit',
+            'group_name'  => 'reports',
+            'description' => 'Can edit existing reports.',
+            'parent_id'   => $reports->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'reports.create',
+            'group_name'  => 'reports',
+            'description' => 'Can create new reports.',
+            'parent_id'   => $reports->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'reports.delete',
+            'group_name'  => 'reports',
+            'description' => 'Can delete reports.',
+            'parent_id'   => $reports->id
+        ]);
+
+        // citizenReports permissions
+        $citizenReports = Permission::firstOrCreate([
+            'name'       => 'citizenReports',
+            'group_name' => 'citizenReports'
+        ]);
+
+        Permission::firstOrCreate([
+            'name'        => 'citizenReports.view',
+            'group_name'  => 'citizenReports',
+            'description' => 'Can view citizenReports.',
+            'parent_id'   => $citizenReports->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'citizenReports.edit',
+            'group_name'  => 'citizenReports',
+            'description' => 'Can edit existing citizenReports.',
+            'parent_id'   => $citizenReports->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'citizenReports.create',
+            'group_name'  => 'citizenReports',
+            'description' => 'Can create new citizenReports.',
+            'parent_id'   => $citizenReports->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'citizenReports.delete',
+            'group_name'  => 'citizenReports',
+            'description' => 'Can delete citizenReports.',
+            'parent_id'   => $citizenReports->id
+        ]);
+
+        // reportTypes permissions
+        $reportTypes = Permission::firstOrCreate([
+            'name'       => 'reportTypes',
+            'group_name' => 'reportTypes'
+        ]);
+
+        Permission::firstOrCreate([
+            'name'        => 'reportTypes.view',
+            'group_name'  => 'reportTypes',
+            'description' => 'Can view reportTypes.',
+            'parent_id'   => $reportTypes->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'reportTypes.edit',
+            'group_name'  => 'reportTypes',
+            'description' => 'Can edit existing reportTypes.',
+            'parent_id'   => $reportTypes->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'reportTypes.create',
+            'group_name'  => 'reportTypes',
+            'description' => 'Can create new reportTypes.',
+            'parent_id'   => $reportTypes->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'reportTypes.delete',
+            'group_name'  => 'reportTypes',
+            'description' => 'Can delete reportTypes.',
+            'parent_id'   => $reportTypes->id
         ]);
 
         // // log permissions
