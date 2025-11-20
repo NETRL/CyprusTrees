@@ -18,8 +18,8 @@ class Photo extends Model
         'caption',
         'captured_at',
         'source',
-        'path',     
-        'status',  
+        'path',
+        'status',
         'error_message',
     ];
 
@@ -27,8 +27,15 @@ class Photo extends Model
         'captured_at' => 'datetime',
     ];
 
+    public static function relationships(): array
+    {
+        return [
+            'tree'
+        ];
+    }
+
     public function tree()
     {
-        return $this->belongsTo(Tree::class, 'tree_id', 'tree_id');
+        return $this->belongsTo(Tree::class);
     }
 }

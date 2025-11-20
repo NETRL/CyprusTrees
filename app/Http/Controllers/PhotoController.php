@@ -29,28 +29,38 @@ class PhotoController extends Controller
         $this->authorize('viewAny', Photo::class);
 
         $perPage = $request->integer('per_page', 10);
-
         if ($request->filled('tree_id')) {
             $treeId = (int) $request->input('tree_id');
         } else {
             $treeId = null;
         }
+
         $tableData = null;
         $tree      = null;
 
         if ($treeId) {
+            // Specific tree mode
             $query = Photo::query()
                 ->where('tree_id', $treeId)
                 ->setUpQuery();
 
             $tableData = $query->paginate($perPage)->withQueryString();
             $tree      = Tree::find($treeId);
+        } else {
+            // Explore mode (no tree requested): random or latest photos
+            $tableData = Photo::query()
+                ->with('tree')
+                ->setUpQuery()
+                ->latest()           
+                ->paginate($perPage)
+                ->withQueryString();
+
         }
 
-        return Inertia::render('Photo/Index', [
-            'tableData'      => $tableData,   // null if no tree chosen yet
-            'selectedTree'   => $tree,
-            'initialTreeId'  => $treeId,
+        return Inertia::render('Photo/Index1', [
+            'tableData'     => $tableData,
+            'selectedTree'  => $tree,
+            'initialTreeId' => $treeId,
         ]);
     }
 
