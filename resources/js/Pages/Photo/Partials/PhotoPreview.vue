@@ -1,7 +1,7 @@
 <template>
     <Dialog :breakpoints="{ '960px': '90vw', '640px': '100vw' }" :modal="true" :style="{ width: '800px' }"
         :visible="visible" :header="photo?.caption || `Photo #${photo?.id}`" @update:visible="close"
-        class="dark:bg-gray-900 photo-preview-dialog select-none" :dismissableMask="true">
+        class="dark:bg-gray-900 photo-preview-dialog " :dismissableMask="true">
         <div v-if="photo" class="space-y-6">
             <div class="relative bg-gray-100 dark:bg-gray-800 rounded-2xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 h-[500px] flex items-center justify-center group select-none"
                 @wheel.prevent="handleWheel">
@@ -54,7 +54,7 @@
                     <div class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                         <i class="pi pi-hashtag text-brand-500 mt-0.5"></i>
                         <div>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">Photo ID</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 select-none">Photo ID</p>
                             <p class="text-sm font-medium dark:text-gray-200">{{ photo.id }}</p>
                         </div>
                     </div>
@@ -73,7 +73,7 @@
                     <i :class="photo.source === 'camera' ? 'pi pi-camera' : 'pi pi-upload'"
                         class="text-brand-500 mt-0.5"></i>
                     <div class="flex-1 min-w-0">
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Source</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-0.5 select-none">Source</p>
                         <p class="text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">
                             {{ photo.source }}
                         </p>
@@ -87,7 +87,7 @@
                 <div class="flex items-start gap-3">
                     <i class="pi pi-comment text-brand-500 mt-1"></i>
                     <div class="flex-1">
-                        <p class="text-xs font-medium text-brand-700 dark:text-brand-400 mb-1">Caption</p>
+                        <p class="text-xs font-medium text-brand-700 dark:text-brand-400 mb-1 select-none">Caption</p>
                         <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                             {{ photo.caption }}
                         </p>
@@ -100,7 +100,7 @@
                 <div class="flex items-start gap-3">
                     <i class="pi pi-exclamation-circle text-error-500 mt-1"></i>
                     <div class="flex-1">
-                        <p class="text-xs font-medium text-error-700 dark:text-error-400 mb-1">Error</p>
+                        <p class="text-xs font-medium text-error-700 dark:text-error-400 mb-1 select-none">Error</p>
                         <p class="text-sm text-gray-700 dark:text-gray-300">
                             {{ photo.error_message }}
                         </p>

@@ -33,11 +33,7 @@ class PhotoController extends Controller
         $perPage = $request->integer('per_page', 10);
 
         // --- Filters from request ---
-        if ($request->filled('tree_id')) {
-            $treeId = (int) $request->input('tree_id');
-        } else {
-            $treeId = null;
-        }
+        $treeId        = $request->filled('tree_id') ? (int) $request->input('tree_id') : null;
         $search         = $request->string('search')->trim()->toString(); // global text search
         $neighborhoodId = $request->integer('neighborhood_id');
         $speciesId      = $request->integer('species_id');
@@ -47,16 +43,17 @@ class PhotoController extends Controller
 
         $tree = null;
 
-        $query = Photo::query()
+        // Base query: filters that should affect EVERYTHING (results + facets)
+        $baseQuery = Photo::query()
             ->with([
                 'tree',
                 'tree.species',
                 'tree.neighborhood',
             ]);
 
-        // Filter: Tree ID (keeps your "tree mode" behavior)
+        // Tree mode
         if ($treeId) {
-            $query->where('tree_id', $treeId);
+            $baseQuery->where('tree_id', $treeId);
             $tree = Tree::find($treeId);
         }
 
@@ -66,7 +63,7 @@ class PhotoController extends Controller
         // - species name / latin name
         // - neighborhood name
         if ($search !== '') {
-            $query->where(function ($q) use ($search) {
+            $baseQuery->where(function ($q) use ($search) {
                 $q->where('caption', 'like', "%{$search}%")
                     ->orWhereHas('tree', function ($qt) use ($search) {
                         $qt->where('address', 'like', "%{$search}%")
@@ -81,26 +78,30 @@ class PhotoController extends Controller
             });
         }
 
+        // Date range
+        if ($dateFrom) {
+            $baseQuery->whereDate('captured_at', '>=', $dateFrom);
+        }
+        if ($dateTo) {
+            $baseQuery->whereDate('captured_at', '<=', $dateTo);
+        }
+
+
+        // MAIN RESULTS QUERY: base filters + selected species / neighborhood
+        $resultsQuery = clone $baseQuery;
+
         // Filter: Neighborhood
         if ($neighborhoodId) {
-            $query->whereHas('tree', function ($qt) use ($neighborhoodId) {
+            $resultsQuery->whereHas('tree', function ($qt) use ($neighborhoodId) {
                 $qt->where('neighborhood_id', $neighborhoodId);
             });
         }
 
         // Filter: Species
         if ($speciesId) {
-            $query->whereHas('tree', function ($qt) use ($speciesId) {
+            $resultsQuery->whereHas('tree', function ($qt) use ($speciesId) {
                 $qt->where('species_id', $speciesId);
             });
-        }
-
-        // Filter: Date range (captured_at; fallback to created_at if you want)
-        if ($dateFrom) {
-            $query->whereDate('captured_at', '>=', $dateFrom);
-        }
-        if ($dateTo) {
-            $query->whereDate('captured_at', '<=', $dateTo);
         }
 
         // Sort:
@@ -110,28 +111,56 @@ class PhotoController extends Controller
         // 4. tree_id_desc→ tree_id desc
         switch ($sort) {
             case 'oldest':
-                $query->orderBy('captured_at', 'asc');
+                $resultsQuery->orderBy('captured_at', 'asc');
                 break;
             case 'tree_id_asc':
-                $query->orderBy('tree_id', 'asc');
+                $resultsQuery->orderBy('tree_id', 'asc');
                 break;
             case 'tree_id_desc':
-                $query->orderBy('tree_id', 'desc');
+                $resultsQuery->orderBy('tree_id', 'desc');
                 break;
             case 'recent':
             default:
-                $query->orderBy('captured_at', 'desc');
+                $resultsQuery->orderBy('captured_at', 'desc');
                 break;
         }
 
-        $tableData = $query
+        $tableData = $resultsQuery
             ->paginate($perPage)
             ->appends($request->query());
 
-        // For dropdowns
-        $speciesOptions = Species::query()
+        // SPECIES FACET: base filters + current neighborhood
+        $speciesQuery = Species::query()
             ->leftJoin('trees', 'trees.species_id', '=', 'species.id')
             ->leftJoin('photos', 'photos.tree_id', '=', 'trees.id')
+            ->leftJoin('neighborhoods', 'neighborhoods.id', '=', 'trees.neighborhood_id');
+
+        // Same shared filters:
+        if ($treeId) {
+            $speciesQuery->where('photos.tree_id', $treeId);
+        }
+        if ($search !== '') {
+            $speciesQuery->where(function ($q) use ($search) {
+                $q->where('photos.caption', 'like', "%{$search}%")
+                    ->orWhere('trees.address', 'like', "%{$search}%")
+                    ->orWhere('species.common_name', 'like', "%{$search}%")
+                    ->orWhere('species.latin_name', 'like', "%{$search}%")
+                    ->orWhere('neighborhoods.name', 'like', "%{$search}%");
+            });
+        }
+        if ($dateFrom) {
+            $speciesQuery->whereDate('photos.captured_at', '>=', $dateFrom);
+        }
+        if ($dateTo) {
+            $speciesQuery->whereDate('photos.captured_at', '<=', $dateTo);
+        }
+
+        // Apply neighborhood filter (other facet), but NOT species filter
+        if ($neighborhoodId) {
+            $speciesQuery->where('trees.neighborhood_id', $neighborhoodId);
+        }
+
+        $speciesOptions = $speciesQuery
             ->groupBy('species.id', 'species.common_name', 'species.latin_name')
             ->orderBy('species.common_name')
             ->get([
@@ -140,9 +169,35 @@ class PhotoController extends Controller
                 'species.latin_name',
                 DB::raw('COUNT(photos.id) as photos_count'),
             ]);
-        $neighborhoodOptions = Neighborhood::query()
+
+        // NEIGHBORHOOD FACET: base filters + current species
+        $neighborhoodQuery = Neighborhood::query()
             ->leftJoin('trees', 'trees.neighborhood_id', '=', 'neighborhoods.id')
-            ->leftJoin('photos', 'photos.tree_id', '=', 'trees.id')
+            ->leftJoin('photos', 'photos.tree_id', '=', 'trees.id');
+
+        if ($treeId) {
+            $neighborhoodQuery->where('photos.tree_id', $treeId);
+        }
+        if ($search !== '') {
+            $neighborhoodQuery->where(function ($q) use ($search) {
+                $q->where('photos.caption', 'like', "%{$search}%")
+                    ->orWhere('trees.address', 'like', "%{$search}%")
+                    ->orWhere('neighborhoods.name', 'like', "%{$search}%");
+            });
+        }
+        if ($dateFrom) {
+            $neighborhoodQuery->whereDate('photos.captured_at', '>=', $dateFrom);
+        }
+        if ($dateTo) {
+            $neighborhoodQuery->whereDate('photos.captured_at', '<=', $dateTo);
+        }
+
+        // Apply species filter (other facet), but NOT neighborhood filter
+        if ($speciesId) {
+            $neighborhoodQuery->where('trees.species_id', $speciesId);
+        }
+
+        $neighborhoodOptions = $neighborhoodQuery
             ->groupBy('neighborhoods.id', 'neighborhoods.name')
             ->orderBy('neighborhoods.name')
             ->get([
@@ -152,17 +207,17 @@ class PhotoController extends Controller
             ]);
 
         // Keep the last-used filters so Vue can pre-fill the form
-        $filters = $request->only([
-            'tree_id',
-            'search',
-            'neighborhood_id',
-            'species_id',
-            'date_from',
-            'date_to',
-            'sort',
-        ]);
+        $filters = [
+            'tree_id'         => $treeId,
+            'search'          => $search,
+            'neighborhood_id' => $neighborhoodId,
+            'species_id'      => $speciesId,
+            'date_from'       => $request->input('date_from'),
+            'date_to'         => $request->input('date_to'),
+            'sort'            => $sort,
+        ];
 
-        return Inertia::render('Photo/Index1', [
+        return Inertia::render('Photo/Index', [
             'tableData'           => $tableData,
             'selectedTree'        => $tree,
             'initialTreeId'       => $treeId,
