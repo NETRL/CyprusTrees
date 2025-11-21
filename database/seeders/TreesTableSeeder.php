@@ -15,7 +15,7 @@ class TreesTableSeeder extends Seeder
         // Map species by common_name => id
         $species = Species::pluck('id', 'common_name');
         // Map neighborhoods by name => id
-        $neighborhoods = Neighborhood::pluck('id', 'name');
+        $neighborhoods = Neighborhood::all();
 
         // Guard: if nothing exists yet, don’t crash
         if ($species->isEmpty() || $neighborhoods->isEmpty()) {
@@ -29,7 +29,7 @@ class TreesTableSeeder extends Seeder
             // Within the Walls
             [
                 'species_id'         => $species['Olive'] ?? $species->first(),
-                'neighborhood_id'    => $neighborhoods['Within the Walls (Old Town)'] ?? null,
+                'neighborhood_id'    => $neighborhoods->random()->id,
                 'lat'                => 35.171200,
                 'lon'                => 33.362000,
                 'address'            => 'Near Eleftheria Square, Within the Walls, Nicosia',
@@ -45,7 +45,7 @@ class TreesTableSeeder extends Seeder
             ],
             [
                 'species_id'         => $species['Bitter orange'] ?? $species->first(),
-                'neighborhood_id'    => $neighborhoods['Within the Walls (Old Town)'] ?? null,
+                'neighborhood_id'    => $neighborhoods->random()->id,
                 'lat'                => 35.169800,
                 'lon'                => 33.365500,
                 'address'            => 'Ledra Street, Within the Walls, Nicosia',
@@ -63,7 +63,7 @@ class TreesTableSeeder extends Seeder
             // Strovolos
             [
                 'species_id'         => $species['Aleppo pine'] ?? $species->first(),
-                'neighborhood_id'    => $neighborhoods['Strovolos'] ?? null,
+                'neighborhood_id'    => $neighborhoods->random()->id,
                 'lat'                => 35.145000,
                 'lon'                => 33.348000,
                 'address'            => 'Strovolos Municipal Park, Strovolos',
@@ -79,7 +79,7 @@ class TreesTableSeeder extends Seeder
             ],
             [
                 'species_id'         => $species['Carob'] ?? $species->first(),
-                'neighborhood_id'    => $neighborhoods['Strovolos'] ?? null,
+                'neighborhood_id'    => $neighborhoods->random()->id,
                 'lat'                => 35.144500,
                 'lon'                => 33.345500,
                 'address'            => 'Residential street in Strovolos',
@@ -97,7 +97,7 @@ class TreesTableSeeder extends Seeder
             // Engomi
             [
                 'species_id'         => $species['Jacaranda'] ?? $species->first(),
-                'neighborhood_id'    => $neighborhoods['Engomi'] ?? null,
+                'neighborhood_id'    => $neighborhoods->random()->id,
                 'lat'                => 35.165000,
                 'lon'                => 33.312000,
                 'address'            => 'Street near University of Nicosia, Engomi',
@@ -113,7 +113,7 @@ class TreesTableSeeder extends Seeder
             ],
             [
                 'species_id'         => $species['Stone pine'] ?? $species->first(),
-                'neighborhood_id'    => $neighborhoods['Engomi'] ?? null,
+                'neighborhood_id'    => $neighborhoods->random()->id,
                 'lat'                => 35.166200,
                 'lon'                => 33.314800,
                 'address'            => 'Park in Engomi',
@@ -131,7 +131,7 @@ class TreesTableSeeder extends Seeder
             // Aglandjia
             [
                 'species_id'         => $species['Eucalyptus'] ?? $species->first(),
-                'neighborhood_id'    => $neighborhoods['Aglandjia'] ?? null,
+                'neighborhood_id'    => $neighborhoods->random()->id,
                 'lat'                => 35.148500,
                 'lon'                => 33.393000,
                 'address'            => 'Athalassa Park edge, Aglandjia',
@@ -147,7 +147,7 @@ class TreesTableSeeder extends Seeder
             ],
             [
                 'species_id'         => $species['Olive'] ?? $species->first(),
-                'neighborhood_id'    => $neighborhoods['Aglandjia'] ?? null,
+                'neighborhood_id'    => $neighborhoods->random()->id,
                 'lat'                => 35.147800,
                 'lon'                => 33.390000,
                 'address'            => 'Residential street in Aglandjia',
@@ -165,7 +165,7 @@ class TreesTableSeeder extends Seeder
             // Kaimakli
             [
                 'species_id'         => $species['Tamarisk'] ?? $species->first(),
-                'neighborhood_id'    => $neighborhoods['Kaimakli'] ?? null,
+                'neighborhood_id'    => $neighborhoods->random()->id,
                 'lat'                => 35.179000,
                 'lon'                => 33.389000,
                 'address'            => 'Main road in Kaimakli',

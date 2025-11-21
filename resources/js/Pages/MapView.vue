@@ -1,6 +1,6 @@
 <template>
 
-    <Head title="Welcome" />
+    <Head title="MapView.vue" />
     <div class="min-h-dvh h-dvh flex flex-col">
         <!-- <AppSidebar /> -->
         <Backdrop />

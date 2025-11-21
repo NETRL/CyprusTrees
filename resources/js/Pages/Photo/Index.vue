@@ -140,7 +140,7 @@
                         <!-- Explore mode -->
                         <template v-else>
                             <span class="text-base sm:text-xl text-black dark:text-white select-none">
-                                Browsing <strong class="text-brand-500">random photos</strong>
+                                Browsing photos
                             </span>
                             <span v-if="tableData.total > 0"
                                 class="text-sm text-gray-500 dark:text-gray-400 select-none">

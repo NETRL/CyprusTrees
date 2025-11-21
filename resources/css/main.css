@@ -3,9 +3,17 @@ layer(base);
 
 @import "tailwindcss";
 
+@import 'maplibre-gl/dist/maplibre-gl.css';
+
+
 @custom-variant dark (&:is(.dark *));
 
-
+/* MapLibre */
+.maplibregl-popup-content {
+    @apply dark:text-black!;
+}.maplibregl-popup-close-button{
+    @apply px-1.5 rounded;
+}
 
 .p-focus {
     @apply border-brand-300! outline-hidden! ring-1! ring-brand-500/60! dark:border-brand-500!
