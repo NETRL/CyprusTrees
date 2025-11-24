@@ -13,6 +13,8 @@ layer(base);
     @apply dark:text-black!;
 }.maplibregl-popup-close-button{
     @apply px-1.5 rounded;
+}.maplibregl-ctrl-attrib{
+     @apply dark:text-black!;
 }
 
 .p-focus {

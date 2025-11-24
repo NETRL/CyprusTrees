@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\GeometryHelper;
 use App\Http\Requests\Neighborhood\StoreNeighborhoodRequest;
 use App\Http\Requests\Neighborhood\UpdateNeighborhoodRequest;
 use App\Models\Neighborhood;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -49,7 +52,32 @@ class NeigborhoodController extends Controller
 
     public function update(UpdateNeighborhoodRequest $request, Neighborhood $neighborhood): RedirectResponse
     {
-        $neighborhood->update($request->validated());
+        $oldRef = $neighborhood->geom_ref;
+        $data   = $request->validated();
+
+        $neighborhood->update($data);
+
+        $newRef = $neighborhood->geom_ref;
+
+        // If geom_ref changed, rename associated GeoJSON file if it exists
+        if ($oldRef && $newRef && $oldRef !== $newRef) {
+
+            $oldPath = $neighborhood->geojsonPath($oldRef);
+            $newPath = $neighborhood->geojsonPath($newRef);
+
+            if (file_exists($oldPath)) {
+
+                // Ensure directory exists
+                if (!is_dir(dirname($newPath))) {
+                    mkdir(dirname($newPath), 0775, true);
+                }
+
+                rename($oldPath, $newPath);
+
+                // OPTIONAL: re-generate PostGIS geom (keeps DB consistent)
+                GeometryHelper::updateSpatialData($neighborhood);
+            }
+        }
 
         $request->session()->flash('message', [
             'type'    => 'success',
@@ -65,10 +93,13 @@ class NeigborhoodController extends Controller
         // 1. Authorize 
         $this->authorize('delete', $neighborhood);
 
-        // 2. Delete
+        // 2. Remove associated GeoJSON file
+        $this->removeNeighborhoodGeojson($neighborhood, clearGeom: false);
+
+        // 3. Delete
         $neighborhood->delete();
 
-        // 3. Flash
+        // 4. Flash
         $request->session()->flash('message', [
             'type' => 'success',
             'message' => __('Neighborhood has been deleted.')
@@ -99,14 +130,9 @@ class NeigborhoodController extends Controller
             // Load the models we’re going to operate on
             $neighborhoodList = Neighborhood::whereIn('id', $ids)->get();
 
-            // Optional sanity check: if some IDs were not found
-            // decide what to do (ignore, error, etc.)
-            // if (count($neighborhoodList) !== count($ids)) {
-            //     throw new \RuntimeException('Some selected neighborhood do not exist.');
-            // }
-
             foreach ($neighborhoodList as $neighborhood) {
                 $this->authorize('delete', $neighborhood);
+                $this->removeNeighborhoodGeojson($neighborhood, clearGeom: false);
                 $neighborhood->delete();
             }
         });
@@ -117,5 +143,89 @@ class NeigborhoodController extends Controller
         ]);
 
         return redirect()->route('neighborhoods.index');
+    }
+
+    public function uploadFile(Request $request)
+    {
+
+        $validated = $request->validate([
+            'neighborhood_id'   => ['required', 'exists:neighborhoods,id'],
+            'geojson_file'      => ['required', 'file', 'mimetypes:application/json,text/plain,application/geo+json'],
+        ]);
+
+
+        $neighborhood = Neighborhood::findOrFail($validated['neighborhood_id']);
+        $file         = $validated['geojson_file'];
+
+        // Ensure geom_ref exists
+        if (!$neighborhood->geom_ref) {
+            // Example derivation; adjust to your naming scheme
+            $base = $neighborhood->name ?? ('neighborhood-' . $neighborhood->id);
+            $neighborhood->geom_ref = Str::upper(Str::slug($base, '_'));
+            $neighborhood->save();
+        }
+
+        $geomRef  = $neighborhood->geom_ref;
+        $filename = $geomRef . '.json';
+        $dir      = base_path('geojson-data');
+
+        if (! is_dir($dir)) {
+            mkdir($dir, 0775, true);
+        }
+
+        $file->move($dir, $filename);
+
+        // Now use your existing logic to populate geom
+
+        GeometryHelper::updateSpatialData($neighborhood);
+
+        $request->session()->flash('message', [
+            'type'    => 'success',
+            'message' => __('GeoJSON uploaded and spatial data updated.'),
+        ]);
+        return redirect()->route('neighborhoods.index');
+    }
+
+    public function removeFile(Request $request)
+    {
+        $validated = $request->validate([
+            'neighborhood_id' => ['required', 'exists:neighborhoods,id'],
+        ]);
+
+        $neighborhood = Neighborhood::findOrFail($validated['neighborhood_id']);
+
+        $this->authorize('update', $neighborhood);
+
+        $this->removeNeighborhoodGeojson($neighborhood, clearGeom: true);
+
+        $request->session()->flash('message', [
+            'type'    => 'success',
+            'message' => __('GeoJSON file removed and geometry cleared.'),
+        ]);
+
+        return redirect()->route('neighborhoods.index');
+    }
+
+    protected function removeNeighborhoodGeojson(Neighborhood $neighborhood, bool $clearGeom = true): void
+    {
+        $geomRef = $neighborhood->geom_ref;
+
+        if (! $geomRef) {
+            return; // nothing to do
+        }
+
+        $path = $neighborhood->geojsonPath($geomRef);
+
+        if (file_exists($path)) {
+            if (! @unlink($path)) {
+                Log::warning("Failed to delete GeoJSON file for {$geomRef}: {$path}");
+            }
+        }
+
+        if ($clearGeom) {
+            // Only clear geom if we’re keeping the model
+            $neighborhood->geom = null;
+            $neighborhood->save();
+        }
     }
 }

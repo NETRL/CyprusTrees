@@ -6,6 +6,7 @@ use App\Models\Traits\BaseModelTrait;
 use App\Models\Traits\Paginatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Tree extends Model
 {
@@ -127,7 +128,7 @@ class Tree extends Model
 
     public function healthAssessments()
     {
-        return $this->hasMany(HealthAssesment::class);
+        return $this->hasMany(HealthAssessment::class);
     }
 
     public function citizenReports()
@@ -162,5 +163,20 @@ class Tree extends Model
         }
 
         return $tags->pluck('name')->join(', ');
+    }
+
+    protected static function booted()
+    {
+        static::saving(function ($tree) {
+            if ($tree->isDirty(['lat', 'lon'])) {
+                if (!is_null($tree->lat) && !is_null($tree->lon)) {
+                    $tree->geom = DB::raw(
+                        "ST_SetSRID(ST_MakePoint({$tree->lon}, {$tree->lat}), 4326)"
+                    );
+                } else {
+                    $tree->geom = null;
+                }
+            }
+        });
     }
 }

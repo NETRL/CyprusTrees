@@ -46,7 +46,6 @@ class NeighborhoodGeoController extends Controller
             'features' => $features,
         ];
 
-        // 👈 THIS is the important part: return JSON, NOT route()
         return response()->json($featureCollection);
     }
 }

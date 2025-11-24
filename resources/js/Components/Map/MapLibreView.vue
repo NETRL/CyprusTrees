@@ -33,8 +33,10 @@ onMounted(() => {
                 },
             ],
         },
-        attribution:
-            '© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
+        attributionControl: {
+            compact: false,                 // optional
+            customAttribution: '© City of Nicosia © OpenStreetMap'
+        },
         center,
         zoom,
     })
@@ -42,85 +44,170 @@ onMounted(() => {
     map.value.addControl(new maplibregl.NavigationControl())
 
     map.value.on('load', () => {
-        console.log('MapLibre loaded')
 
-        // // 1) Fetch GeoJSON from your Laravel API
-        fetch('/api/neighborhoods')
-            .then((res) => {
-                if (!res.ok) {
-                    throw new Error(`Failed to load neighborhoods: ${res.status}`)
-                }
-                return res.json()
-            })
-            .then((data) => {
-                if (!map.value) return
+        fetchNeighborhoods(map.value);
+        fetchTrees(map.value);
+    })
+})
 
-                // 2) Add source
-                map.value.addSource('neighborhoods', {
-                    type: 'geojson',
-                    data,
+
+const fetchTrees = (mapInstance) => {
+    fetch('/api/trees')
+        .then((res) => {
+            if (!res.ok) {
+                throw new Error(`Failed to load trees: ${res.status}`)
+            }
+            return res.json()
+        })
+        .then((data) => {
+            if (!mapInstance) return
+
+            // If source already exists (e.g. reloading data), just update it
+            if (mapInstance.getSource('trees')) {
+                mapInstance.getSource('trees').setData(data)
+            } else {
+                // 1) Add GeoJSON source
+                mapInstance.addSource('trees', {
+                    type: 'geojson', 
+                    data: data,
                 })
 
-                // 3) Add fill layer
-                map.value.addLayer({
-                    id: 'neighborhoods-fill',
-                    type: 'fill',
-                    source: 'neighborhoods',
+                // 2) Add circle layer for tree points
+                mapInstance.addLayer({
+                    id: 'trees-circle',
+                    type: 'circle',
+                    source: 'trees',
                     paint: {
-                        'fill-color': '#1d4ed8',
-                        'fill-opacity': 0.25,
+                        'circle-radius': 4,
+                        'circle-color': '#16a34a', // green
+                        'circle-stroke-width': 1,
+                        'circle-stroke-color': '#064e3b',
                     },
                 })
 
-                // 4) Add outline layer
-                map.value.addLayer({
-                    id: 'neighborhoods-outline',
-                    type: 'line',
-                    source: 'neighborhoods',
-                    paint: {
-                        'line-color': '#1d4ed8',
-                        'line-width': 1,
-                    },
-                })
+                // 3) click popup for trees
+                mapInstance.on('click', 'trees-circle', (e) => {
+                    const feature = e.features?.[0]
+                    if (!feature) return
 
-                // 5) Click → popup
-                map.value.on('click', (e) => {
-                    const features = map.value.queryRenderedFeatures(e.point, {
-                        layers: ['neighborhoods-fill'],
-                    })
+                    const p = feature.properties
 
-                    console.log('Clicked features:', features)
+                    // species & neighborhood are JSON-encoded strings in props
+                    let species = null
+                    let neighborhood = null
+                    try {
+                        species = p.species ? JSON.parse(p.species) : null
+                        neighborhood = p.neighborhood ? JSON.parse(p.neighborhood) : null
+                    } catch (err) {
+                        console.warn('Failed to parse nested props', err)
+                    }
 
-                    if (!features.length) return
-
-                    const feature = features[0]
-                    const { name, geom_ref } = feature.properties
+                    const html = `
+                        <div>
+                            <strong>Tree #${p.id}</strong><br/>
+                            ${species ? `<div>${species.common_name ?? ''}</div>` : ''}
+                            ${neighborhood ? `<div>${neighborhood.name ?? ''}</div>` : ''}
+                            ${p.address ? `<div>${p.address}</div>` : ''}
+                        </div>
+                    `
 
                     new maplibregl.Popup()
                         .setLngLat(e.lngLat)
-                        .setHTML(
-                            `<div>
+                        .setHTML(html)
+                        .addTo(mapInstance)
+                })
+
+                mapInstance.on('mouseenter', 'trees-circle', () => {
+                    mapInstance.getCanvas().style.cursor = 'pointer'
+                })
+
+                mapInstance.on('mouseleave', 'trees-circle', () => {
+                    mapInstance.getCanvas().style.cursor = ''
+                })
+            }
+        })
+        .catch((err) => {
+            console.error(err)
+        })
+}
+
+
+
+const fetchNeighborhoods = (mapInstance) => {
+    // Fetch GeoJSON from the API
+    fetch('/api/neighborhoods')
+        .then((res) => {
+            if (!res.ok) {
+                throw new Error(`Failed to load neighborhoods: ${res.status}`)
+            }
+            return res.json()
+        })
+        .then((data) => {
+            if (!mapInstance) return
+
+            // 2) Add source
+            mapInstance.addSource('neighborhoods', {
+                type: 'geojson',
+                data,
+            })
+
+            // 3) Add fill layer
+            mapInstance.addLayer({
+                id: 'neighborhoods-fill',
+                type: 'fill',
+                source: 'neighborhoods',
+                paint: {
+                    'fill-color': '#1d4ed8',
+                    'fill-opacity': 0.25,
+                },
+            })
+
+            // 4) Add outline layer
+            mapInstance.addLayer({
+                id: 'neighborhoods-outline',
+                type: 'line',
+                source: 'neighborhoods',
+                paint: {
+                    'line-color': '#1d4ed8',
+                    'line-width': 1,
+                },
+            })
+
+            // 5) Click → popup
+            mapInstance.on('click', (e) => {
+                const features = mapInstance.queryRenderedFeatures(e.point, {
+                    layers: ['neighborhoods-fill'],
+                })
+
+                if (!features.length) return
+
+                const feature = features[0]
+                const { name, geom_ref } = feature.properties
+
+                new maplibregl.Popup()
+                    .setLngLat(e.lngLat)
+                    .setHTML(
+                        `<div>
                                 <strong>${name}</strong><br/>
                                 <small>${geom_ref}</small>
                             </div>`
-                        )
-                        .addTo(map.value)
-                })
-
-                // 6) Cursor change on hover
-                map.value.on('mouseenter', 'neighborhoods-fill', () => {
-                    map.value.getCanvas().style.cursor = 'pointer'
-                })
-
-                map.value.on('mouseleave', 'neighborhoods-fill', () => {
-                    map.value.getCanvas().style.cursor = ''
-                })
+                    )
+                    .addTo(mapInstance)
             })
-            .catch((err) => {
-                console.error(err)
+
+            // 6) Cursor change on hover
+            mapInstance.on('mouseenter', 'neighborhoods-fill', () => {
+                mapInstance.getCanvas().style.cursor = 'pointer'
             })
-    })
-})
+
+            mapInstance.on('mouseleave', 'neighborhoods-fill', () => {
+                mapInstance.getCanvas().style.cursor = ''
+            })
+        })
+        .catch((err) => {
+            console.error(err)
+        })
+}
 
 onBeforeUnmount(() => {
     if (map.value) {
@@ -129,4 +216,3 @@ onBeforeUnmount(() => {
     }
 })
 </script>
-

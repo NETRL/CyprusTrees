@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\NeighborhoodGeoController;
+use App\Http\Controllers\TreesGeoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,3 +15,4 @@ Route::get('/test', function () {
 });
 
 Route::get('/neighborhoods', [NeighborhoodGeoController::class, 'index']);
+Route::get('/trees', [TreesGeoController::class, 'index']);

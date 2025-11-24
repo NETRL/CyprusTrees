@@ -62,6 +62,8 @@ Route::middleware('auth', '2fa')->group(function () {
 
     Route::resource('neighborhoods', NeigborhoodController::class);
     Route::post('/neighborhoods/mass-destroy', [NeigborhoodController::class, 'massDestroy'])->name('neighborhoods.massDestroy');
+    Route::post('/neighborhoods/remove-file', [NeigborhoodController::class, 'removeFile'])->name('neighborhoods.removeFile');
+    Route::post('/neighborhoods/upload-file', [NeigborhoodController::class, 'uploadFile'])->name('neighborhoods.uploadFile');
 
     Route::resource('photos', PhotoController::class);
     Route::post('/photos/mass-destroy', [PhotoController::class, 'massDestroy'])->name('photos.massDestroy');

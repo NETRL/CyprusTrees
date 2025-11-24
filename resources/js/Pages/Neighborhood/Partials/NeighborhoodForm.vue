@@ -22,8 +22,7 @@
             <!-- Geom Ref -->
             <div class="col-span-12">
                 <FormField v-model="formData.geom_ref" :displayErrors="displayErrors" label="Geometric Reference"
-                    name="geom_ref" />
-
+                name="geom_ref" />
             </div>
         </form>
 

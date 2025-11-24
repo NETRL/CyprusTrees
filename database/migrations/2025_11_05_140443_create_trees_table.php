@@ -4,6 +4,7 @@ use App\Models\Neighborhood;
 use App\Models\Species;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -38,6 +39,17 @@ return new class extends Migration
             // map index
             $table->index(['lat', 'lon'], 'idx_trees_latlon');
         });
+
+        DB::statement("
+            ALTER TABLE trees
+            ADD COLUMN geom geometry(Point, 4326)
+        ");
+
+        DB::statement("
+            CREATE INDEX trees_geom_gix
+            ON trees
+            USING GIST (geom)
+        ");
     }
 
     /**

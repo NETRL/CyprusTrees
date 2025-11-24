@@ -7,6 +7,7 @@ use App\Models\Species;
 use App\Models\Neighborhood;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class TreesTableSeeder extends Seeder
 {
@@ -182,6 +183,10 @@ class TreesTableSeeder extends Seeder
         ];
 
         foreach ($trees as $data) {
+            $data['geom'] = DB::raw(
+                "ST_SetSRID(ST_MakePoint({$data['lon']}, {$data['lat']}), 4326)"
+            );
+
             Tree::create($data);
         }
     }

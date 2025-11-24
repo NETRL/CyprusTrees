@@ -12,6 +12,8 @@ class Neighborhood extends Model
     /** @use HasFactory<\Database\Factories\NeighborhoodFactory> */
     use HasFactory, BaseModelTrait, Paginatable;
 
+    protected $appends = ['has_geojson'];
+
     protected $fillable = [
         'name',
         'city',
@@ -41,7 +43,7 @@ class Neighborhood extends Model
         'city',
         'district',
         'geom_ref',
-        
+
 
     ];
 
@@ -53,7 +55,6 @@ class Neighborhood extends Model
         'trees_count',
     ];
 
-
     public static function relationships(): array
     {
         return [
@@ -61,9 +62,28 @@ class Neighborhood extends Model
         ];
     }
 
-
     public function trees()
     {
         return $this->hasMany(Tree::class);
+    }
+
+    public function getHasGeojsonAttribute(): bool
+    {
+        $geomRef = $this->geom_ref;
+
+        if (!$geomRef) {
+            return false;
+        }
+
+        $path = base_path('geojson-data/' . $geomRef . '.json');
+
+        return file_exists($path);
+    }
+
+
+    public function geojsonPath(string $ref): string
+    {
+        $ref ??= $this->geom_ref;
+        return base_path('geojson-data/' . $ref . '.json');
     }
 }
