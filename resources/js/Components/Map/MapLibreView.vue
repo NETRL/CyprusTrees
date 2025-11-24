@@ -13,6 +13,9 @@ import Backdrop from '../Layout/Backdrop.vue'
 const mapContainer = ref(null)
 const map = ref(null)
 
+const treesData = ref([]);
+const neighborhoodData = ref([]);
+
 // initial coordinates for your city
 const center = [33.37, 35.17]  // [lon, lat]
 const zoom = 12
@@ -66,6 +69,7 @@ const fetchTrees = (mapInstance) => {
         .then((data) => {
             if (!mapInstance) return
 
+            treesData.value=data;
             // If source already exists (e.g. reloading data), just update it
             if (mapInstance.getSource('trees')) {
                 mapInstance.getSource('trees').setData(data)
@@ -119,6 +123,7 @@ const fetchTrees = (mapInstance) => {
                         .setLngLat(e.lngLat)
                         .setHTML(html)
                         .addTo(mapInstance)
+
                 })
 
                 mapInstance.on('mouseenter', 'trees-circle', () => {
@@ -148,7 +153,7 @@ const fetchNeighborhoods = (mapInstance) => {
         })
         .then((data) => {
             if (!mapInstance) return
-
+            neighborhoodData.value=data;
             // 2) Add source
             mapInstance.addSource('neighborhoods', {
                 type: 'geojson',
