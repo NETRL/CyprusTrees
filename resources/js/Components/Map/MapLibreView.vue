@@ -1,10 +1,14 @@
 <template>
+    <MapSidebar />
     <div ref="mapContainer" class="map-container w-full h-full"></div>
+
 </template>
 
 <script setup>
 import { onMounted, ref, onBeforeUnmount } from 'vue'
 import maplibregl from 'maplibre-gl'
+import MapSidebar from './Partials/MapSidebar.vue'
+import Backdrop from '../Layout/Backdrop.vue'
 
 const mapContainer = ref(null)
 const map = ref(null)
@@ -68,7 +72,7 @@ const fetchTrees = (mapInstance) => {
             } else {
                 // 1) Add GeoJSON source
                 mapInstance.addSource('trees', {
-                    type: 'geojson', 
+                    type: 'geojson',
                     data: data,
                 })
 

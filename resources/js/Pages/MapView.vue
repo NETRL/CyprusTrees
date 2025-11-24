@@ -2,14 +2,16 @@
 
     <Head title="MapView.vue" />
     <div class="min-h-dvh h-dvh flex flex-col">
-        <!-- <AppSidebar /> -->
-        <Backdrop />
+        <!-- <Backdrop  class="z-999!"/> -->
         <header class="shrink-0 relative ">
-            <AppHeader :with-sidebar="false" />
+            <AppHeader>
+                <template #startIcon>
+                    <HeaderLogo class="max-lg:hidden" />
+                </template>
+            </AppHeader>
         </header>
-
         <main class="flex-1 relative overflow-hidden">
-            <MapLibreView/>
+            <MapLibreView />
         </main>
 
 
@@ -23,6 +25,8 @@ import AppHeader from '@/Layouts/AppHeader.vue';
 import { useSidebar } from '@/Composables/useSidebar';
 import Backdrop from '@/Components/Layout/Backdrop.vue';
 import MapLibreView from '@/Components/Map/MapLibreView.vue';
+import MapSidebar from '@/Components/Map/Partials/MapSidebar.vue';
+import HeaderLogo from '@/Components/Layout/Header/HeaderLogo.vue';
 
 
 

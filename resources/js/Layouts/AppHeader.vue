@@ -5,6 +5,7 @@
       <div
         class="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
         <!-- Toggle Sidebar Button -->
+        <slot name="startIcon"></slot>
         <button v-if="withSidebar" @click="handleToggle"
           class="flex items-center justify-center w-10 h-10 text-gray-500 border-gray-200 rounded-lg z-99999 dark:border-gray-800 dark:text-gray-400 lg:h-11 lg:w-11 lg:border"
           :class="[
@@ -38,7 +39,8 @@
       <div v-if="isAuthenticated" :class="[isApplicationMenuOpen ? 'flex' : 'hidden']"
         class="items-center justify-between w-full gap-4 px-5 py-4 shadow-theme-md lg:flex lg:justify-end lg:px-0 lg:shadow-none">
         <div class="flex items-center gap-2 2xsm:gap-3">
-          <NavLinkButton v-if="$page.component != 'Dashboard'" :href="route('dashboard')" >Go to Dashboard</NavLinkButton>
+          <NavLinkButton v-if="$page.component != 'Dashboard'" :href="route('dashboard')">Go to Dashboard
+          </NavLinkButton>
           <!-- <NotificationMenu /> -->
         </div>
         <UserMenu />
