@@ -1,43 +1,44 @@
 <template>
-    <aside :class="[
-        'absolute inset-y-0 left-0 h-full py-5 flex flex-col lg:mt-0 bg-white/90 dark:text-white dark:bg-gray-900/90 dark:border-gray-800 text-gray-900 transition-all duration-300 ease-in-out z-50 border-r border-gray-200',
-        {
-                // Desktop behaviour
-
-                'lg:w-[390px] px-5': isExpanded || isMobileOpen || isHovered,
-                'lg:w-0': !isExpanded && !isHovered,
-                'lg:translate-x-0': true,
-
-                // Mobile behaviour
-                'translate-x-0 w-screen': isMobileOpen,   //  full width on mobile when open
-                '-translate-x-full': !isMobileOpen,       // hidden off-screen when closed
-        },
-    ]" @mouseenter="!isExpanded && (isHovered = true)" @mouseleave="isHovered = false">
-
-        <!-- Sidebar Categories - Scrollable Area -->
-        <div class="flex-1 flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
-            <nav class="mb-6">
-                <div class="flex flex-col gap-4">
-                    <span>Some very very very very very very very very very very very very very very very very very very very very long text </span>
-                </div>
-            </nav>
+    <aside
+        :class="[
+            'max-lg:hidden absolute left-0 top-0 m-4 rounded-lg bg-white/90 backdrop-blur-xs dark:bg-gray-900/90 border border-gray-200 dark:border-gray-800 shadow-lg transition-all duration-300 ease-in-out z-50',
+            'max-h-[calc(100vh-7rem)] overflow-y-auto w-[390px]',
+            {
+                'opacity-100 px-5 py-5 pointer-events-auto': isExpanded || isHovered,
+                'opacity-0 pointer-events-none px-0 py-5': !isExpanded && !isHovered,
+            },
+        ]"
+    >
+        <div class="flex flex-col gap-4 select-none">
+            <SidebarContent />
+            <span class="lg:text-xl font-bold">Explore Trees in Nicosia</span>
         </div>
-
-
     </aside>
+
+    <!-- Mobile Bottom Sheet -->
+    <BottomSheet
+        :height-ratio="0.8"
+        fab-icon="pi pi-map"
+        initial-state="closed"
+        @update:state="(s) => (mobileState = s)"
+    >
+        <!-- Optional header above handle -->
+        <template #header>
+            <!-- leave empty or add title, etc. -->
+        </template>
+
+        <!-- Main content -->
+        <SidebarContent />
+    </BottomSheet>
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { usePage } from '@inertiajs/vue3';
-import { HorizontalDots } from "@/icons";
-import SidebarWidget from '@/Components/Layout/Sidebar/SidebarWidget.vue';
-import SidebarNavItem from '@/Components/Layout/Sidebar/SidebarNavItem.vue';
-import { useSidebar } from '@/Composables/useSidebar';
+import { ref } from 'vue'
+import { useSidebar } from '@/Composables/useSidebar'
+import SidebarContent from '@/Components/Map/Partials/SidebarContent.vue'
+import BottomSheet from '@/Components/Layout/BottomSheet.vue'
 
-const page = usePage();
-const { isExpanded, isMobileOpen, isHovered } = useSidebar();
+const { isExpanded, isHovered } = useSidebar()
 
-// Get navigation links from page props
-const navLinks = computed(() => page.props.navbar || []);
+const mobileState = ref('closed')
 </script>
