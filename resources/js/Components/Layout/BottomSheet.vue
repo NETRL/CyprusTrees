@@ -60,12 +60,11 @@ const props = defineProps({
     showFab: {
         type: Boolean,
         default: true,
-    },
+    }
 })
 
 const emit = defineEmits(['update:state'])
 const { isMobileOpen } = useSidebar()
-
 
 // Drag state
 const isDragging = ref(false)
@@ -99,6 +98,23 @@ onBeforeUnmount(() => {
 
 watch(currentState, (val) => {
     emit('update:state', val)
+})
+
+watch(isMobileOpen, (val) => {
+    // ignore while dragging – drag is already controlling height
+    if (isDragging.value) return
+
+    if (val) {
+        // mobile sidebar should be open → show sheet (mid or open)
+        if (currentState.value === 'closed') {
+            setState('mid', false)   // or 'open' if you prefer
+        }
+    } else {
+        // mobile sidebar should be closed → hide sheet
+        if (currentState.value !== 'closed') {
+            setState('closed', false)
+        }
+    }
 })
 
 const updateHeightForState = () => {

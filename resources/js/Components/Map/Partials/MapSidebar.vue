@@ -40,5 +40,6 @@ import BottomSheet from '@/Components/Layout/BottomSheet.vue'
 
 const { isExpanded, isHovered } = useSidebar()
 
+
 const mobileState = ref('closed')
 </script>
