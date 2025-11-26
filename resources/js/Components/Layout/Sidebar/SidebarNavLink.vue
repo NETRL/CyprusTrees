@@ -41,7 +41,7 @@
 <script setup>
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import * as Icons from '@/icons';
+import * as Icons from '@/Icons';
 import { useSidebar } from '@/Composables/useSidebar';
 
 const props = defineProps({

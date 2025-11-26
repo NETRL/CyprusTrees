@@ -57,7 +57,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import * as Icons from "@/icons";
+import * as Icons from "@/Icons";
 import SidebarNavLink from '@/Components/Layout/Sidebar/SidebarNavLink.vue';
 import { useSidebar } from '@/Composables/useSidebar';
 

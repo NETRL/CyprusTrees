@@ -35,7 +35,7 @@
 </template>
 
 <script setup>
-import { UserCircleIcon, ChevronDownIcon, LogoutIcon } from '@/icons'
+import { UserCircleIcon, ChevronDownIcon, LogoutIcon } from '@/Icons'
 import { ref, onMounted, onUnmounted } from 'vue'
 import UserMenuNavLink from './UserMenuNavLink.vue'
 import ThemeToggler from '@/Components/Common/ThemeToggler.vue'

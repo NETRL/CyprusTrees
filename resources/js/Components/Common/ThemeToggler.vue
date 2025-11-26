@@ -14,6 +14,6 @@
 
 <script setup>
 import { useTheme } from '@/Composables/useTheme';
-import { MoonIcon, SunIcon, SystemIcon } from '@/icons';
+import { MoonIcon, SunIcon, SystemIcon } from '@/Icons';
 const { theme, toggleTheme } = useTheme();
 </script>

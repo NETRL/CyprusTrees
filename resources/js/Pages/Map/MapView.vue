@@ -9,7 +9,9 @@
         </header>
 
         <main class="flex-1 relative overflow-hidden">
-            <MapLibreView />
+            <MapFilterProvider>
+                <MapLibreView />
+            </MapFilterProvider>
         </main>
     </div>
 </template>
@@ -18,5 +20,6 @@
 import AppHeader from '@/Layouts/AppHeader.vue';
 import MapLibreView from '@/Components/Map/MapLibreView.vue';
 import HeaderLogo from '@/Components/Layout/Header/HeaderLogo.vue';
+import MapFilterProvider from '@/Components/Map/Partials/MapFilterProvider.vue';
 
 </script>

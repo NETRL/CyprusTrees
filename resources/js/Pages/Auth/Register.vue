@@ -136,7 +136,7 @@ import { ref } from 'vue'
 import { useForm } from '@inertiajs/vue3';
 import CustomCheckbox from '@/Components/CustomCheckbox.vue';
 import FormField from '@/Components/Primitives/FormField.vue';
-import { GoogleIcon } from '@/icons';
+import { GoogleIcon } from '@/Icons';
 
 defineOptions({
     layout: GuestLayout

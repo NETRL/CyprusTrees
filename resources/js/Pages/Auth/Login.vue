@@ -105,7 +105,7 @@ import GuestLayout from '@/Layouts/GuestLayout.vue'
 import InputError from '@/Components/InputError.vue';
 import CustomCheckbox from '@/Components/CustomCheckbox.vue';
 import { useForm } from '@inertiajs/vue3';
-import { ChevronLeftIcon, GoogleIcon } from '@/icons';
+import { ChevronLeftIcon, GoogleIcon } from '@/Icons';
 import NavLink from '@/Components/NavLink.vue';
 import FormField from '@/Components/Primitives/FormField.vue';
 

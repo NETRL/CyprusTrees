@@ -78,7 +78,7 @@
 </template>
 
 <script setup>
-import { BellIcon, CloseIcon } from '@/icons'
+import { BellIcon, CloseIcon } from '@/Icons'
 import { Link } from '@inertiajs/vue3'
 import { ref, onMounted, onUnmounted } from 'vue'
 

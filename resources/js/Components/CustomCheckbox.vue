@@ -21,7 +21,7 @@
 </template>
 
 <script setup>
-import { MarkIcon } from '@/icons';
+import { MarkIcon } from '@/Icons';
 import { computed } from 'vue';
 import InputError from '@/Components/InputError.vue';
 

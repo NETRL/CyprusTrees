@@ -23,7 +23,7 @@
 import { ref } from 'vue'
 import { useSidebar } from '@/Composables/useSidebar'
 import SidebarContent from '@/Components/Map/Partials/SidebarContent.vue'
-import BottomSheet from '@/Components/Layout/BottomSheet.vue'
+import BottomSheet from '@/Components/Map/Partials/BottomSheet.vue'
 
 
 const props = defineProps({
