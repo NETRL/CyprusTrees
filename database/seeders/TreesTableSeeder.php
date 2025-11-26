@@ -13,176 +13,65 @@ class TreesTableSeeder extends Seeder
 {
     public function run(): void
     {
-        // Map species by common_name => id
         $species = Species::pluck('id', 'common_name');
-        // Map neighborhoods by name => id
-        $neighborhoods = Neighborhood::all();
+        $neighborhoods = Neighborhood::whereNotNull('geom')->get();
 
-        // Guard: if nothing exists yet, don’t crash
         if ($species->isEmpty() || $neighborhoods->isEmpty()) {
-            $this->command?->warn('Species or Neighborhoods table empty. Run SpeciesTableSeeder and NeighborhoodsTableSeeder first.');
+            $this->command?->warn("Species or Neighborhoods missing.");
             return;
         }
 
         $today = Carbon::today();
 
-        $trees = [
-            // Within the Walls
-            [
-                'species_id'         => $species['Olive'] ?? $species->first(),
-                'neighborhood_id'    => $neighborhoods->random()->id,
-                'lat'                => 35.171200,
-                'lon'                => 33.362000,
-                'address'            => 'Near Eleftheria Square, Within the Walls, Nicosia',
-                'planted_at'         => $today->copy()->subYears(30),
-                'status'             => 'existing',
-                'health_status'      => 'healthy',
-                'height_m'           => 7.5,
-                'dbh_cm'             => 35.0,
-                'canopy_diameter_m'  => 6.0,
-                'last_inspected_at'  => $today->copy()->subMonths(3),
-                'owner_type'         => 'municipal',
-                'source'             => 'baseline_import',
-            ],
-            [
-                'species_id'         => $species['Bitter orange'] ?? $species->first(),
-                'neighborhood_id'    => $neighborhoods->random()->id,
-                'lat'                => 35.169800,
-                'lon'                => 33.365500,
-                'address'            => 'Ledra Street, Within the Walls, Nicosia',
-                'planted_at'         => $today->copy()->subYears(10),
-                'status'             => 'existing',
-                'health_status'      => 'healthy',
-                'height_m'           => 4.0,
-                'dbh_cm'             => 18.0,
-                'canopy_diameter_m'  => 3.0,
-                'last_inspected_at'  => $today->copy()->subMonths(1),
-                'owner_type'         => 'municipal',
-                'source'             => 'field_survey',
-            ],
+        // ENUM pools
+        $ownerTypes = ['municipal', 'private'];
+        $sources = ['citizen_report', 'field_survey', 'baseline_import'];
+        $healthStatuses = ['healthy', 'watch', 'stressed', 'diseased', 'dead'];
 
-            // Strovolos
-            [
-                'species_id'         => $species['Aleppo pine'] ?? $species->first(),
-                'neighborhood_id'    => $neighborhoods->random()->id,
-                'lat'                => 35.145000,
-                'lon'                => 33.348000,
-                'address'            => 'Strovolos Municipal Park, Strovolos',
-                'planted_at'         => $today->copy()->subYears(20),
-                'status'             => 'existing',
-                'health_status'      => 'healthy',
-                'height_m'           => 12.0,
-                'dbh_cm'             => 40.0,
-                'canopy_diameter_m'  => 8.0,
-                'last_inspected_at'  => $today->copy()->subMonths(6),
-                'owner_type'         => 'municipal',
-                'source'             => 'baseline_import',
-            ],
-            [
-                'species_id'         => $species['Carob'] ?? $species->first(),
-                'neighborhood_id'    => $neighborhoods->random()->id,
-                'lat'                => 35.144500,
-                'lon'                => 33.345500,
-                'address'            => 'Residential street in Strovolos',
-                'planted_at'         => $today->copy()->subYears(8),
-                'status'             => 'existing',
-                'health_status'      => 'stressed',
-                'height_m'           => 5.0,
-                'dbh_cm'             => 20.0,
-                'canopy_diameter_m'  => 4.0,
-                'last_inspected_at'  => $today->copy()->subWeeks(2),
-                'owner_type'         => 'municipal',
-                'source'             => 'citizen_report',
-            ],
+        for ($i = 0; $i < 500; $i++) {
 
-            // Engomi
-            [
-                'species_id'         => $species['Jacaranda'] ?? $species->first(),
-                'neighborhood_id'    => $neighborhoods->random()->id,
-                'lat'                => 35.165000,
-                'lon'                => 33.312000,
-                'address'            => 'Street near University of Nicosia, Engomi',
-                'planted_at'         => $today->copy()->subYears(12),
-                'status'             => 'existing',
-                'health_status'      => 'healthy',
-                'height_m'           => 6.0,
-                'dbh_cm'             => 22.0,
-                'canopy_diameter_m'  => 5.0,
-                'last_inspected_at'  => $today->copy()->subMonths(2),
-                'owner_type'         => 'municipal',
-                'source'             => 'field_survey',
-            ],
-            [
-                'species_id'         => $species['Stone pine'] ?? $species->first(),
-                'neighborhood_id'    => $neighborhoods->random()->id,
-                'lat'                => 35.166200,
-                'lon'                => 33.314800,
-                'address'            => 'Park in Engomi',
-                'planted_at'         => $today->copy()->subYears(18),
-                'status'             => 'existing',
-                'health_status'      => 'watch',
-                'height_m'           => 10.0,
-                'dbh_cm'             => 35.0,
-                'canopy_diameter_m'  => 7.5,
-                'last_inspected_at'  => $today->copy()->subMonths(4),
-                'owner_type'         => 'municipal',
-                'source'             => 'field_survey',
-            ],
+            $neighborhood = $neighborhoods->random();
 
-            // Aglandjia
-            [
-                'species_id'         => $species['Eucalyptus'] ?? $species->first(),
-                'neighborhood_id'    => $neighborhoods->random()->id,
-                'lat'                => 35.148500,
-                'lon'                => 33.393000,
-                'address'            => 'Athalassa Park edge, Aglandjia',
-                'planted_at'         => $today->copy()->subYears(25),
-                'status'             => 'existing',
-                'health_status'      => 'healthy',
-                'height_m'           => 15.0,
-                'dbh_cm'             => 45.0,
-                'canopy_diameter_m'  => 9.0,
-                'last_inspected_at'  => $today->copy()->subMonths(5),
-                'owner_type'         => 'state',
-                'source'             => 'baseline_import',
-            ],
-            [
-                'species_id'         => $species['Olive'] ?? $species->first(),
-                'neighborhood_id'    => $neighborhoods->random()->id,
-                'lat'                => 35.147800,
-                'lon'                => 33.390000,
-                'address'            => 'Residential street in Aglandjia',
-                'planted_at'         => $today->copy()->subYears(5),
-                'status'             => 'existing',
-                'health_status'      => 'healthy',
-                'height_m'           => 3.5,
-                'dbh_cm'             => 14.0,
-                'canopy_diameter_m'  => 2.8,
-                'last_inspected_at'  => $today->copy()->subWeeks(1),
-                'owner_type'         => 'private',
-                'source'             => 'citizen_report',
-            ],
+            // --- Generate a random point inside the neighborhood polygon ---
+            $point = DB::selectOne("
+                SELECT ST_X(geom) AS lon, ST_Y(geom) AS lat
+                FROM (
+                    SELECT (ST_Dump(ST_GeneratePoints(geom, 1))).geom AS geom
+                    FROM neighborhoods
+                    WHERE id = ?
+                ) AS sub
+                LIMIT 1
+            ", [$neighborhood->id]);
 
-            // Kaimakli
-            [
-                'species_id'         => $species['Tamarisk'] ?? $species->first(),
-                'neighborhood_id'    => $neighborhoods->random()->id,
-                'lat'                => 35.179000,
-                'lon'                => 33.389000,
-                'address'            => 'Main road in Kaimakli',
-                'planted_at'         => $today->copy()->subYears(15),
-                'status'             => 'existing',
-                'health_status'      => 'stressed',
-                'height_m'           => 4.5,
-                'dbh_cm'             => 19.0,
-                'canopy_diameter_m'  => 3.5,
-                'last_inspected_at'  => $today->copy()->subMonths(2),
-                'owner_type'         => 'municipal',
-                'source'             => 'field_survey',
-            ],
-        ];
+            if (!$point) {
+                // fallback: skip
+                continue;
+            }
 
-        foreach ($trees as $data) {
+            $speciesId = $species->random();
+
+            $plantedAt = $today->copy()->subYears(rand(3, 40));
+            $lastInspected = $today->copy()->subDays(rand(10, 400));
+
+            // Tree payload -----------------------------------------------
+            $data = [
+                'species_id'         => $speciesId,
+                'neighborhood_id'    => $neighborhood->id,
+                'lat'                => $point->lat,
+                'lon'                => $point->lon,
+                'address'            => $neighborhood->name,
+                'planted_at'         => $plantedAt,
+                'status'             => 'existing',
+                'health_status'      => $healthStatuses[array_rand($healthStatuses)],
+                'height_m'           => round(rand(20, 150) / 10, 1),  // 2.0–15.0m
+                'dbh_cm'             => round(rand(10, 60), 1),
+                'canopy_diameter_m'  => round(rand(15, 90) / 10, 1),
+                'last_inspected_at'  => $lastInspected,
+                'owner_type'         => $ownerTypes[array_rand($ownerTypes)],
+                'source'             => $sources[array_rand($sources)],
+            ];
+
+            // Add geometry
             $data['geom'] = DB::raw(
                 "ST_SetSRID(ST_MakePoint({$data['lon']}, {$data['lat']}), 4326)"
             );

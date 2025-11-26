@@ -1,0 +1,52 @@
+{
+  "type": "FeatureCollection",
+  "name": "NIC_STROVOLOS",
+  "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Strovolos",
+        "geom_ref": "NIC_STROVOLOS",
+        "district": "Nicosia"
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+             [
+              33.33479670518307,
+              35.140331328983365
+            ],
+            [
+              33.3304555575948,
+              35.129453255808684
+            ],
+            [
+              33.33915558888705,
+              35.11721764142095
+            ],
+            [
+              33.3542494998201,
+              35.11898358012883
+            ],
+            [
+              33.36256375366921,
+              35.12704515959118
+            ],
+            [
+              33.35744787074697,
+              35.1404365863268
+            ],
+            [
+              33.33479670518307,
+              35.140331328983365
+            ]
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

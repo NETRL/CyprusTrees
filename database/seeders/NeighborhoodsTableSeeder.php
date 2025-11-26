@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Helpers\GeometryHelper;
+use App\Models\Neighborhood;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -29,6 +30,30 @@ class NeighborhoodsTableSeeder extends Seeder
                 'district' => 'Nicosia',
                 'geom_ref' => 'NIC_AYIOI_OMOLOYITES'
             ],
+            [
+                'name'     => 'Engomi',
+                'city'     => 'Nicosia',
+                'district' => 'Nicosia',
+                'geom_ref' => 'NIC_ENGOMI',
+            ],
+            [
+                'name'     => 'Strovolos',
+                'city'     => 'Nicosia',
+                'district' => 'Nicosia',
+                'geom_ref' => 'NIC_STROVOLOS',
+            ],
+            [
+                'name'     => 'Aglandjia',
+                'city'     => 'Nicosia',
+                'district' => 'Nicosia',
+                'geom_ref' => 'NIC_AGLANDJIA',
+            ],
+            [
+                'name'     => 'Within the Walls',
+                'city'     => 'Nicosia',
+                'district' => 'Nicosia',
+                'geom_ref' => 'NIC_WITHIN_WALLS',
+            ],
         ];
 
         foreach ($items as $item) {
@@ -38,15 +63,10 @@ class NeighborhoodsTableSeeder extends Seeder
             );
         }
 
-        // 2. Link each geom_ref to a file
-        $geomFiles = [
-            ["id" => 1, "geom_ref" => "NIC_KAIMAKLI"],
-            ["id" => 2, "geom_ref" => "NIC_PALLOURIOTISSA"],
-            ["id" => 3, "geom_ref" => "NIC_AYIOI_OMOLOYITES"],
-        ];
-
-        foreach ($geomFiles as $item) {
-            GeometryHelper::updateSpatialData($item);
+        // Link each geom_ref to a file
+        $geomFiless = Neighborhood::query()->select('id','geom_ref')->get();
+        foreach ($geomFiless as $item) {
+            GeometryHelper::updateSpatialData((object)$item);
         }
     }
 }

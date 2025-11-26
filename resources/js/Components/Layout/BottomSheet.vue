@@ -22,7 +22,7 @@
             </button>
 
             <!-- Scrollable content -->
-            <div class="px-5 py-4 flex-1 overflow-y-auto select-none">
+            <div class="px-5 py-4 flex-1 overflow-y-auto select-none flex justify-center">
                 <slot />
             </div>
         </div>
