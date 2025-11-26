@@ -13,7 +13,7 @@
         ]" :style="{
             height: `${currentHeight}px`,
         }">
-            <!-- Handle Bar (drag starts here only) -->
+            <!-- Handle Bar -->
             <button
                 class="w-full p-4 flex flex-col items-center gap-2 touch-manipulation select-none shrink-0 border-b border-gray-700/50"
                 @pointerdown="handlePointerDown">
@@ -29,8 +29,8 @@
 
         <!-- FAB Toggle Button -->
         <button v-if="showFab && currentState === 'closed'" @click="goMid"
-            class="fixed bottom-4 right-4 z-40 bg-gray-700 text-white p-4 rounded-full shadow-lg hover:bg-gray-600 transition-colors group">
-            <i :class="['p-1 group-hover:rotate-25 transition-all duration-300 ease-in-out', fabIcon]"></i>
+            class="fixed w-13 h-13 bottom-4 right-4 z-40 bg-gray-700 text-white p-4 rounded-lg shadow-lg hover:bg-gray-600 transition-colors group">
+            <i :class="[' group-hover:rotate-25 transition-all duration-300 ease-in-out', fabIcon]"></i>
         </button>
     </div>
 </template>
@@ -62,6 +62,8 @@ const props = defineProps({
         default: true,
     }
 })
+
+console.log(props.selectedData)
 
 const emit = defineEmits(['update:state'])
 const { isMobileOpen } = useSidebar()
@@ -101,16 +103,13 @@ watch(currentState, (val) => {
 })
 
 watch(isMobileOpen, (val) => {
-    // ignore while dragging – drag is already controlling height
     if (isDragging.value) return
 
     if (val) {
-        // mobile sidebar should be open → show sheet (mid or open)
         if (currentState.value === 'closed') {
-            setState('mid', false)   // or 'open' if you prefer
+            setState('mid', false)
         }
     } else {
-        // mobile sidebar should be closed → hide sheet
         if (currentState.value !== 'closed') {
             setState('closed', false)
         }
@@ -146,24 +145,19 @@ const setState = async (nextState) => {
         return
     }
 
-    // --- ANIMATION FIX START ---
-
-    // 1. Set the starting point (Closed/0px)
     currentHeight.value = closedHeight.value
     isMobileOpen.value = true
 
-    // 2. Wait for Vue to update the DOM with height: 0px
+    // Wait for Vue to update the DOM with height
     await nextTick()
 
-    // 3. Use double requestAnimationFrame to ensure the browser paints the 0px frame
+    // Use double requestAnimationFrame to ensure the browser paints the 0px frame
     // before applying the new height. This forces the CSS transition to trigger.
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             updateHeightForState()
         })
     })
-
-    // --- ANIMATION FIX END ---
 }
 
 const goOpen = () => setState('open')
