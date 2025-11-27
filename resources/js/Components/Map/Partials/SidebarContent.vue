@@ -1,19 +1,19 @@
 <template>
     <div class="flex flex-col gap-4 max-w-[390px]">
         <span class="lg:text-xl font-bold">Expolore Trees in Nicosia</span>
-        <SegmentedFilter v-model="currentSelection" :options="options" />
+        <SegmentedFilter v-model="selectedFilter" :options="options" />
 
-        <template v-if="currentSelection === 'type'">
-            <span>Here is Type</span>
+        <template v-if="selectedFilter === 'status'">
+            <span>Here is Status</span>
         </template>
-        <template v-if="currentSelection === 'height'">
-            <span>Here is Height</span>
+        <template v-if="selectedFilter === 'pollen_risk'">
+            <span>Here is Pollen Risk</span>
         </template>
-        <template v-if="currentSelection === 'age'">
-            <span>Here is Age</span>
+        <template v-if="selectedFilter === 'water_use'">
+            <span>Here is Water Use</span>
         </template>
-        <template v-if="currentSelection === 'species'">
-            <span>Here is Species</span>
+        <template v-if="selectedFilter === 'shade'">
+            <span>Here is Shade</span>
         </template>
     </div>
 </template>
@@ -23,12 +23,12 @@ import SegmentedFilter from '@/Components/Map/Partials/SegmentedFilter.vue'
 import { useMapFilter } from '@/Composables/useMapFilter';
 import { ref, watch } from 'vue';
 
-const { currentSelection } = useMapFilter();
+const { selectedFilter } = useMapFilter();
 
 const options = [
-    { label: 'Type', value: 'type' },
-    { label: 'Height', value: 'height' },
-    { label: 'Age', value: 'age' },
-    { label: 'Species', value: 'species' },
+    { label: 'Status', value: 'status' },
+    { label: 'Pollen Risk', value: 'pollen_risk' },
+    { label: 'Water Use', value: 'water_use' },
+    { label: 'Shade', value: 'shade' },
 ]
 </script>

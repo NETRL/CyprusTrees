@@ -64,6 +64,7 @@ import TabView from 'primevue/tabview';
 import TabMenu from 'primevue/tabmenu';
 import Tag from 'primevue/tag';
 import Tooltip from 'primevue/tooltip';
+import  Slider from 'primevue/slider';
 
 import { __ } from './lang-handler';
 import TailAdminTheme from './primevue-theme';
@@ -151,6 +152,7 @@ createInertiaApp({
       .component('TabView', TabView)
       .component('TabMenu', TabMenu)
       .component('Tag', Tag)
+      .component('Slider', Slider)
       .directive('ripple', Ripple)
       .directive('tooltip', Tooltip)
       .directive('styleclass', StyleClass)

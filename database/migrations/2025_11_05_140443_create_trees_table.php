@@ -26,11 +26,13 @@ return new class extends Migration
             $table->date('planted_at')->nullable();
             $table->string('status', 20)->nullable();
             $table->string('health_status', 20)->nullable();
+            $table->string('sex', 10)->nullable();
+
             $table->decimal('height_m', 5, 2)->nullable();
             $table->decimal('dbh_cm', 5, 1)->nullable();
             $table->decimal('canopy_diameter_m', 5, 2)->nullable();
-            $table->timestamp('last_inspected_at')->nullable();
 
+            $table->timestamp('last_inspected_at')->nullable();
             $table->string('owner_type', 20)->nullable();
             $table->string('source', 60)->nullable();
 

@@ -40,7 +40,7 @@ class HealthAssessmentController extends Controller
             'userData'      => User::with('roles:id,name')
                 ->select(['id', 'first_name', 'last_name'])
                 ->get(),
-            'healthStatuses' => HealthAssessment::getHealthStatusOptions(),
+            'healthStatus' => HealthAssessment::getHealthStatusOptions(),
         ]);
     }
 

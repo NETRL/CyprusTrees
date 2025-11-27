@@ -4,51 +4,51 @@
       pageTitle="Manage Planting Events" @create="openCreateForm" @edit="openEditForm" @afterDelete="onAfterDelete"
       @afterMassDelete="onAfterMassDelete">
 
-      <template #columns>
+      <template #columns="{ isColumnVisible }">
         <!-- Planting-->
-        <Column field="planting_id" header="Id" sortable>
+        <Column v-if="isColumnVisible('planting_id')" field="planting_id" header="Id" sortable>
           <template #body="{ data }">
             {{ data.planting_id }}
           </template>
         </Column>
 
         <!-- Tree -->
-        <Column field="tree_id" header="Tree" sortable>
+        <Column v-if="isColumnVisible('tree_id')" field="tree_id" header="Tree" sortable>
           <template #body="{ data }">
             {{ treeLabel(data) }}
           </template>
         </Column>
 
         <!-- Campaign: 1 - Eat all Trees (Goodies) 2025-11-18 -->
-        <Column field="campaign_id" header="Campaign" sortable>
+        <Column v-if="isColumnVisible('campaign_id')" field="campaign_id" header="Campaign" sortable>
           <template #body="{ data }">
             {{ campaignLabel(data) }}
           </template>
         </Column>
 
         <!-- Planted By: 2 - Test User -->
-        <Column field="planted_by" header="Planted By" sortable>
+        <Column v-if="isColumnVisible('planted_by')" field="planted_by" header="Planted By" sortable>
           <template #body="{ data }">
             {{ userLabel(data) }}
           </template>
         </Column>
 
         <!-- Planted At -->
-        <Column field="planted_at" header="Planted At" sortable>
+        <Column v-if="isColumnVisible('planted_at')" field="planted_at" header="Planted At" sortable>
           <template #body="{ data }">
             {{ formatDate(data.planted_at) }}
           </template>
         </Column>
 
         <!-- Method -->
-        <Column field="method" header="Method" sortable>
+        <Column v-if="isColumnVisible('method')" field="method" header="Method" sortable>
           <template #body="{ data }">
             {{ data.method }}
           </template>
         </Column>
 
         <!-- Notes -->
-        <Column field="notes" header="Notes">
+        <Column v-if="isColumnVisible('notes')" field="notes" header="Notes">
           <template #body="{ data }">
             {{ data.notes }}
           </template>

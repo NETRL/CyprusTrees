@@ -6,9 +6,9 @@ enum ReportStatus: string
 {
     use HasLabel;
     
-    case OPEN      = 'Open';
-    case TRIAGED   = 'Triaged';
-    case RESOLVED  = 'Resolved';
+    case OPEN      = 'open';
+    case TRIAGED   = 'triaged';
+    case RESOLVED  = 'resolved';
 
     public function label(): string
     {

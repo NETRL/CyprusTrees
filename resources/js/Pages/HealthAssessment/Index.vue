@@ -4,46 +4,46 @@
       inertiaKey="tableData" pageTitle="Health Assessments" @create="openCreateForm" @edit="openEditForm"
       @afterDelete="onAfterDelete" @afterMassDelete="onAfterMassDelete">
 
-      <template #columns>
+      <template #columns="{ isColumnVisible }">
         <!-- ID -->
-        <Column field="assessment_id" header="Id" sortable>
+        <Column v-if="isColumnVisible('assessment_id')" field="assessment_id" header="Id" sortable>
           <template #body="{ data }">
             {{ data.assessment_id }}
           </template>
         </Column>
 
-        <Column field="tree_id" header="Tree" sortable>
+        <Column v-if="isColumnVisible('tree_id')" field="tree_id" header="Tree" sortable>
           <template #body="{ data }">
             {{ treeLabel(data) }}
           </template>
         </Column>
 
-        <Column field="assessed_by" header="Assessed By" sortable>
+        <Column v-if="isColumnVisible('assessed_by')" field="assessed_by" header="Assessed By" sortable>
           <template #body="{ data }">
             {{ userLabel(data) }}
           </template>
         </Column>
 
 
-        <Column field="health_status" header="Health Status" sortable>
+        <Column v-if="isColumnVisible('health_status')" field="health_status" header="Health Status" sortable>
           <template #body="{ data }">
-            {{ data.health_status ?? '-' }}
+            {{ healthLabel(data) }}
           </template>
         </Column>
 
-        <Column field="pests_diseases" header="Pests & Diseases" sortable>
+        <Column v-if="isColumnVisible('pests_diseases')" field="pests_diseases" header="Pests & Diseases" sortable>
           <template #body="{ data }">
             {{ data.pests_diseases ?? '-' }}
           </template>
         </Column>
 
-        <Column field="risk_score" header="Risk Score" sortable>
+        <Column v-if="isColumnVisible('risk_score')" field="risk_score" header="Risk Score" sortable>
           <template #body="{ data }">
             {{ data.risk_score ?? '-' }}
           </template>
         </Column>
 
-        <Column field="actions_recommended" header="Actions Recommended" sortable>
+        <Column v-if="isColumnVisible('actions_recommended')" field="actions_recommended" header="Actions Recommended" sortable>
           <template #body="{ data }">
             {{ data.actions_recommended ?? '-' }}
           </template>
@@ -56,7 +56,7 @@
 
     <HealthAssessmentForm v-model:visible="formVisible" routeResource="healthAssessments" :action="formAction"
       :dataRow="formRow" @updated="reloadTable" @created="reloadTable" :trees="treeData" :users="userData"
-      :healthStatuses="healthStatuses" />
+      :healthStatus="healthStatus" />
   </div>
 </template>
 
@@ -90,16 +90,23 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
-  healthStatuses: {
+  healthStatus: {
     type: Array,
     default: () => []
   },
 
 });
 
-console.log(props.tableData)
 
 const { formatDate } = useDateFormatter();
+
+const healthLabel = (row) => {
+    const field = row.health_status;
+    if (!field) return '-';
+
+    const item = props.healthStatus.find(s => s.value === field);
+    return item ? item.label : '-';
+};
 
 const treeLabel = (row) => {
   const id = row.tree_id;

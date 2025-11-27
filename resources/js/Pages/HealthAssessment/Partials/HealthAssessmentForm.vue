@@ -81,7 +81,7 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
-    healthStatuses: {
+    healthStatus: {
         type: Array,
         default: () => []
     },
@@ -118,7 +118,7 @@ const userOptions = computed(() => (props.users ?? []).map(index => {
     };
 }))
 
-const healthStatusOptions = computed(() => props.healthStatuses)
+const healthStatusOptions = computed(() => props.healthStatus)
 
 // state
 const formData = reactive({

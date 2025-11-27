@@ -30,7 +30,7 @@ class CitizenReport extends Model
 
     protected $tableColumns = [
         'report_id',
-        'report_type_id',
+        'type_id',
         'created_by',
         'tree_id',
         'lat',

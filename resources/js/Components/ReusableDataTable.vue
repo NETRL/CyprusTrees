@@ -43,11 +43,12 @@
         </template>
 
         <!-- selection column -->
-          <Column :exportable="false" selectionMode="multiple" style="width: 3rem"></Column>
+        <Column :exportable="false" selectionMode="multiple" style="width: 3rem"></Column>
 
         <!-- If parent provides #columns, use that -->
         <template v-if="$slots.columns">
-          <slot name="columns" />
+          <slot name="columns" :isColumnVisible="isColumnVisible" :selectedColumns="selectedColumns"
+            :columnsToShow="columnsToShow" />
         </template>
 
         <!-- Otherwise use the existing auto-generated columns -->
@@ -73,8 +74,7 @@
         <!-- actions column -->
         <Column :exportable="false">
           <template #body="slotProps">
-            <Button v-if="showEditButton"
-              v-has-permission="{ props: $page.props, permissions: [finalPermissionEdit] }"
+            <Button v-if="showEditButton" v-has-permission="{ props: $page.props, permissions: [finalPermissionEdit] }"
               class="p-button-rounded mr-2 max-sm:text-sm! my-1" severity="primary" icon="pi pi-pencil"
               @click="onEditClick(slotProps.data)" />
             <Button v-if="showDeleteButton"
@@ -210,6 +210,11 @@ const selectedColumns = useColumnPrefs(
   STORAGE_KEY,
   columnsToShow.value.map(c => c.value)
 );
+
+const isColumnVisible = (field) => {
+  return selectedColumns.value.includes(field)
+}
+
 
 const selectedColumnDefs = computed(() =>
   columnsToShow.value.filter(c =>

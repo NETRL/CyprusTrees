@@ -5,51 +5,51 @@
       @afterDelete="onAfterDelete" @afterMassDelete="onAfterMassDelete">
 
 
-      <template #columns>
+      <template #columns="{ isColumnVisible }">
         <!-- Event-->
-        <Column field="event_id" header="Id" sortable>
+        <Column v-if="isColumnVisible('event_id')" field="event_id" header="Id" sortable>
           <template #body="{ data }">
             {{ data.event_id }}
           </template>
         </Column>
         <!-- Tree-->
-        <Column field="tree_id" header="Tree" sortable>
+        <Column v-if="isColumnVisible('tree_id')" field="tree_id" header="Tree" sortable>
           <template #body="{ data }">
             {{ treeLabel(data) }}
           </template>
         </Column>
         <!-- Type-->
-        <Column field="type_id" header="Type" sortable>
+        <Column v-if="isColumnVisible('type_id')" field="type_id" header="Type" sortable>
           <template #body="{ data }">
             {{ typeLabel(data) }}
           </template>
         </Column>
         <!-- Performed By-->
-        <Column field="performed_by" header="Performed By" sortable>
+        <Column v-if="isColumnVisible('performed_by')" field="performed_by" header="Performed By" sortable>
           <template #body="{ data }">
             {{ userLabel(data) }}
           </template>
         </Column>
         <!-- Performed At-->
-        <Column field="performed_at" header="Performed At" sortable>
+        <Column v-if="isColumnVisible('performed_at')" field="performed_at" header="Performed At" sortable>
           <template #body="{ data }">
             {{ formatDate(data.performed_at) }}
           </template>
         </Column>
         <!-- Quantity-->
-        <Column field="quantity" header="Quantity" sortable>
+        <Column v-if="isColumnVisible('quantity')" field="quantity" header="Quantity" sortable>
           <template #body="{ data }">
             {{ data.quantity }}
           </template>
         </Column>
         <!-- Cost-->
-        <Column field="cost" header="Cost" sortable>
+        <Column v-if="isColumnVisible('cost')" field="cost" header="Cost" sortable>
           <template #body="{ data }">
             {{ data.cost }}
           </template>
         </Column>
         <!-- Notes-->
-        <Column field="notes" header="Notes" sortable>
+        <Column v-if="isColumnVisible('notes')" field="notes" header="Notes" sortable>
           <template #body="{ data }">
             {{ data.notes }}
           </template>

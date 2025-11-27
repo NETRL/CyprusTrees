@@ -5,73 +5,73 @@
       @afterDelete="onAfterDelete" @afterMassDelete="onAfterMassDelete">
 
 
-      <template #columns>
+      <template #columns="{ isColumnVisible}">
         <!-- ID-->
-        <Column field="report_id" header="Id" sortable>
+        <Column v-if="isColumnVisible('report_id')" field="report_id" header="Id" sortable>
           <template #body="{ data }">
             {{ data.report_id }}
           </template>
         </Column>
 
-        <Column field="type_id" header="Report Type" sortable>
+        <Column v-if="isColumnVisible('type_id')" field="type_id" header="Report Type" sortable>
           <template #body="{ data }">
             {{ typeLabel(data) }}
           </template>
         </Column>
 
-        <Column field="created_by" header="Created By" sortable>
+        <Column v-if="isColumnVisible('created_by')" field="created_by" header="Created By" sortable>
           <template #body="{ data }">
             {{ userLabel(data) }}
           </template>
         </Column>
 
-        <Column field="tree_id" header="Tree" sortable>
+        <Column v-if="isColumnVisible('tree_id')" field="tree_id" header="Tree" sortable>
           <template #body="{ data }">
             {{ treeLabel(data) }}
           </template>
         </Column>
 
 
-        <Column field="lat" header="Lat" sortable>
+        <Column v-if="isColumnVisible('lat')" field="lat" header="Lat" sortable>
           <template #body="{ data }">
             {{ data.lat }}
           </template>
         </Column>
 
 
-        <Column field="lon" header="Lon" sortable>
+        <Column v-if="isColumnVisible('lon')" field="lon" header="Lon" sortable>
           <template #body="{ data }">
             {{ data.lon }}
           </template>
         </Column>
 
 
-        <Column field="description" header="Description" sortable>
+        <Column v-if="isColumnVisible('description')" field="description" header="Description" sortable>
           <template #body="{ data }">
             {{ data.description }}
           </template>
         </Column>
 
-        <Column field="status" header="Status" sortable>
+        <Column v-if="isColumnVisible('status')" field="status" header="Status" sortable>
           <template #body="{ data }">
             {{ data.status }}
           </template>
         </Column>
 
-        <Column field="photo_url" header="Photo Url" sortable>
+        <Column v-if="isColumnVisible('photo_url')" field="photo_url" header="Photo Url" sortable>
           <template #body="{ data }">
             {{ data.photo_url }}
           </template>
         </Column>
 
 
-        <Column field="created_at" header="Created At" sortable>
+        <Column v-if="isColumnVisible('created_at')" field="created_at" header="Created At" sortable>
           <template #body="{ data }">
             {{ formatDate(data.created_at) }}
           </template>
         </Column>
 
-        <Column field="resolved_at" header="Resolved At" sortable>
+        <Column v-if="isColumnVisible('resolved_at')" field="resolved_at" header="Resolved At" sortable>
           <template #body="{ data }">
             {{ formatDate(data.resolved_at) }}
           </template>

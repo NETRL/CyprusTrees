@@ -47,12 +47,17 @@
             </div>
 
             <!-- Status fields -->
-            <div class="col-span-6">
-                <FormField v-model="formData.status" :displayErrors="displayErrors" label="Status" name="status" />
+            <div class="col-span-4">
+                <FormField v-model="formData.status" :displayErrors="displayErrors" label="Status" name="status" 
+                :options="treeStatusOptions"  optionLabel="label" optionValue="value"  placeholder="Select tree status" />
             </div>
-            <div class="col-span-6">
-                <FormField v-model="formData.health_status" :displayErrors="displayErrors" label="Health Status"
-                    name="health_status" />
+            <div class="col-span-4">
+                <FormField component="Dropdown" v-model="formData.health_status" :displayErrors="displayErrors" label="Health Status"
+                    name="health_status" :options="healthStatusOptions" optionLabel="label" optionValue="value"  placeholder="Select health status" />
+            </div>
+            <div class="col-span-4">
+                <FormField component="Dropdown" v-model="formData.sex" :displayErrors="displayErrors" label="Sex"
+                    name="sex" :options="treeSexOptions" optionLabel="label" optionValue="value" placeholder="Select sex" />
             </div>
 
             <!-- Measurements -->
@@ -70,8 +75,8 @@
 
             <!-- Ownership / source -->
             <div class="col-span-6">
-                <FormField v-model="formData.owner_type" :displayErrors="displayErrors" label="Owner Type"
-                    name="owner_type" />
+                <FormField component="Dropdown" v-model="formData.owner_type" :displayErrors="displayErrors" label="Owner Type"
+                    name="owner_type" :options="ownerTypeOptions"  optionValue="value"  placeholder="Select owner type" />
             </div>
             <div class="col-span-6">
                 <FormField v-model="formData.source" :displayErrors="displayErrors" label="Source" name="source" />
@@ -120,7 +125,23 @@ const props = defineProps({
     routeResource: {
         type: String,
         required: true
-    }
+    },
+    treeSex: {
+        type: Array,
+        default: () => [],
+    },
+    healthStatus: {
+        type: Array,
+        default: () => [],
+    },
+    treeStatus: {
+        type: Array,
+        default: () => [],
+    },
+    ownerType: {
+        type: Array,
+        default: () => [],
+    },
 })
 
 
@@ -138,6 +159,7 @@ const formData = reactive({
     planted_at: null,
     status: '',
     health_status: '',
+    sex: '',
     height_m: null,
     dbh_cm: null,
     canopy_diameter_m: null,
@@ -147,6 +169,12 @@ const formData = reactive({
 })
 
 const displayErrors = ref(false)
+
+const healthStatusOptions = computed(() => props.healthStatus)
+const treeStatusOptions = computed(() => props.treeStatus)
+const treeSexOptions =  computed(() => props.treeSex)
+const ownerTypeOptions = computed(() => props.ownerType)
+
 
 // Helper function to convert date string to Date object
 const { parseDate } = useDateParser();
@@ -169,13 +197,14 @@ const resetForm = () => {
     formData.lon = null
     formData.address = ''
     formData.planted_at = new Date(),
-    formData.status = ''
+        formData.status = ''
     formData.health_status = ''
+    formData.sex = ''
     formData.height_m = null
     formData.dbh_cm = null
     formData.canopy_diameter_m = null
     formData.last_inspected_at = new Date(),
-    formData.owner_type = ''
+        formData.owner_type = ''
     formData.source = ''
 }
 
@@ -224,6 +253,7 @@ const initForm = () => {
     formData.planted_at = parseDate(row.planted_at)
     formData.status = row.status ?? ''
     formData.health_status = row.health_status ?? ''
+    formData.sex = row.sex ?? ''
     formData.height_m = row.height_m ?? null
     formData.dbh_cm = row.dbh_cm ?? null
     formData.canopy_diameter_m = row.canopy_diameter_m ?? null

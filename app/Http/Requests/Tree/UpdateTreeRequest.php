@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Tree;
 
+use App\Enums\TreeSex;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class UpdateTreeRequest extends FormRequest
 {
@@ -26,6 +28,7 @@ class UpdateTreeRequest extends FormRequest
             'last_inspected_at' => ['nullable', 'date', 'before_or_equal:now'],
             'status'            => ['nullable', 'string', 'max:20'],
             'health_status'     => ['nullable', 'string', 'max:20'],
+            'sex'               => ['nullable', new Enum(TreeSex::class)],
             'height_m'          => ['nullable', 'numeric', 'min:0', 'max:999.99'],
             'dbh_cm'            => ['nullable', 'numeric', 'min:0', 'max:999.9'],
             'canopy_diameter_m' => ['nullable', 'numeric', 'min:0', 'max:999.99'],

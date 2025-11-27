@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests\Tree;
 
+use App\Enums\TreeSex;
 use App\Models\Tree;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class StoreTreeRequest extends FormRequest
 {
@@ -33,6 +35,7 @@ class StoreTreeRequest extends FormRequest
             // Descriptive attributes
             'status'            => ['nullable', 'string', 'max:20'],
             'health_status'     => ['nullable', 'string', 'max:20'],
+            'sex'               => ['nullable', new Enum(TreeSex::class)],
 
             // Use realisctic measurements
             'height_m'          => ['nullable', 'numeric', 'between:0,999.99'],

@@ -42,7 +42,10 @@ class TreeController extends Controller
             'neighborhoodData' => Neighborhood::orderBy('name')->get(['id', 'name', 'city']),
             'tagData' => Tag::all(),
             'dataColumns' => Tree::getDataColumns(),
-
+            'treeSex' => Tree::getTreeSexOptions(),
+            'healthStatus' => Tree::getHealthStatusOptions(),
+            'treeStatus' => Tree::getTreeStatusOptions(),
+            'ownerType' => Tree::getOwnerTypeOptions(),
         ]);
     }
 

@@ -3,15 +3,15 @@ import { inject, provide, ref } from "vue"
 const MapSymbol = Symbol('MapFilter')
 
 export function useMapFilterProvider() {
-    const currentSelection = ref('type')
+    const selectedFilter = ref('type')
 
 
     const setSelection = (value) => {
-        currentSelection.value = value
+        selectedFilter.value = value
     }
 
     const context = {
-        currentSelection,
+        selectedFilter,
     }
 
     provide(MapSymbol, context)

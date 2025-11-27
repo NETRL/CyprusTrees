@@ -1,5 +1,6 @@
 <template>
-    <label v-if="label" :for="name" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400 pointer-events-none select-none">
+    <label v-if="label" :for="name"
+        class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400 pointer-events-none select-none">
         {{ label }}
         <span v-if="required" class="text-error-500">*</span>
     </label>
@@ -30,7 +31,7 @@
         v-bind="$attrs" :maxSelectedLabels="1" panelClass="custom-multiselect-panel" />
 
     <InputNumber v-else-if="component === 'Number'" :id="name"
-        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', inputBase]" v-bind="$attrs" 
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', inputBase]" v-bind="$attrs"
         inputClass="w-full border-transparent! focus:border-brand-300! focus:outline-hidden! focus:ring-1! focus:ring-brand-500/60! rounded-lg! text-sm! text-gray-800! placeholder:text-gray-400! dark:text-white/90! dark:placeholder:text-white/30! dark:focus:border-brand-800!" />
     <Textarea v-else-if="component === 'Textarea'" :id="name"
         :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle]" v-bind="$attrs" />
@@ -45,6 +46,7 @@
         :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle]" v-bind="$attrs" />
     <Checkbox v-else-if="component === 'Checkbox'" :id="name"
         :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '',]" v-bind="$attrs" />
+    <CustomSlider v-else-if="component === 'CustomSlider'" :id="name" v-bind="$attrs" />
     <InputError v-if="shouldDisplayErrors" :id="name + '-help'" class="mt-2" :message="$page.props.errors[name]" />
 </template>
 
@@ -52,6 +54,7 @@
 import InputError from '@/Components/InputError.vue';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import CustomSlider from '@/Components/Primitives/CustomSlider.vue';
 
 const page = usePage();
 

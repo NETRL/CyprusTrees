@@ -19,12 +19,13 @@ class UpdateSpeciesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'latin_name'        => ['nullable', 'string', 'max:120'],
-            'common_name'       => ['nullable', 'string', 'max:120'],
-            'family'            => ['nullable', 'string', 'max:120'],
-            'drought_tolerance' => ['nullable', new Enum(DroughtTolerance::class)],
-            'canopy_class'      => ['nullable', new Enum(CanopyClass::class)],
-            'notes'             => ['nullable', 'string'],
+            'latin_name'            => ['nullable', 'string', 'max:120'],
+            'common_name'           => ['nullable', 'string', 'max:120'],
+            'family'                => ['nullable', 'string', 'max:120'],
+            'opals_score'  => ['nullable', 'integer', 'min:0', 'max:10'],
+            'drought_tolerance'     => ['nullable', new Enum(DroughtTolerance::class)],
+            'canopy_class'          => ['nullable', new Enum(CanopyClass::class)],
+            'notes'                 => ['nullable', 'string'],
         ];
     }
 

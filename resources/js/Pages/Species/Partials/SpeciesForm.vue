@@ -20,8 +20,13 @@
                 <FormField v-model="formData.family" :displayErrors="displayErrors" label="Family" name="family" />
             </div>
 
+             <div class="col-span-6">
+                <FormField component="Number" v-model="formData.opals_score" :displayErrors="displayErrors"  @input="formData.opals_score = $event.value" 
+                    label="OPALS Score (0–10)" name="opals_score" inputId="minmax-buttons" mode="decimal" showButtons :min="0" :max="10" :step="1" fluid/>
+            </div>
+
             <!-- Drought Tolerance (ENUM: Low / Moderate / High) -->
-            <div class="col-span-12">
+            <div class="col-span-6">
                 <FormField component="Dropdown" v-model="formData.drought_tolerance" :displayErrors="displayErrors"
                     :options="droughtToleranceOptions" label="Drought Tolerance" name="drought_tolerance"
                     optionLabel="label" optionValue="value" placeholder="Select drought tolerance" />
@@ -88,6 +93,7 @@ const formData = reactive({
     latin_name: '',
     common_name: '',
     family: '',
+    opals_score: null,
     drought_tolerance: null,
     canopy_class: null,
     notes: '',
@@ -114,6 +120,7 @@ const initForm = () => {
     formData.latin_name = row?.latin_name ?? ''
     formData.common_name = row?.common_name ?? ''
     formData.family = row?.family ?? ''
+    formData.opals_score = row?.opals_score ?? null
     formData.drought_tolerance = row?.drought_tolerance ?? null
     formData.canopy_class = row?.canopy_class ?? null
     formData.notes = row?.notes ?? ''

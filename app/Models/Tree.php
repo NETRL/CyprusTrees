@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\HealthStatus;
+use App\Enums\OwnerType;
+use App\Enums\TreeSex;
+use App\Enums\TreeStatus;
 use App\Models\Traits\BaseModelTrait;
 use App\Models\Traits\Paginatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -24,6 +28,7 @@ class Tree extends Model
         'planted_at',
         'status',
         'health_status',
+        'sex',
         'height_m',
         'dbh_cm',
         'canopy_diameter_m',
@@ -35,14 +40,14 @@ class Tree extends Model
 
     protected array $tableColumns = [
         'id',
-        'species_label',
-        'tags_label',
-        'lat',
-        'lon',
+        'species',
+        'neighborhood',
+        'location',
         'address',
         'planted_at',
         'status',
         'health_status',
+        'sex',
         'height_m',
         'dbh_cm',
         'canopy_diameter_m',
@@ -61,6 +66,7 @@ class Tree extends Model
         'planted_at',
         'status',
         'health_status',
+        'sex',
         'height_m',
         'dbh_cm',
         'canopy_diameter_m',
@@ -69,16 +75,7 @@ class Tree extends Model
         'source',
     ];
 
-    protected array $sortable = [
-        'id',
-        'species_label',
-        'tags_label',
-        'planted_at',
-        'last_inspected_at',
-        'height_m',
-        'dbh_cm',
-        'canopy_diameter_m',
-    ];
+
 
 
     protected $casts = [
@@ -163,6 +160,26 @@ class Tree extends Model
         }
 
         return $tags->pluck('name')->join(', ');
+    }
+
+    public static function getTreeSexOptions(): array
+    {
+        return TreeSex::options();
+    }
+
+    public static function getHealthStatusOptions(): array
+    {
+        return HealthStatus::options();
+    }
+
+    public static function getTreeStatusOptions(): array
+    {
+        return TreeStatus::options();
+    }
+
+    public static function getOwnerTypeOptions(): array
+    {
+        return OwnerType::options();
     }
 
     protected static function booted()

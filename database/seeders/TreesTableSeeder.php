@@ -2,6 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Enums\HealthStatus;
+use App\Enums\OwnerType;
+use App\Enums\TreeSex;
+use App\Enums\TreeStatus;
 use App\Models\Tree;
 use App\Models\Species;
 use App\Models\Neighborhood;
@@ -24,9 +28,7 @@ class TreesTableSeeder extends Seeder
         $today = Carbon::today();
 
         // ENUM pools
-        $ownerTypes = ['municipal', 'private'];
         $sources = ['citizen_report', 'field_survey', 'baseline_import'];
-        $healthStatuses = ['healthy', 'watch', 'stressed', 'diseased', 'dead'];
 
         for ($i = 0; $i < 500; $i++) {
 
@@ -50,6 +52,12 @@ class TreesTableSeeder extends Seeder
 
             $speciesId = $species->random();
 
+            $treeSex = TreeSex::cases()[array_rand(TreeSex::cases())];
+            $healthStatus = HealthStatus::cases()[array_rand(HealthStatus::cases())];
+            $treeStatus = TreeStatus::cases()[array_rand(TreeStatus::cases())];
+            $ownerType = OwnerType::cases()[array_rand(OwnerType::cases())];
+
+
             $plantedAt = $today->copy()->subYears(rand(3, 40));
             $lastInspected = $today->copy()->subDays(rand(10, 400));
 
@@ -61,13 +69,14 @@ class TreesTableSeeder extends Seeder
                 'lon'                => $point->lon,
                 'address'            => $neighborhood->name,
                 'planted_at'         => $plantedAt,
-                'status'             => 'existing',
-                'health_status'      => $healthStatuses[array_rand($healthStatuses)],
+                'status'             => $treeStatus,
+                'health_status'      => $healthStatus,
+                'sex'                => $treeSex,
                 'height_m'           => round(rand(20, 150) / 10, 1),  // 2.0–15.0m
                 'dbh_cm'             => round(rand(10, 60), 1),
                 'canopy_diameter_m'  => round(rand(15, 90) / 10, 1),
                 'last_inspected_at'  => $lastInspected,
-                'owner_type'         => $ownerTypes[array_rand($ownerTypes)],
+                'owner_type'         => $ownerType,
                 'source'             => $sources[array_rand($sources)],
             ];
 

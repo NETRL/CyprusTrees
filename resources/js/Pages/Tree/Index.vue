@@ -3,107 +3,116 @@
         <ReusableDataTable routeResource="trees" :columns="dataColumns" :tableData="tableData" inertiaKey="tableData"
             pageTitle="Manage Trees" @create="openCreateForm" @edit="openEditForm" @afterDelete="onAfterDelete"
             @afterMassDelete="onAfterMassDelete">
-
-            <template #columns>
-
-                <Column field="id" header="Id" sortable>
+            <template #columns="{ isColumnVisible }">
+                <Column v-if="isColumnVisible('id')" field="id" header="Id" sortable>
                     <template #body="{ data }">
                         {{ data.id }}
                     </template>
                 </Column>
 
-                <Column field="species_id" header="Species" sortable>
+                <Column v-if="isColumnVisible('species')" field="species_id" header="Species" sortable>
                     <template #body="{ data }">
                         {{ speciesLabel(data) }}
                     </template>
                 </Column>
 
-                <Column field="neighborhood_id" header="Neighborhood" sortable>
+                <Column v-if="isColumnVisible('neighborhood')" field="neighborhood_id" header="Neighborhood"
+                    sortable>
                     <template #body="{ data }">
                         {{ neighborhoodLabel(data) }}
                     </template>
                 </Column>
 
-                <Column field="location" header="Location" sortable>
+                <Column v-if="isColumnVisible('location')" field="location" header="Location" sortable>
                     <template #body="{ data }">
                         {{ locationLabel(data) }}
                     </template>
                 </Column>
 
-                <Column field="address" header="Address" sortable>
+                <Column v-if="isColumnVisible('address')" field="address" header="Address" sortable>
                     <template #body="{ data }">
                         {{ data.address }}
                     </template>
                 </Column>
 
-                <Column field="planted_at" header="Planted At" sortable>
+                <Column v-if="isColumnVisible('planted_at')" field="planted_at" header="Planted At" sortable>
                     <template #body="{ data }">
                         {{ formatDate(data.planted_at) }}
                     </template>
                 </Column>
 
-                <Column field="status" header="Status" sortable>
+                <Column v-if="isColumnVisible('status')" field="status" header="Status" sortable>
                     <template #body="{ data }">
-                        {{ data.status }}
+                        {{ treeStatusLabel(data) }}
                     </template>
                 </Column>
 
-                <Column field="health_status" header="Health Status" sortable>
+                <Column v-if="isColumnVisible('health_status')" field="health_status" header="Health Status" sortable>
                     <template #body="{ data }">
-                        {{ data.health_status }}
+                        {{ treeHealthLabel(data) }}
                     </template>
                 </Column>
 
-                <Column field="height_m" header="Height (m)" sortable>
+                <Column v-if="isColumnVisible('sex')" field="sex" header="Sex" sortable>
+                    <template #body="{ data }">
+                        {{ treeSexLabel(data) }}
+                    </template>
+                </Column>
+
+                <Column v-if="isColumnVisible('height_m')" field="height_m" header="Height (m)" sortable>
                     <template #body="{ data }">
                         {{ data.height_m }}
                     </template>
                 </Column>
 
-                <Column field="dbh_cm" header="DBH (cm)" sortable>
+                <Column v-if="isColumnVisible('dbh_cm')" field="dbh_cm" header="DBH (cm)" sortable>
                     <template #body="{ data }">
                         {{ data.dbh_cm }}
                     </template>
                 </Column>
 
-                <Column field="canopy_diameter_m" header="Canopy Diameter (m)" sortable>
+                <Column v-if="isColumnVisible('canopy_diameter_m')" field="canopy_diameter_m"
+                    header="Canopy Diameter (m)" sortable>
                     <template #body="{ data }">
                         {{ data.canopy_diameter_m }}
                     </template>
                 </Column>
 
-
-                <Column field="owner_type" header="Owner Type" sortable>
+                <Column v-if="isColumnVisible('owner_type')" field="owner_type" header="Owner Type" sortable>
                     <template #body="{ data }">
-                        {{ data.owner_type }}
+                        {{ ownerTypeLabel(data) }}
                     </template>
                 </Column>
 
-                <Column field="last_inspected_at" header="Last Inspected At" sortable>
+                <Column v-if="isColumnVisible('last_inspected_at')" field="last_inspected_at" header="Last Inspected At"
+                    sortable>
                     <template #body="{ data }">
                         {{ formatDate(data.last_inspected_at) }}
                     </template>
                 </Column>
 
-                <Column field="source" header="Source" sortable>
+                <Column v-if="isColumnVisible('source')" field="source" header="Source" sortable>
                     <template #body="{ data }">
                         {{ data.source }}
                     </template>
                 </Column>
 
+                <!-- Photos column: likely always visible & not in MultiSelect -->
                 <Column header="Photos">
                     <template #body="slotProps">
                         <NavLinkButton class="text-nowrap" title="Manage photos"
-                            :href="route('photos.index', { tree_id: slotProps.data.id })">Manage {{
-                                slotProps.data.photos_count
-                                ?? 0 }} photos</NavLinkButton>
+                            :href="route('photos.index', { tree_id: slotProps.data.id })">
+                            Manage {{ slotProps.data.photos_count ?? 0 }} photos
+                        </NavLinkButton>
                     </template>
                 </Column>
             </template>
         </ReusableDataTable>
+
         <TreeForm v-model:visible="formVisible" routeResource="trees" :action="formAction" :dataRow="formRow"
             :speciesData="speciesData" :neighborhoodData="neighborhoodData" :tagData="tagData" @updated="reloadTable"
-            @created="reloadTable" />
+            @created="reloadTable" :treeSex="treeSex" :healthStatus="healthStatus" :treeStatus="treeStatus"
+            :ownerType="ownerType" />
 
     </div>
 </template>
@@ -142,9 +151,57 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    treeSex: {
+        type: Array,
+        default: () => [],
+    },
+    healthStatus: {
+        type: Array,
+        default: () => [],
+    },
+    treeStatus: {
+        type: Array,
+        default: () => [],
+    },
+    ownerType: {
+        type: Array,
+        default: () => [],
+    }
 });
 
 const { formatDate } = useDateFormatter();
+
+const ownerTypeLabel = (row) => {
+    const field = row.owner_type;
+    if (!field) return '-';
+
+    const item = props.ownerType.find(s => s.value === field);
+    return item ? item.label : '-';
+};
+const treeStatusLabel = (row) => {
+    const field = row.status;
+    if (!field) return '-';
+
+    const item = props.treeStatus.find(s => s.value === field);
+    return item ? item.label : '-';
+};
+
+const treeHealthLabel = (row) => {
+    const field = row.health_status;
+    if (!field) return '-';
+
+    const item = props.healthStatus.find(s => s.value === field);
+    return item ? item.label : '-';
+};
+
+const treeSexLabel = (row) => {
+    const field = row.sex;
+    if (!field) return '-';
+
+    const item = props.treeSex.find(s => s.value === field);
+    return item ? item.label : '-';
+};
+
 const speciesLabel = (row) => {
     const id = row.species_id;
     const species = row.species;

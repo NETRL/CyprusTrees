@@ -6,9 +6,9 @@ enum DroughtTolerance: string
 {
     use HasLabel;
     
-    case LOW        = 'Low';
-    case MODERATE   = 'Moderate';
-    case HIGH       = 'High';
+    case LOW        = 'low';
+    case MODERATE   = 'moderate';
+    case HIGH       = 'high';
 
     public function label(): string
     {
