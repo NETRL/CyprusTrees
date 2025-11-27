@@ -7,7 +7,7 @@
 
         <!-- Bottom Sheet -->
         <div :class="[
-            'fixed left-0 right-0 bottom-0 bg-white/90 dark:bg-gray-900/90 dark:border-gray-800 dark:text-white text-gray-900',
+            'fixed left-0 right-0 bottom-0 bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-white text-gray-900',
             !isDragging ? 'transition-all duration-300 ease-in-out' : '',
             'z-50 border-t border-gray-200 rounded-t-2xl shadow-2xl flex flex-col overflow-hidden',
         ]" :style="{
@@ -22,7 +22,7 @@
             </button>
 
             <!-- Scrollable content -->
-            <div class="px-5 py-4 flex-1 overflow-y-auto select-none flex justify-center">
+            <div class="py-4 flex-1 overflow-y-auto select-none flex justify-center">
                 <slot />
             </div>
         </div>

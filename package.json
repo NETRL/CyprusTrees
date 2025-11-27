@@ -26,6 +26,7 @@
     "dependencies": {
         "@floating-ui/dom": "^1.7.4",
         "@primeuix/themes": "^1.2.5",
+        "lucide-vue-next": "^0.555.0",
         "maplibre-gl": "^5.10.0",
         "primeicons": "^7.0.0",
         "primevue": "^4.4.1",
