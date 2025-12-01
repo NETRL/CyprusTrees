@@ -1,65 +1,52 @@
 import { BaseMapControl } from '@/Lib/Map/BaseMapControl'
 
 export async function setupBaseLayers(map, { maptilerKey, vectorStyles = [] }) {
-  // Raster basemaps
-  map.addSource('osmStandard', {
-    type: 'raster',
-    tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
-    tileSize: 256,
-  })
-  map.addLayer({
-    id: 'osmStandardLayer',
-    type: 'raster',
-    source: 'osmStandard',
-    layout: { visibility: 'visible' },
-  })
 
-  map.addSource('maptilerDark', {
-    type: 'raster',
-    tiles: [
-      `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}@2x.png?key=${maptilerKey}`,
-    ],
-    tileSize: 256,
-  })
-  map.addLayer({
-    id: 'maptilerDarkLayer',
-    type: 'raster',
-    source: 'maptilerDark',
-    layout: { visibility: 'none' },
-  })
-
-  map.addSource('cartoDark', {
-    type: 'raster',
-    tiles: ['https://s.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'],
-    tileSize: 256,
-  })
-  map.addLayer({
-    id: 'cartoDarkLayer',
-    type: 'raster',
-    source: 'cartoDark',
-    layout: { visibility: 'none' },
-  })
 
   const layersConfig = [
+    // {
+    //   source: 'osmStandard
+    //   id: 'osmStandardLayer',
+    //   name: 'Standard',
+    //   type: 'raster',
+    //   preview: '/storage/images/map-default.png',
+    // },
     {
-      id: 'osmStandardLayer',
-      name: 'Standard',
-      type: 'raster',
-      preview: '/storage/images/map-default.png',
-    },
-    {
+      source: 'maptilerDark',
       id: 'maptilerDarkLayer',
       name: 'Dark',
       type: 'raster',
       preview: '/storage/images/map-dark.png',
+      tiles: [`https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}@2x.png?key=${maptilerKey}`],
+      tileSize: 256,
     },
-    {
-      id: 'cartoDarkLayer',
-      name: 'Carto',
-      type: 'raster',
-      preview: '/storage/images/map-carto.png',
-    },
+    // {
+    //   source: 'cartoDark',
+    //   id: 'cartoDarkLayer',
+    //   name: 'Carto',
+    //   type: 'raster',
+    //   preview: '/storage/images/map-carto.png',
+    //   tiles: ['https://s.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'],
+    //   tileSize: 256,
+
+    // },
   ]
+
+  layersConfig.forEach(layer => {
+    map.addSource(layer.source, {
+      type: layer.type,
+      tiles: layer.tiles,
+      tileSize: layer.tileSize
+    })
+
+    map.addLayer({
+      id: layer.id,
+      type: layer.type,
+      source: layer.source,
+      layout: { visibility: 'none' },
+
+    })
+  })
 
   // Multiple custom MapTiler vector styles
   for (const styleDef of vectorStyles) {
@@ -79,7 +66,8 @@ export async function setupBaseLayers(map, { maptilerKey, vectorStyles = [] }) {
   }
 
   const baseMapControl = new BaseMapControl({
-    defaultLayerId: 'osmStandardLayer',
+    // defaultLayerId: layersConfig[0].id,
+    defaultLayerId: 'darkGreen',
     layers: layersConfig,
     map,
   })

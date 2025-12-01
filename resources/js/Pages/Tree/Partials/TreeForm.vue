@@ -228,10 +228,6 @@ const tagOptions = computed(() =>
     }))
 )
 
-
-
-watch(neighborhoodOptions, v => console.log(v))
-
 const initForm = () => {
     const row = props.dataRow
     displayErrors.value = false

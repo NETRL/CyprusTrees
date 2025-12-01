@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\TreeHelper;
 use App\Models\Tree;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,8 +13,8 @@ class TreesGeoController extends Controller
     public function index(): JsonResponse
     {
         // Fetch from PostGIS
-        $rows = Tree::with('species:id,common_name,latin_name')
-        ->with('neighborhood:id,name,city,district')
+        $rows = Tree::with('species')
+            ->with('neighborhood:id,name,city,district')
             ->select([
                 '*',
                 DB::raw('ST_AsGeoJSON(geom) as geom_point'),
@@ -43,6 +44,7 @@ class TreesGeoController extends Controller
                     'planted_at' => $row->planted_at,
                     'status' => $row->status,
                     'health_status' => $row->health_status,
+                    'sex' => $row->health_status,
                     'height_m' => $row->height_m,
                     'dbh_cm' => $row->dbh_cm,
                     'canopy_diameter_m' => $row->canopy_diameter_m,
@@ -51,7 +53,10 @@ class TreesGeoController extends Controller
                     'source' => $row->source,
                     'neighborhood' => $row->neighborhood,
                     'species' => $row->species,
-                    
+                    'species_origin' => $row->species['origin'],
+                    'species_drought_tolerance' => $row->species['drought_tolerance'],
+                    'species_canopy_class' => $row->species['canopy_class'],
+                    'calculated_pollen_risk' => TreeHelper::calculateIAPS($row->species['opals_score'], $row->sex)
                 ],
                 'geometry'   => $geometry,
             ];

@@ -1,248 +1,146 @@
 <template>
-    <MapSidebar :selectedData="selectedData" />
-    <div ref="mapContainer" class="map-container w-full h-full"></div>
+  <MapSidebar :selectedData="selectedData" />
+  <div ref="mapContainer" class="map-container w-full h-full"></div>
 
+  <!-- Loading overlay controlled by v-model -->
+  <MapLoadingOverlay :isLoading="isLoading" />
 </template>
 
 <script setup>
 import { onMounted, ref, onBeforeUnmount, watch } from 'vue'
-import maplibregl from 'maplibre-gl'
 import MapSidebar from '@/Components/Map/Partials/MapSidebar.vue'
+import MapLoadingOverlay from '@/Components/Map/Partials/MapLoadingOverlay.vue'
+
 import { initMap } from '@/Lib/Map/InitMap'
 import { setupBaseLayers } from '@/Lib/Map/SetupBaseLayers'
+import { loadTreesLayer, loadNeighborhoodsLayer } from '@/Lib/Map/DataLayers'
 import { useMapFilter } from '@/Composables/useMapFilter'
+import { useMapColors } from '@/Composables/useMapColors'
 
 const mapContainer = ref(null)
 const map = ref(null)
+
+const isLoading = ref(true)
 
 const treesData = ref([])
 const neighborhoodData = ref([])
 const selectedData = ref(null)
 
-// initial coordinates
-const center = [33.37, 35.17]  // [lon, lat]
+const center = [33.37, 35.17]
 const zoom = 12
 
-// Your MapTiler API key & style ID
 const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY
 const CUSTOM_VECTOR_STYLES = [
-    {
-        id: 'darkGreen',
-        name: 'Dark Green',
-        styleUrl: `https://api.maptiler.com/maps/019abffb-04c2-7927-8c58-ff64512e9321/style.json?key=${MAPTILER_KEY}`,
-        preview: '/storage/images/map-custom.png',
-    },
-    {
-        id: 'lightStreets',
-        name: 'Light Streets',
-        styleUrl: `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`,
-        preview: '/storage/images/map-custom.png',
-    },
-    {
-        id: 'landcapeDark',
-        name: 'Landscape Dark',
-        styleUrl: `https://api.maptiler.com/maps/landscape-dark/style.json?key=${MAPTILER_KEY}`,
-        preview: '/storage/images/map-custom.png',
-    },
+  {
+    id: 'darkGreen',
+    name: 'Dark Green',
+    styleUrl: `https://api.maptiler.com/maps/019abffb-04c2-7927-8c58-ff64512e9321/style.json?key=${MAPTILER_KEY}`,
+    preview: '/storage/images/map-custom.png',
+  },
+  {
+    id: 'lightStreets',
+    name: 'Light Streets',
+    styleUrl: `https://api.maptiler.com/maps/019ac206-e7bc-7796-8930-3a253cad08d9/style.json?key=${MAPTILER_KEY}`,
+    preview: '/storage/images/map-default.png',
+  },
+  {
+    id: 'landcapeDark',
+    name: 'Landscape Dark',
+    styleUrl: `https://api.maptiler.com/maps/019ac206-7965-7795-8035-d9b24b5c8815/style.json?key=${MAPTILER_KEY}`,
+    preview: '/storage/images/map-custom.png',
+  },
 ]
 
 const { selectedFilter } = useMapFilter()
 
-watch(selectedFilter, v => {
-    console.log(v)
-})
+const { STATUS_COLORS, WATER_USE_COLORS, SHADE_COLORS, ORIGIN_COLORS, POLLEN_RISK_COLORS } =
+  useMapColors()
 
 onMounted(async () => {
-    const { map: m, styleJson } = await initMap(mapContainer.value, {
-        center,
-        zoom,
-        styleUrl: CUSTOM_VECTOR_STYLES[0].styleUrl,
+  try {
+    const { map: m } = await initMap(mapContainer.value, {
+      center,
+      zoom,
+      styleUrl: CUSTOM_VECTOR_STYLES[0].styleUrl,
     })
 
     map.value = m
 
     setupBaseLayers(m, {
-        maptilerKey: MAPTILER_KEY,
-        vectorStyles: CUSTOM_VECTOR_STYLES,
+      maptilerKey: MAPTILER_KEY,
+      vectorStyles: CUSTOM_VECTOR_STYLES,
     })
 
-    fetchNeighborhoods(m)
-    fetchTrees(m)
-    //   await Promise.all([
-    //   ])
+    await Promise.all([
+      loadNeighborhoodsLayer(m, {
+        onDataLoaded: (data) => (neighborhoodData.value = data),
+        onNeighborhoodSelected: (props) => (selectedData.value = props),
+      }),
+      loadTreesLayer(m, {
+        onDataLoaded: (data) => (treesData.value = data),
+        onTreeSelected: (props) => (selectedData.value = props),
+        setInitialFilter: (val) => (selectedFilter.value = val),
+      }),
+    ])
+  } catch (e) {
+    console.error(e)
+    // could set a dedicated error state here
+  } finally {
+    isLoading.value = false
+  }
 })
 
+watch(
+  selectedFilter,
+  (mode) => {
+    if (!map.value || !map.value.getLayer('trees-circle')) return
+    visualiseTreeData(mode)
+  },
+  { immediate: true }
+)
 
-const fetchTrees = (mapInstance) => {
-    fetch('/api/trees')
-        .then((res) => {
-            if (!res.ok) {
-                throw new Error(`Failed to load trees: ${res.status}`)
-            }
-            return res.json()
-        })
-        .then((data) => {
-            if (!mapInstance) return
+const visualiseTreeData = (mode) => {
+  if (!map.value || !map.value.getLayer('trees-circle')) return
 
-            treesData.value = data;
-            // If source already exists (e.g. reloading data), just update it
-            if (mapInstance.getSource('trees')) {
-                mapInstance.getSource('trees').setData(data)
-            } else {
-                // 1) Add GeoJSON source
-                mapInstance.addSource('trees', {
-                    type: 'geojson',
-                    data: data,
-                })
+  let propertyKey
+  let colorExpression
+  const DEFAULT_COLOR = '#16a34a'
 
-                // 2) Add circle layer for tree points
-                mapInstance.addLayer({
-                    id: 'trees-circle',
-                    type: 'circle',
-                    source: 'trees',
-                    paint: {
-                        'circle-radius': 4,
-                        'circle-color': '#16a34a', // green
-                        'circle-stroke-width': 1,
-                        'circle-stroke-color': '#064e3b',
-                    },
-                })
+  switch (mode) {
+    case 'status':
+      propertyKey = ['get', 'status']
+      colorExpression = ['match', propertyKey, ...STATUS_COLORS]
+      break
+    case 'origin':
+      propertyKey = ['get', 'species_origin']
+      colorExpression = ['match', propertyKey, ...ORIGIN_COLORS]
+      break
+    case 'pollen_risk':
+      propertyKey = ['get', 'calculated_pollen_risk']
+      colorExpression = ['step', propertyKey, ...POLLEN_RISK_COLORS]
+      break
+    case 'water_use':
+      propertyKey = ['get', 'species_drought_tolerance']
+      colorExpression = ['match', propertyKey, ...WATER_USE_COLORS]
+      break
+    case 'shade':
+      propertyKey = ['get', 'species_canopy_class']
+      colorExpression = ['match', propertyKey, ...SHADE_COLORS]
+      break
+    default:
+      map.value.setPaintProperty('trees-circle', 'circle-color', DEFAULT_COLOR)
+      return
+  }
 
-                // 3) click popup for trees
-                mapInstance.on('click', 'trees-circle', (e) => {
-                    const feature = e.features?.[0]
-                    if (!feature) return
-
-                    const p = feature.properties
-
-                    selectedData.value = p;
-
-                    console.log(p)
-
-                    // species & neighborhood are JSON-encoded strings in props
-                    let species = null
-                    let neighborhood = null
-                    try {
-                        species = p.species ? JSON.parse(p.species) : null
-                        neighborhood = p.neighborhood ? JSON.parse(p.neighborhood) : null
-                    } catch (err) {
-                        console.warn('Failed to parse nested props', err)
-                    }
-
-                    const html = `
-                        <div>
-                            <strong>Tree #${p.id}</strong><br/>
-                            ${species ? `<div>${species.common_name ?? ''}</div>` : ''}
-                            ${neighborhood ? `<div>${neighborhood.name ?? ''}</div>` : ''}
-                            ${p.address ? `<div>${p.address}</div>` : ''}
-                        </div>
-                    `
-
-                    new maplibregl.Popup()
-                        .setLngLat(e.lngLat)
-                        .setHTML(html)
-                        .addTo(mapInstance)
-
-                })
-
-                mapInstance.on('mouseenter', 'trees-circle', () => {
-                    mapInstance.getCanvas().style.cursor = 'pointer'
-                })
-
-                mapInstance.on('mouseleave', 'trees-circle', () => {
-                    mapInstance.getCanvas().style.cursor = ''
-                })
-            }
-        })
-        .catch((err) => {
-            console.error(err)
-        })
-}
-
-
-
-const fetchNeighborhoods = (mapInstance) => {
-    // Fetch GeoJSON from the API
-    fetch('/api/neighborhoods')
-        .then((res) => {
-            if (!res.ok) {
-                throw new Error(`Failed to load neighborhoods: ${res.status}`)
-            }
-            return res.json()
-        })
-        .then((data) => {
-            if (!mapInstance) return
-            neighborhoodData.value = data;
-            // 2) Add source
-            mapInstance.addSource('neighborhoods', {
-                type: 'geojson',
-                data,
-            })
-
-            // 3) Add fill layer
-            mapInstance.addLayer({
-                id: 'neighborhoods-fill',
-                type: 'fill',
-                source: 'neighborhoods',
-                paint: {
-                    'fill-color': '#1d4ed8',
-                    'fill-opacity': 0.25,
-                },
-            })
-
-            // 4) Add outline layer
-            mapInstance.addLayer({
-                id: 'neighborhoods-outline',
-                type: 'line',
-                source: 'neighborhoods',
-                paint: {
-                    'line-color': '#1d4ed8',
-                    'line-width': 1,
-                },
-            })
-
-            // 5) Click → popup
-            mapInstance.on('click', (e) => {
-                const features = mapInstance.queryRenderedFeatures(e.point, {
-                    layers: ['neighborhoods-fill'],
-                })
-
-                if (!features.length) return
-
-                const feature = features[0]
-
-                const { name, geom_ref } = feature.properties
-                selectedData.value = feature.properties
-
-                new maplibregl.Popup()
-                    .setLngLat(e.lngLat)
-                    .setHTML(
-                        `<div>
-                                <strong>${name}</strong><br/>
-                                <small>${geom_ref}</small>
-                            </div>`
-                    )
-                    .addTo(mapInstance)
-            })
-
-            // 6) Cursor change on hover
-            mapInstance.on('mouseenter', 'neighborhoods-fill', () => {
-                mapInstance.getCanvas().style.cursor = 'pointer'
-            })
-
-            mapInstance.on('mouseleave', 'neighborhoods-fill', () => {
-                mapInstance.getCanvas().style.cursor = ''
-            })
-        })
-        .catch((err) => {
-            console.error(err)
-        })
+  if (colorExpression) {
+    map.value.setPaintProperty('trees-circle', 'circle-color', colorExpression)
+  }
 }
 
 onBeforeUnmount(() => {
-    if (map.value) {
-        map.value.remove()
-        map.value = null
-    }
+  if (map.value) {
+    map.value.remove()
+    map.value = null
+  }
 })
 </script>

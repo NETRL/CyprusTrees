@@ -63,8 +63,6 @@ const props = defineProps({
     }
 })
 
-console.log(props.selectedData)
-
 const emit = defineEmits(['update:state'])
 const { isMobileOpen } = useSidebar()
 
