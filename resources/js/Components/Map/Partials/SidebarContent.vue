@@ -10,6 +10,9 @@
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Explore urban forestry data
             </p>
+            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                Total trees mapped: <span class="font-semibold">{{ totalTrees }}</span>
+            </p>
         </div>
 
         <!-- Content Area -->
@@ -19,14 +22,16 @@
                 <CompactFilter v-model="selectedFilter" :options="options" />
             </div>
 
-            <!-- Legend Content - Scrollable with custom scrollbar -->
-            <div class="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
+            <!-- Legend Content -->
+            <div
+                class="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
 
                 <!-- Status Filter -->
                 <template v-if="selectedFilter === 'status'">
                     <div class="space-y-4 pb-4">
                         <div>
-                            <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+                            <h3
+                                class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
                                 <Leaf class="w-4 h-4 text-emerald-600" />
                                 Administrative Status
                             </h3>
@@ -36,7 +41,8 @@
                         </div>
                         <div class="space-y-0.5">
                             <LegendItem v-for="item in statusLegend" :key="item.key" :color="item.color"
-                                :label="item.label" />
+                                :label="item.label" :count="item.count" :icon="item.icon"
+                                @toggle="() => emit('toggleCategory', { mode: selectedFilter, key: item.key })" />
                         </div>
                     </div>
                 </template>
@@ -45,7 +51,8 @@
                 <template v-if="selectedFilter === 'origin'">
                     <div class="space-y-4 pb-4">
                         <div>
-                            <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+                            <h3
+                                class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
                                 <MapPin class="w-4 h-4 text-emerald-600" />
                                 Species Origin & Significance
                             </h3>
@@ -55,7 +62,9 @@
                         </div>
                         <div class="space-y-0.5">
                             <LegendItem v-for="item in originLegend" :key="item.key" :color="item.color"
-                                :label="item.label" />
+                                :label="item.label" :count="item.count" :icon="item.icon"
+                                @toggle="() => emit('toggleCategory', { mode: selectedFilter, key: item.key })" />
+
                         </div>
                     </div>
                 </template>
@@ -64,12 +73,13 @@
                 <template v-if="selectedFilter === 'pollen_risk'">
                     <div class="space-y-4 pb-4">
                         <div>
-                            <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+                            <h3
+                                class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
                                 <AlertTriangle class="w-4 h-4 text-amber-600" />
                                 Pollen Risk (OPALS)
                             </h3>
                             <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                                Based on OPALS score (1-10) for respiratory health risk. 
+                                Based on OPALS score (1-10) for respiratory health risk.
                                 <span class="font-medium">Note:</span> Primarily applies to male trees.
                             </p>
                         </div>
@@ -89,7 +99,8 @@
                 <template v-if="selectedFilter === 'water_use'">
                     <div class="space-y-4 pb-4">
                         <div>
-                            <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+                            <h3
+                                class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
                                 <Droplets class="w-4 h-4 text-blue-600" />
                                 Water Use & Drought Tolerance
                             </h3>
@@ -99,7 +110,9 @@
                         </div>
                         <div class="space-y-0.5">
                             <LegendItem v-for="item in waterUseLegend" :key="item.key" :color="item.color"
-                                :label="item.label" />
+                                :label="item.label" :count="item.count" :icon="item.icon"
+                                @toggle="() => emit('toggleCategory', { mode: selectedFilter, key: item.key })" />
+
                         </div>
                     </div>
                 </template>
@@ -108,7 +121,8 @@
                 <template v-if="selectedFilter === 'shade'">
                     <div class="space-y-4 pb-4">
                         <div>
-                            <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+                            <h3
+                                class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
                                 <Sun class="w-4 h-4 text-amber-600" />
                                 Shade Contribution
                             </h3>
@@ -118,7 +132,9 @@
                         </div>
                         <div class="space-y-0.5">
                             <LegendItem v-for="item in shadeLegend" :key="item.key" :color="item.color"
-                                :label="item.label" />
+                                :label="item.label" :count="item.count" :icon="item.icon"
+                                @toggle="() => emit('toggleCategory', { mode: selectedFilter, key: item.key })" />
+
                         </div>
                     </div>
                 </template>
@@ -129,12 +145,33 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import CompactFilter from '@/Components/Map/Partials/CompactFilter.vue';
 import LegendItem from '@/Components/Map/Partials/LegentItem.vue';
 import { useMapColors } from '@/Composables/useMapColors';
 import { Leaf, MapPin, AlertTriangle, Droplets, Sun } from 'lucide-vue-next';
 import { useMapFilter } from '@/Composables/useMapFilter';
+
+const props = defineProps({
+    selectedData: {
+        type: Object,
+        default: null
+    },
+    treeData: {
+        type: Object,
+        default: () => null
+    },
+    neighborhoodData: {
+        type: Object,
+        default: () => null
+    },
+    hiddenCategories: {
+        type: Object,
+        default: () => ({}), // { status: Set(), origin: Set(), ... }
+    },
+})
+
+const emit = defineEmits(['toggleCategory']);
 
 // --- Reactive State ---
 const { selectedFilter } = useMapFilter();
@@ -157,6 +194,29 @@ const {
     SHADE_COLORS
 } = useMapColors();
 
+const treeFeatures = computed(() =>
+    props.treeData?.features ?? []
+);
+
+const totalTrees = computed(() => treeFeatures.value.length);
+
+const makeCounts = (propName) => computed(() => {
+    const counts = {};
+    for (const feature of treeFeatures.value) {
+        const val = feature.properties?.[propName];
+        if (!val) continue;
+        counts[val] = (counts[val] || 0) + 1;
+    }
+    counts['all'] = totalTrees.value
+    return counts;
+});
+
+
+const statusCounts = makeCounts('status');
+const originCounts = makeCounts('species_origin');
+const waterUseCounts = makeCounts('species_drought_tolerance');
+const shadeCounts = makeCounts('species_canopy_class');
+
 // --- Helper Function for Categorical Legends ---
 const getLegendData = (colorArray, labels) => {
     const data = [];
@@ -170,8 +230,9 @@ const getLegendData = (colorArray, labels) => {
     return data;
 };
 
-// --- Labels for Categorical Data (Reordered for better UX) ---
+// --- Labels for Categorical Data  ---
 const statusLabels = {
+    all: 'All',
     existing: 'Existing Tree',
     newly_planted: 'Newly Planted',
     proposed: 'Proposed Planting',
@@ -201,22 +262,124 @@ const shadeLabels = {
     M: 'Medium Canopy',
     L: 'Large Canopy',
 };
+// --- Legends with counts and icons ---
 
-// --- Computed Legend Data (Maintains order from labels) ---
+// Status includes "all"
 const statusLegend = computed(() => {
-    // Custom ordering: active trees first, then issues, then historical
-    const orderedKeys = ['existing', 'newly_planted', 'proposed', 'vacant_pit', 'pending_removal', 'dead', 'stump', 'removed', 'missing', 'unknown'];
-    return orderedKeys.map(key => {
-        const colorIndex = STATUS_COLORS.indexOf(key);
-        return {
-            key,
-            color: STATUS_COLORS[colorIndex + 1],
-            label: statusLabels[key]
-        };
-    }).filter(item => item.color); // Filter out any that don't have colors
+    const orderedKeys = [
+        'all',
+        'existing',
+        'newly_planted',
+        'proposed',
+        'vacant_pit',
+        'pending_removal',
+        'dead',
+        'stump',
+        'removed',
+        'missing',
+        'unknown',
+    ];
+
+    const counts = statusCounts.value;
+    const hiddenSet =
+        props.hiddenCategories?.status instanceof Set
+            ? props.hiddenCategories.status
+            : new Set();
+
+    const anyHidden = hiddenSet.size > 0;
+
+    return orderedKeys
+        .map((key) => {
+            // "all" is virtual row: neutral color + action-based icon
+            if (key === 'all') {
+                return {
+                    key,
+                    color: '#6b7280', // neutral gray
+                    label: statusLabels[key],
+                    count: counts[key] ?? totalTrees.value,
+                    icon: anyHidden ? 'pi-eye' : 'pi-eye-slash',
+                    isAll: true,
+                };
+            }
+
+            const colorIndex = STATUS_COLORS.indexOf(key);
+            const color = STATUS_COLORS[colorIndex + 1];
+            if (!color) return null;
+
+            const visible = !hiddenSet.has(key);
+            const icon = visible ? 'pi-eye' : 'pi-eye-slash';
+
+            return {
+                key,
+                color,
+                label: statusLabels[key],
+                count: counts[key] ?? 0,
+                icon,
+                isAll: false,
+            };
+        })
+        .filter(Boolean);
 });
 
-const originLegend = computed(() => getLegendData(ORIGIN_COLORS, originLabels));
-const waterUseLegend = computed(() => getLegendData(WATER_USE_COLORS, waterUseLabels));
-const shadeLegend = computed(() => getLegendData(SHADE_COLORS, shadeLabels));
+const originLegend = computed(() => {
+    const base = getLegendData(ORIGIN_COLORS, originLabels);
+    const counts = originCounts.value;
+    const hiddenSet =
+        props.hiddenCategories?.origin instanceof Set
+            ? props.hiddenCategories.origin
+            : new Set();
+
+    return base.map((item) => {
+        const visible = !hiddenSet.has(item.key);
+        const icon = visible ? 'pi-eye-slash' : 'pi-eye';
+
+        return {
+            ...item,
+            count: counts[item.key] ?? 0,
+            icon,
+        };
+    });
+});
+
+const waterUseLegend = computed(() => {
+    const base = getLegendData(WATER_USE_COLORS, waterUseLabels);
+    const counts = waterUseCounts.value;
+    const hiddenSet =
+        props.hiddenCategories?.water_use instanceof Set
+            ? props.hiddenCategories.water_use
+            : new Set();
+
+    return base.map((item) => {
+        const visible = !hiddenSet.has(item.key);
+        const icon = visible ? 'pi-eye-slash' : 'pi-eye';
+
+        return {
+            ...item,
+            count: counts[item.key] ?? 0,
+            icon,
+        };
+    });
+});
+
+const shadeLegend = computed(() => {
+    const base = getLegendData(SHADE_COLORS, shadeLabels);
+    const counts = shadeCounts.value;
+    const hiddenSet =
+        props.hiddenCategories?.shade instanceof Set
+            ? props.hiddenCategories.shade
+            : new Set();
+
+    return base.map((item) => {
+        const visible = !hiddenSet.has(item.key);
+        const icon = visible ? 'pi-eye-slash' : 'pi-eye';
+
+        return {
+            ...item,
+            count: counts[item.key] ?? 0,
+            icon,
+        };
+    });
+});
+
+
 </script>

@@ -7,19 +7,19 @@
             'opacity-0 pointer-events-none px-0 py-5': !isExpanded && !isHovered,
         },
     ]">
-        <SidebarContent v-bind="props" />
+        <SidebarContent v-bind="props" @toggleCategory="payload => emit('toggleCategory', payload)" />
     </aside>
-    
+
     <!-- Mobile Bottom Sheet -->
     <BottomSheet @update:state="(s) => (mobileState = s)">
         <div class="flex flex-col h-full px-5 pt-4 pb-6 w-full sm:items-center">
-            <SidebarContent v-bind="props" />
+            <SidebarContent v-bind="props" @toggleCategory="payload => emit('toggleCategory', payload)" />
         </div>
     </BottomSheet>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useSidebar } from '@/Composables/useSidebar'
 import SidebarContent from '@/Components/Map/Partials/SidebarContent.vue'
 import BottomSheet from '@/Components/Map/Partials/BottomSheet.vue'
@@ -28,8 +28,26 @@ const props = defineProps({
     selectedData: {
         type: Object,
         default: null
+    },
+    treeData: {
+        type: Object,
+        default: () => null
+    },
+    neighborhoodData: {
+        type: Object,
+        default: () => null
+    },
+    hiddenCategories: {
+        type: Object,
+        default: () => null
+    },
+    currentMode: {
+        type: String,
+        default: ''
     }
 })
+
+const emit = defineEmits(['toggleCategory'])
 
 const { isExpanded, isHovered } = useSidebar()
 const mobileState = ref('closed')
