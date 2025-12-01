@@ -26,7 +26,7 @@
     </div>
 
     <div>
-      <DataTable class="m-4 rounded-xl border border-gray-200  dark:border-gray-800" ref="dt"
+      <DataTable class="m-4 rounded-xl border border-gray-200  dark:border-gray-800 truncate" ref="dt"
         v-model:selection="selected" :filters="filters" :value="tableData.data" :lazy="true" :paginator="true"
         :rows="perPage" :totalRecords="tableData.total" :first="(tableData.current_page - 1) * tableData.per_page"
         :rowsPerPageOptions="[5, 10, 25, 50, 100]" responsiveLayout="scroll" :loading="isLoading" @page="onPage"
@@ -46,7 +46,7 @@
         <Column :exportable="false" selectionMode="multiple" style="width: 3rem"></Column>
 
         <!-- If parent provides #columns, use that -->
-        <template v-if="$slots.columns">
+        <template v-if="$slots.columns" >
           <slot name="columns" :isColumnVisible="isColumnVisible" :selectedColumns="selectedColumns"
             :columnsToShow="columnsToShow" />
         </template>
@@ -64,7 +64,9 @@
 
             <!-- default (non-date columns) -->
             <template #body="slotProps" v-else>
-              {{ slotProps.data[col.value] }}
+              <span class="block max-w-[180px] truncate" :title="slotProps.data[col.value]">
+                {{ slotProps.data[col.value] }}
+              </span>
             </template>
           </Column>
 

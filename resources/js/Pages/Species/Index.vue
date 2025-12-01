@@ -6,7 +6,7 @@
     </ReusableDataTable>
 
     <SpeciesForm v-model:visible="formVisible" routeResource="species" :action="formAction" :dataRow="formRow"
-      @updated="reloadTable" @created="reloadTable" :droughtOptions="droughtOptions" :canopyOptions="canopyOptions" />
+      @updated="reloadTable" @created="reloadTable" :droughtOptions="droughtOptions" :canopyOptions="canopyOptions" :originOptions="originOptions" />
   </div>
 </template>
 
@@ -37,7 +37,11 @@ const props = defineProps({
   canopyOptions: {
     type: Array,
     default: () => [],
-  }
+  },
+  originOptions: {
+    type: Array,
+    default: () => [],
+  },
 });
 
 console.log(props.dataColumns)

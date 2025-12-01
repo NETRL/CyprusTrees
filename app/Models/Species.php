@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\CanopyClass;
 use App\Enums\DroughtTolerance;
+use App\Enums\SpeciesOrigin;
 use App\Models\Traits\BaseModelTrait;
 use App\Models\Traits\Paginatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,6 +20,7 @@ class Species extends Model
         'latin_name',
         'common_name',
         'family',
+        'origin',
         'opals_score',
         'drought_tolerance',
         'canopy_class',
@@ -30,6 +32,7 @@ class Species extends Model
         'latin_name',
         'common_name',
         'family',
+        'origin',
         'opals_score',
         'drought_tolerance',
         'canopy_class',
@@ -41,6 +44,7 @@ class Species extends Model
         'latin_name',
         'common_name',
         'family',
+        'origin',
         'opals_score',
         'drought_tolerance',
         'canopy_class',
@@ -53,6 +57,7 @@ class Species extends Model
         'latin_name',
         'common_name',
         'family',
+        'origin',
         'opals_score',
         'drought_tolerance',
         'canopy_class',
@@ -65,6 +70,7 @@ class Species extends Model
         'latin_name',
         'common_name',
         'family',
+        'origin',
         'opals_score',
         'drought_tolerance',
         'canopy_class',
@@ -92,5 +98,9 @@ class Species extends Model
     public static function getCanopyClassOptions(): array
     {
         return CanopyClass::options();
+    }
+
+    public static function getOriginOptions(): array{
+        return SpeciesOrigin::options();
     }
 }

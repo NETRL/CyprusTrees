@@ -35,6 +35,7 @@ class SpeciesController extends Controller
             'dataColumns' => Species::getDataColumns(),
             'droughtOptions' => Species::getDroughtToleranceOptions(),
             'canopyOptions' => Species::getCanopyClassOptions(),
+            'originOptions' => Species::getOriginOptions(),
         ]);
     }
 

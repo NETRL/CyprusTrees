@@ -16,9 +16,10 @@ return new class extends Migration
             $table->string('latin_name', 120)->nullable();
             $table->string('common_name', 120)->nullable();
             $table->string('family', 120)->nullable();
-            $table->tinyInteger('opals_score')->nullable(); // 0-10
-            $table->string('drought_tolerance', 20)->nullable();
-            $table->string('canopy_class', 10)->nullable();
+            $table->string('origin', 20)->nullable();               // enum
+            $table->tinyInteger('opals_score')->nullable();         // 0-10
+            $table->string('drought_tolerance', 20)->nullable();    // enum
+            $table->string('canopy_class', 10)->nullable();         // enum
             $table->text('notes')->nullable();
             $table->timestamps();
         });
