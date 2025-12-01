@@ -107,7 +107,7 @@ watch(
         if (!map.value || !map.value.getLayer('trees-circle')) return
         visualiseTreeData(mode)
     },
-    { immediate: true, deep: true }
+    { immediate: true }
 )
 
 const visualiseTreeData = (mode) => {
@@ -215,32 +215,29 @@ const onToggleCategory = ({ mode, key }) => {
 
 
 const applyVisibility = (mode = selectedFilter.value) => {
-    if (!map.value || !map.value.getLayer('trees-circle')) return;
+  if (!map.value || !map.value.getLayer('trees-circle')) return;
 
-    const propName = modeToPropName[mode];
-    if (!propName) {
-        map.value.setPaintProperty('trees-circle', 'circle-opacity', 1);
-        return;
-    }
+  const propName = modeToPropName[mode];
+  if (!propName) {
+    // reset any filter
+    map.value.setFilter('trees-circle', null);
+    return;
+  }
 
-    const hidden = Array.from(hiddenCategories.value[mode] || []);
+  const hidden = Array.from(hiddenCategories.value[mode] || []);
 
-    // If nothing is hidden, show everything
-    if (!hidden.length) {
-        map.value.setPaintProperty('trees-circle', 'circle-opacity', 1);
-        return;
-    }
+  // If nothing is hidden, remove the filter: everything is visible + clickable
+  if (!hidden.length) {
+    map.value.setFilter('trees-circle', null);
+    return;
+  }
 
-    // hide only the selected categories
-    const opacityExpression = [
-        'case',
-        ['in', ['get', propName], ['literal', hidden]],
-        0.0, // these are hidden
-        1.0  // others visible
-    ];
+  // Keep ONLY features whose propName is NOT in `hidden`
+  const filter = ['!', ['in', ['get', propName], ['literal', hidden]]];
 
-    map.value.setPaintProperty('trees-circle', 'circle-opacity', opacityExpression);
+  map.value.setFilter('trees-circle', filter);
 };
+
 
 watch(
     selectedFilter,

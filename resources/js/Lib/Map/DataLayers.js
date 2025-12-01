@@ -61,8 +61,8 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
       paint: {
         'circle-radius': 10,
         'circle-color': 'rgba(34, 197, 94, 0.25)',
-        'circle-stroke-width': 3,
-        'circle-stroke-color': '#16a34a',
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#22c55e',
       },
       filter: ['==', ['get', 'id'], -1],
     });
