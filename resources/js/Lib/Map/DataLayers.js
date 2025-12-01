@@ -15,7 +15,9 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
     mapInstance.addSource('trees', {
       type: 'geojson',
       data,
+      promoteId: 'id'
     })
+
 
     mapInstance.addLayer({
       id: 'trees-circle',
@@ -23,45 +25,162 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
       source: 'trees',
       paint: {
         'circle-radius': 3,
-        'circle-stroke-width': 0,
-        'circle-stroke-color': '#064e3b',
+        'circle-color': '#16a34a',
+        'circle-stroke-width': 10,
+        'circle-stroke-color': 'rgba(0,0,0,0)',
       },
     })
 
+    // Hover ring (no pulse, just a halo while hovering)
+    mapInstance.addLayer({
+      id: 'trees-circle-hover',
+      type: 'circle',
+      source: 'trees',
+      paint: {
+        'circle-radius': 10,
+        'circle-color': 'rgba(0,0,0,0)', // transparent fill
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#22c55e',
+      },
+      // initially match nothing
+      filter: ['==', ['get', 'id'], -1],
+    });
+
+    // Selected ring (this one will pulse)
+    mapInstance.addLayer({
+      id: 'trees-circle-selected',
+      type: 'circle',
+      source: 'trees',
+      paint: {
+        'circle-radius': 10,
+        'circle-color': 'rgba(0,0,0,0)',
+        'circle-stroke-width': 3,
+        'circle-stroke-color': '#16a34a',
+      },
+      filter: ['==', ['get', 'id'], -1],
+    });
+
+    let hoveredId = null;
+    let selectedId = null;
+
+    let pulseAnimationId = null;
+    const baseSelectedRadius = 10;
+
+    function startPulse(map) {
+      if (pulseAnimationId != null) return; // already running
+
+      const start = performance.now();
+
+      const frame = (time) => {
+        const t = (time - start) / 300; // speed factor
+        const pulse = baseSelectedRadius + Math.sin(t) * 2; // between 4 and 8
+
+        map.setPaintProperty('trees-circle-selected', 'circle-radius', pulse);
+        pulseAnimationId = requestAnimationFrame(frame);
+      };
+
+      pulseAnimationId = requestAnimationFrame(frame);
+    }
+
+    function stopPulse(map) {
+      if (pulseAnimationId != null) {
+        cancelAnimationFrame(pulseAnimationId);
+        pulseAnimationId = null;
+      }
+      map.setPaintProperty('trees-circle-selected', 'circle-radius', baseSelectedRadius);
+    }
+
+    function clearSelection(map) {
+      selectedId = null;
+      stopPulse(map);
+      map.setFilter('trees-circle-selected', ['==', ['get', 'id'], -1]);
+    }
+
     mapInstance.on('click', 'trees-circle', (e) => {
-      const feature = e.features?.[0]
-      if (!feature) return
+      const feature = e.features?.[0];
+      if (!feature) return;
 
-      const p = feature.properties
-      onTreeSelected?.(p)
+      const p = feature.properties;
+      const id = p?.id ?? feature.id;
+      if (!id) return;
 
-      let species = null
-      let neighborhood = null
+      // --- selection logic ---
+      selectedId = id;
+      // selected ring: show only this id
+      mapInstance.setFilter('trees-circle-selected', ['==', ['get', 'id'], selectedId]);
+      // hover ring: hide when selected
+      hoveredId = null;
+      mapInstance.setFilter('trees-circle-hover', ['==', ['get', 'id'], -1]);
+      // start pulsating
+      startPulse(mapInstance);
+
+      // --- your existing code ---
+      onTreeSelected?.(p);
+
+      let species = null;
+      let neighborhood = null;
       try {
-        species = p.species ? JSON.parse(p.species) : null
-        neighborhood = p.neighborhood ? JSON.parse(p.neighborhood) : null
+        species = p.species ? JSON.parse(p.species) : null;
+        neighborhood = p.neighborhood ? JSON.parse(p.neighborhood) : null;
       } catch (err) {
-        console.warn('Failed to parse nested props', err)
+        console.warn('Failed to parse nested props', err);
       }
 
       const html = `
-        <div>
-          <strong>Tree #${p.id}</strong><br/>
-          ${species ? `<div>${species.common_name ?? ''}</div>` : ''}
-          ${neighborhood ? `<div>${neighborhood.name ?? ''}</div>` : ''}
-          ${p.address ? `<div>${p.address}</div>` : ''}
-        </div>
-      `
+    <div>
+      <strong>Tree #${p.id}</strong><br/>
+      ${species ? `<div>${species.common_name ?? ''}</div>` : ''}
+      ${neighborhood ? `<div>${neighborhood.name ?? ''}</div>` : ''}
+      ${p.address ? `<div>${p.address}</div>` : ''}
+    </div>
+  `;
 
-      new maplibregl.Popup().setLngLat(e.lngLat).setHTML(html).addTo(mapInstance)
-    })
+      new maplibregl.Popup()
+        .setLngLat(e.lngLat)
+        .setHTML(html)
+        .addTo(mapInstance);
+    });
+
 
     mapInstance.on('mouseenter', 'trees-circle', () => {
       mapInstance.getCanvas().style.cursor = 'pointer'
     })
+
+    mapInstance.on('mousemove', 'trees-circle', (e) => {
+      const feature = e.features?.[0];
+      if (!feature) return;
+
+      const id = feature.properties?.id ?? feature.id;
+      if (!id) return;
+
+      // If this feature is selected, don't show hover ring on top – keep only selected ring
+      if (id === selectedId) {
+        hoveredId = null;
+        mapInstance.setFilter('trees-circle-hover', ['==', ['get', 'id'], -1]);
+      } else {
+        hoveredId = id;
+        mapInstance.setFilter('trees-circle-hover', ['==', ['get', 'id'], hoveredId]);
+      }
+
+      mapInstance.getCanvas().style.cursor = 'pointer';
+    });
+
     mapInstance.on('mouseleave', 'trees-circle', () => {
-      mapInstance.getCanvas().style.cursor = ''
-    })
+      hoveredId = null;
+      mapInstance.setFilter('trees-circle-hover', ['==', ['get', 'id'], -1]);
+      mapInstance.getCanvas().style.cursor = '';
+    });
+
+    mapInstance.on('click', (e) => {
+      // Skip clicks that hit a tree feature – those are handled above
+      const features = mapInstance.queryRenderedFeatures(e.point, {
+        layers: ['trees-circle'],
+      });
+
+      if (features.length === 0) {
+        clearSelection(mapInstance);
+      }
+    });
   }
 
   setInitialFilter?.('status')
@@ -100,28 +219,6 @@ export async function loadNeighborhoodsLayer(mapInstance, { onDataLoaded, onNeig
         'line-color': '#1d4ed8',
         'line-width': 0,
       },
-    })
-
-    mapInstance.on('click', (e) => {
-      const features = mapInstance.queryRenderedFeatures(e.point, {
-        layers: ['neighborhoods-fill'],
-      })
-      if (!features.length) return
-
-      const feature = features[0]
-      onNeighborhoodSelected?.(feature.properties)
-
-      const { name, geom_ref } = feature.properties
-
-      new maplibregl.Popup()
-        .setLngLat(e.lngLat)
-        .setHTML(
-          `<div>
-            <strong>${name}</strong><br/>
-            <small>${geom_ref}</small>
-          </div>`
-        )
-        .addTo(mapInstance)
     })
 
     mapInstance.on('mouseenter', 'neighborhoods-fill', () => {

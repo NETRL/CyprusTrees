@@ -90,6 +90,9 @@ onMounted(async () => {
                 setInitialFilter: (val) => (selectedFilter.value = val),
             }),
         ])
+        if (map.value && map.value.getLayer('trees-circle')) {
+            visualiseTreeData(selectedFilter.value ?? 'status')
+        }
     } catch (e) {
         console.error(e)
         // could set a dedicated error state here
@@ -104,7 +107,7 @@ watch(
         if (!map.value || !map.value.getLayer('trees-circle')) return
         visualiseTreeData(mode)
     },
-    { immediate: true }
+    { immediate: true, deep: true }
 )
 
 const visualiseTreeData = (mode) => {

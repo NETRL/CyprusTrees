@@ -1,7 +1,7 @@
 <template>
-    <div class="flex flex-col h-full">
-        <!-- Enhanced Header -->
-        <div class="shrink-0 pb-5 border-b border-gray-200 dark:border-gray-800">
+    <div class="flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
+        <!-- Header -->
+        <div class="sticky shrink-0 pb-5 border-b border-gray-200 dark:border-gray-800">
             <div class="flex items-center gap-2 mb-1">
                 <span class="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
                     Nicosia Trees
@@ -24,7 +24,7 @@
 
             <!-- Legend Content -->
             <div
-                class="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
+                class="flex-1 ">
 
                 <!-- Status Filter -->
                 <template v-if="selectedFilter === 'status'">
