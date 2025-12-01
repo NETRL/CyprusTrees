@@ -5,7 +5,7 @@ export function useMapColors() {
     const STATUS_COLORS = [
         'existing', '#10b981',      // Brighter emerald green
         'newly_planted', '#6ee7b7', // Brighter mint green
-        'dead', '#78350f',          // Lighter brown (more visible)
+        'dead', '#C4A484',          // Lighter brown (more visible)
         'stump', '#9ca3af',         // Lighter grey
         'removed', '#d4d4d4',       // Light grey
         'missing', '#fbbf24',       // Brighter yellow

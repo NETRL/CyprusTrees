@@ -24,12 +24,19 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
       type: 'circle',
       source: 'trees',
       paint: {
-        'circle-radius': 3,
+        'circle-radius': [
+          'interpolate', ['linear'], ['zoom'],
+          10, 2,   // at zoom 10
+          14, 2,   // at zoom 14
+          17, 4    // at zoom 17
+        ],
         'circle-color': '#16a34a',
         'circle-stroke-width': 10,
         'circle-stroke-color': 'rgba(0,0,0,0)',
       },
     })
+
+
 
     // Hover ring (no pulse, just a halo while hovering)
     mapInstance.addLayer({
@@ -38,7 +45,7 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
       source: 'trees',
       paint: {
         'circle-radius': 10,
-        'circle-color': 'rgba(0,0,0,0)', // transparent fill
+        'circle-color': 'rgba(34, 197, 94, 0.25)', // transparent fill
         'circle-stroke-width': 2,
         'circle-stroke-color': '#22c55e',
       },
@@ -53,7 +60,7 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
       source: 'trees',
       paint: {
         'circle-radius': 10,
-        'circle-color': 'rgba(0,0,0,0)',
+        'circle-color': 'rgba(34, 197, 94, 0.25)',
         'circle-stroke-width': 3,
         'circle-stroke-color': '#16a34a',
       },
