@@ -21,5 +21,16 @@ import AppHeader from '@/Layouts/AppHeader.vue';
 import MapLibreView from '@/Components/Map/MapLibreView.vue';
 import HeaderLogo from '@/Components/Layout/Header/HeaderLogo.vue';
 import MapFilterProvider from '@/Components/Map/Partials/MapFilterProvider.vue';
+import { provide } from 'vue';
+
+const props = defineProps({
+    reportTypes: {
+        type: Array,
+        default: () => []
+    },
+})
+
+provide('reportTypes', props.reportTypes)
+
 
 </script>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\TreeStatus;
 use App\Models\CitizenReport;
 use App\Models\ReportType;
 use App\Models\Tree;
@@ -9,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rules\Enum;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -48,6 +50,8 @@ class CitizenReportController extends Controller
     public function store(Request $request): RedirectResponse
     {
 
+        dd($request->all());
+
         $validated = $request->validate([
             "report_type_id" => 'required|integer|exists:report_types,id',
             "created_by"    => 'nullable|integer|exists:users,id',
@@ -56,9 +60,8 @@ class CitizenReportController extends Controller
             'lat'           => ['nullable', 'numeric', 'between:-90,90'],
             'lon'           => ['nullable', 'numeric', 'between:-180,180'],
             "description"   => 'nullable|string|max:5000',
-            "status"        => 'nullable|string|max:20',
+            "status"        => ['nullable', new Enum(TreeStatus::class)],
             "photo_url"     => 'nullable|string|max:255',
-            "created_at"    => 'nullable|date',
             "resolved_at"   => 'nullable|date',
         ]);
 

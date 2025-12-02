@@ -17,12 +17,15 @@ use App\Http\Controllers\SpeciesController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TreeController;
 use App\Http\Controllers\UserAddressController;
+use App\Models\ReportType;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Map/MapView', []);
+    return Inertia::render('Map/MapView', [
+        'reportTypes' => ReportType::all(),
+    ]);
 })->name('/');
 
 

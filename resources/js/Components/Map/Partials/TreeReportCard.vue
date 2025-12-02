@@ -2,8 +2,8 @@
     <Modal v-if="showModal" class="m-4">
         <template #body>
             <div
-                class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
-                <!-- close btn -->
+                class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white dark:bg-gray-900 p-5">
+                <!-- Close Button -->
                 <button @click="() => emit('closeModal')"
                     class="transition-color absolute right-5 top-5 z-999 flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:bg-gray-700 dark:bg-white/[0.05] dark:text-gray-400 dark:hover:bg-white/[0.07] dark:hover:text-gray-300">
                     <svg class="fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -14,43 +14,155 @@
                     </svg>
                 </button>
 
+                <!-- Not Authenticated State -->
                 <template v-if="!isAuthenticated">
                     <div class="px-2 pr-14">
-                        <h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-                            Report an issue
+                        <h4
+                            class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90 flex items-center gap-3">
+                            <Flag class="w-7 h-7 text-red-600" />
+                            Report an Issue
                         </h4>
                         <p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-                            Please log-in to report an issue
+                            Please log in to report an issue with this tree
                         </p>
                     </div>
-                    <Link :href="route('login')">Login</Link>
+
+                    <div
+                        class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-6">
+                        <div class="flex items-start gap-3">
+                            <AlertCircle class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                            <div class="text-sm text-amber-700 dark:text-amber-400">
+                                Authentication required to submit reports. This helps us track and respond to issues
+                                effectively.
+                            </div>
+                        </div>
+                    </div>
+
+                    <Link :href="route('login')"
+                        class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold hover:from-emerald-700 hover:to-teal-700 transition-all">
+                    <LogIn class="w-4 h-4" />
+                    Login to Continue
+                    </Link>
                 </template>
+
+                <!-- Authenticated State -->
                 <template v-else>
                     <div class="px-2 pr-14">
-                        <h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-                            Report an issue
+                        <h4
+                            class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90 flex items-center gap-3">
+                            <Flag class="w-7 h-7 text-red-600" />
+                            Report an Issue
                         </h4>
                         <p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-                            Please fill out the form to report an issue with the Tree
+                            Please fill out the form to report an issue with this tree
                         </p>
                     </div>
-                    <div class="custom-scrollbar h-[458px] overflow-y-auto p-2">
-                        <div class="mt-7">
-                            <form @submit.prevent="handleSubmit" class="flex flex-col">
-                                <h5 class="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
-                                    Personal Information
-                                </h5>
-                                <div class="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                                    <div class="col-span-2 lg:col-span-1">
-                                        <label
-                                            class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                            First Name
-                                        </label>
 
+                    <!-- Tree Information Summary -->
+                    <div
+                        class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4 mb-6 mx-2">
+                        <div class="flex items-start gap-3">
+                            <TreeDeciduous class="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                            <div class="flex-1">
+                                <div class="text-sm font-semibold text-emerald-900 dark:text-emerald-300 mb-1">
+                                    {{ treeSpecies?.common_name || 'Unknown Tree' }}
+                                </div>
+                                <div class="text-xs text-emerald-700 dark:text-emerald-400">
+                                    ID: {{ props.tree?.id }} • {{ props.tree?.address || 'Location not specified' }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="custom-scrollbar max-h-[500px] overflow-y-auto p-2">
+                        <form @submit.prevent="handleSubmit" class="flex flex-col space-y-6">
+
+                            <!-- Report Type -->
+                            <FormField component="Dropdown" v-model="form.report_type_id" :displayErrors="displayErrors" :required="true"
+                                label="Issue Type" name="report_type_id" :options="reportTypeOptions" optionLabel="label"
+                                optionValue="value" />
+
+                            <!-- Description -->
+                            <div>
+                                <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                    Description
+                                </label>
+                                <textarea v-model="form.description" rows="4"
+                                    placeholder="Please describe the issue in detail..."
+                                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none transition-colors"></textarea>
+                                <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                                    Optional: Provide additional details about the issue
+                                </p>
+                                <p v-if="form.errors.description" class="mt-1.5 text-xs text-red-600 dark:text-red-400">
+                                    {{ form.errors.description }}
+                                </p>
+                            </div>
+
+                            <!-- Photo Upload (Optional) -->
+                            <div>
+                                <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                    Photo Evidence (Optional)
+                                </label>
+                                <div
+                                    class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-red-500 dark:hover:border-red-500 transition-colors">
+                                    <input type="file" @change="handleFileUpload" accept="image/*" class="hidden"
+                                        ref="fileInput" />
+
+                                    <!-- Upload Preview -->
+                                    <div v-if="photoPreview" class="relative inline-block">
+                                        <img :src="photoPreview" class="max-h-40 rounded-lg" />
+                                        <button type="button" @click="removePhoto"
+                                            class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition-colors">
+                                            <X class="w-4 h-4" />
+                                        </button>
+                                    </div>
+
+                                    <!-- Upload Button -->
+                                    <div v-else @click="$refs.fileInput.click()" class="cursor-pointer">
+                                        <Camera class="w-12 h-12 mx-auto text-gray-400 mb-3" />
+                                        <button type="button"
+                                            class="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium">
+                                            Click to upload a photo
+                                        </button>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                            JPG up to 5MB
+                                        </p>
                                     </div>
                                 </div>
-                            </form>
-                        </div>
+                                <p v-if="form.errors.photo_url" class="mt-1.5 text-xs text-red-600 dark:text-red-400">
+                                    {{ form.errors.photo_url }}
+                                </p>
+                            </div>
+
+                            <!-- Contact Information Notice -->
+                            <div
+                                class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                                <div class="flex items-start gap-3">
+                                    <Info class="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                                    <div class="text-xs text-blue-700 dark:text-blue-400">
+                                        Your report will be submitted as <strong>{{ user?.name || user?.email
+                                            }}</strong>.
+                                        Our team will review your report.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex gap-3 pt-2">
+                                <button type="button" @click="() => emit('closeModal')"
+                                    class="flex-1 px-6 py-3 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                                    :disabled="form.processing">
+                                    Cancel
+                                </button>
+                                <button type="submit"
+                                    class="flex-1 px-6 py-3 rounded-lg bg-gradient-to-r from-red-600 to-orange-600 text-white font-semibold hover:from-red-700 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                                    :disabled="form.processing || !form.report_type_id">
+                                    <Loader2 v-if="form.processing" class="w-4 h-4 animate-spin" />
+                                    <Flag v-else class="w-4 h-4" />
+                                    {{ form.processing ? 'Submitting...' : 'Submit Report' }}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </template>
 
@@ -59,14 +171,24 @@
     </Modal>
 </template>
 
-
 <script setup>
+import { ref, computed, inject, watch } from 'vue';
+import { useForm, Link } from '@inertiajs/vue3';
 import Modal from '@/Components/Modal.vue';
 import { useAuth } from '@/Composables/useAuth';
-import { useForm } from '@inertiajs/vue3';
+import {
+    Flag,
+    AlertCircle,
+    LogIn,
+    TreeDeciduous,
+    Camera,
+    X,
+    Info,
+    Loader2
+} from 'lucide-vue-next';
+import FormField from '@/Components/Primitives/FormField.vue';
 
-
-const emit = defineEmits(['closeModal'])
+const emit = defineEmits(['closeModal']);
 
 const props = defineProps({
     showModal: {
@@ -77,19 +199,102 @@ const props = defineProps({
         type: Object,
         default: null,
     },
-    reportType: {
+});
 
-    },
-})
+const reportTypes = inject('reportTypes');
 
-const { user, isAuthenticated } = useAuth()
+const reportTypeOptions = computed(() =>
+    reportTypes.map(index => ({
+        label: `${index.name}`,
+        value: index.id,
+    }))
+)
+const { user, isAuthenticated } = useAuth();
 
+// File input ref
+const fileInput = ref(null);
+const photoPreview = ref(null);
+
+// Parse tree species data
+const treeSpecies = computed(() => {
+    if (!props.tree?.species) return null;
+    try {
+        return typeof props.tree.species === 'string'
+            ? JSON.parse(props.tree.species)
+            : props.tree.species;
+    } catch {
+        return null;
+    }
+});
+
+// Form setup
 const form = useForm({
-    tree_id: props.tree.id,
-})
+    report_type_id: '',
+    created_by: null,
+    created_at: new Date(),
+    tree_id: computed(() => props.tree?.id),
+    lat: computed(() => props.tree?.lat),
+    lon: computed(() => props.tree?.lon),
+    description: '',
+    status: props.tree?.status,
+    photo: null,
+    resolved_at: null,
+});
 
+// Handle file upload
+const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        alert('File size must be less than 5MB');
+        return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+        alert('Please upload an image file');
+        return;
+    }
+
+    form.photo = file;
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        photoPreview.value = e.target.result;
+    };
+    reader.readAsDataURL(file);
+};
+
+// Remove photo
+const removePhoto = () => {
+    form.photo = null;
+    photoPreview.value = null;
+    if (fileInput.value) {
+        fileInput.value.value = '';
+    }
+};
+
+// Handle form submission
 const handleSubmit = () => {
+    form.post(route('citizenReports.store'), {
+        preserveScroll: true,
+        onSuccess: () => {
+            // Reset form
+            form.reset();
+            photoPreview.value = null;
 
-}
+            // Show success message (you can replace with toast notification)
+            alert('Thank you for your report! Our team will review it shortly.');
 
+            // Close modal
+            emit('closeModal');
+        },
+        onError: (errors) => {
+            console.error('Form submission errors:', errors);
+        }
+    });
+};
 </script>

@@ -35,6 +35,7 @@ const props = defineProps({
         type: Object,
         default: null,
     },
+    
 })
 
 const isHovered = computed(() => props.hovered !== null)

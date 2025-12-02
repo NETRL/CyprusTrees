@@ -15,6 +15,7 @@ class ReportTypeTableSeeder extends Seeder
             ['name' => 'Irrigation'],
             ['name' => 'Disease'],
             ['name' => 'Suggestion'],
+            ['name' => 'Other'],
         ];
 
         foreach ($items as $item) {
