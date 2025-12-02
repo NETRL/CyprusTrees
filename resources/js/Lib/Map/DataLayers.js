@@ -1,6 +1,6 @@
 import maplibregl from 'maplibre-gl'
 
-export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected, setInitialFilter }) {
+export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected, onTreeHovered, setInitialFilter }) {
   const res = await fetch('/api/trees')
   if (!res.ok) {
     throw new Error(`Failed to load trees: ${res.status}`)
@@ -99,8 +99,12 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
 
     function clearSelection(map) {
       selectedId = null;
+      hoveredId = null;
       stopPulse(map);
       map.setFilter('trees-circle-selected', ['==', ['get', 'id'], -1]);
+      map.setFilter('trees-circle-hover', ['==', ['get', 'id'], -1]);
+      onTreeSelected?.(null);
+      onTreeHovered?.(null);
     }
 
     mapInstance.on('click', 'trees-circle', (e) => {
@@ -121,7 +125,6 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
       // start pulsating
       startPulse(mapInstance);
 
-      // --- your existing code ---
       onTreeSelected?.(p);
 
       let species = null;
@@ -133,31 +136,33 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
         console.warn('Failed to parse nested props', err);
       }
 
-      const html = `
-    <div>
-      <strong>Tree #${p.id}</strong><br/>
-      ${species ? `<div>${species.common_name ?? ''}</div>` : ''}
-      ${neighborhood ? `<div>${neighborhood.name ?? ''}</div>` : ''}
-      ${p.address ? `<div>${p.address}</div>` : ''}
-    </div>
-  `;
+  //     const html = `
+  //   <div>
+  //     <strong>Tree #${p.id}</strong><br/>
+  //     ${species ? `<div>${species.common_name ?? ''}</div>` : ''}
+  //     ${neighborhood ? `<div>${neighborhood.name ?? ''}</div>` : ''}
+  //     ${p.address ? `<div>${p.address}</div>` : ''}
+  //   </div>
+  // `;
 
-      new maplibregl.Popup()
-        .setLngLat(e.lngLat)
-        .setHTML(html)
-        .addTo(mapInstance);
+  //     new maplibregl.Popup()
+  //       .setLngLat(e.lngLat)
+  //       .setHTML(html)
+  //       .addTo(mapInstance);
     });
 
 
     mapInstance.on('mouseenter', 'trees-circle', () => {
-      mapInstance.getCanvas().style.cursor = 'pointer'
+      mapInstance.getCanvas().style.cursor = 'crosshair'
     })
 
     mapInstance.on('mousemove', 'trees-circle', (e) => {
+      if(selectedId) return
       const feature = e.features?.[0];
       if (!feature) return;
 
-      const id = feature.properties?.id ?? feature.id;
+      const p = feature.properties;
+      const id = p?.id ?? feature.id;
       if (!id) return;
 
       // If this feature is selected, don't show hover ring on top – keep only selected ring
@@ -167,16 +172,20 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
       } else {
         hoveredId = id;
         mapInstance.setFilter('trees-circle-hover', ['==', ['get', 'id'], hoveredId]);
+        onTreeHovered?.(p)
       }
 
-      mapInstance.getCanvas().style.cursor = 'pointer';
+
+      mapInstance.getCanvas().style.cursor = 'crosshair';
     });
 
-    mapInstance.on('mouseleave', 'trees-circle', () => {
-      hoveredId = null;
-      mapInstance.setFilter('trees-circle-hover', ['==', ['get', 'id'], -1]);
+    mapInstance.on('mouseleave', 'trees-circle', (e) => {
+      // hoveredId = null;
+      // mapInstance.setFilter('trees-circle-hover', ['==', ['get', 'id'], -1]);
       mapInstance.getCanvas().style.cursor = '';
+      // handler(e)
     });
+
 
     mapInstance.on('click', (e) => {
       // Skip clicks that hit a tree feature – those are handled above
@@ -188,6 +197,11 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
         clearSelection(mapInstance);
       }
     });
+    mapInstance.on('dragstart', () => {
+      if(selectedId) return
+      clearSelection(mapInstance)
+    });
+
   }
 
   setInitialFilter?.('status')
@@ -228,12 +242,12 @@ export async function loadNeighborhoodsLayer(mapInstance, { onDataLoaded, onNeig
       },
     })
 
-    mapInstance.on('mouseenter', 'neighborhoods-fill', () => {
-      mapInstance.getCanvas().style.cursor = 'pointer'
-    })
-    mapInstance.on('mouseleave', 'neighborhoods-fill', () => {
-      mapInstance.getCanvas().style.cursor = ''
-    })
+    // mapInstance.on('mouseenter', 'neighborhoods-fill', () => {
+    //   mapInstance.getCanvas().style.cursor = 'crosshair'
+    // })
+    // mapInstance.on('mouseleave', 'neighborhoods-fill', () => {
+    //   mapInstance.getCanvas().style.cursor = ''
+    // })
   } else {
     mapInstance.getSource('neighborhoods').setData(data)
   }

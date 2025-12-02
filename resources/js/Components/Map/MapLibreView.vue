@@ -3,7 +3,9 @@
         :hiddenCategories="hiddenCategories" :currentMode="selectedFilter" @toggleCategory="onToggleCategory" />
     <div ref="mapContainer" class="map-container w-full h-full"></div>
 
-    <!-- Loading overlay controlled by v-model -->
+    <TreeCard :hovered="hoveredData" :selected="selectedData"/>
+
+    <!-- Loading overlay -->
     <MapLoadingOverlay :isLoading="isLoading" />
 </template>
 
@@ -17,7 +19,7 @@ import { setupBaseLayers } from '@/Lib/Map/SetupBaseLayers'
 import { loadTreesLayer, loadNeighborhoodsLayer } from '@/Lib/Map/DataLayers'
 import { useMapFilter } from '@/Composables/useMapFilter'
 import { useMapColors } from '@/Composables/useMapColors'
-import { keyBy } from 'lodash'
+import TreeCard from '@/Components/Map/Partials/TreeCard.vue'
 
 const mapContainer = ref(null)
 const map = ref(null)
@@ -27,6 +29,8 @@ const isLoading = ref(true)
 const treeData = ref([])
 const neighborhoodData = ref([])
 const selectedData = ref(null)
+const hoveredData = ref(null)
+const toggleTreeCard = ref(null)
 
 const center = [33.37, 35.17]
 const zoom = 12
@@ -87,6 +91,7 @@ onMounted(async () => {
             loadTreesLayer(m, {
                 onDataLoaded: (data) => (treeData.value = data),
                 onTreeSelected: (props) => (selectedData.value = props),
+                onTreeHovered: (props) => (hoveredData.value = props),
                 setInitialFilter: (val) => (selectedFilter.value = val),
             }),
         ])
@@ -109,6 +114,15 @@ watch(
     },
     { immediate: true }
 )
+
+watch(hoveredData, data => {
+
+    if(!data) {
+        toggleTreeCard.value = false
+        return
+    }
+        toggleTreeCard.value = true
+})
 
 const visualiseTreeData = (mode) => {
     if (!map.value || !map.value.getLayer('trees-circle')) return

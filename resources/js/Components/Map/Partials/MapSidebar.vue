@@ -11,7 +11,7 @@
     </aside>
 
     <!-- Mobile Bottom Sheet -->
-    <BottomSheet @update:state="(s) => (mobileState = s)">
+    <BottomSheet v-model:state="mobileState">
         <div class="flex flex-col h-full px-5 pt-4 pb-6 w-full sm:items-center">
             <SidebarContent v-bind="props" @toggleCategory="payload => emit('toggleCategory', payload)" />
         </div>
@@ -27,28 +27,48 @@ import BottomSheet from '@/Components/Map/Partials/BottomSheet.vue'
 const props = defineProps({
     selectedData: {
         type: Object,
-        default: null
+        default: null,
     },
     treeData: {
         type: Object,
-        default: () => null
+        default: () => null,
     },
     neighborhoodData: {
         type: Object,
-        default: () => null
+        default: () => null,
     },
     hiddenCategories: {
         type: Object,
-        default: () => null
+        default: () => null,
     },
     currentMode: {
         type: String,
-        default: ''
-    }
+        default: '',
+    },
 })
 
 const emit = defineEmits(['toggleCategory'])
 
-const { isExpanded, isHovered } = useSidebar()
+const { isExpanded, isHovered, isMobileOpen } = useSidebar()
+
+// local state for this BottomSheet instance
 const mobileState = ref('closed')
+
+// keep isMobileOpen and mobileState in sync
+watch(
+    () => isMobileOpen.value,
+    (val) => {
+        // e.g. burger opens sidebar on mobile
+        mobileState.value = val ? 'mid' : 'closed'
+    },
+    { immediate: true }
+)
+
+watch(
+    () => mobileState.value,
+    (val) => {
+        // if the sheet is not closed, then mobile sidebar is "open"
+        isMobileOpen.value = val !== 'closed'
+    }
+)
 </script>

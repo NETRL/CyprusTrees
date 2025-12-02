@@ -23,7 +23,7 @@ export async function initMap(container, { center, zoom, styleUrl }) {
       compact: false,
       customAttribution: 'City of Nicosia',
     }),
-    'bottom-right'
+    'bottom-left'
   )
   map.addControl(new maplibregl.NavigationControl())
 

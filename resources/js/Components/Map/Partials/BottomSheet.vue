@@ -2,17 +2,15 @@
     <!-- Mobile Bottom Sheet wrapper -->
     <div class="lg:hidden fixed bottom-0 z-50">
         <!-- Backdrop -->
-        <div v-if="currentState !== 'closed'" class="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
-            @click="goClosed"></div>
+        <div v-if="currentState !== 'closed' && showBackdrop"
+            class="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300" @click="goClosed"></div>
 
         <!-- Bottom Sheet -->
         <div :class="[
             'fixed left-0 right-0 bottom-0 bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-white text-gray-900',
             !isDragging ? 'transition-all duration-300 ease-in-out' : '',
             'z-50 border-t border-gray-200 rounded-t-2xl shadow-2xl flex flex-col overflow-hidden',
-        ]" :style="{
-            height: `${currentHeight}px`,
-        }">
+        ]" :style="{ height: `${currentHeight}px` }">
             <!-- Handle Bar -->
             <button
                 class="w-full p-4 flex flex-col items-center gap-2 touch-manipulation select-none shrink-0 border-b border-gray-700/50"
@@ -37,9 +35,14 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
-import { useSidebar } from '@/Composables/useSidebar'
 
 const props = defineProps({
+    /** v-model:state: 'open' | 'mid' | 'closed' */
+    state: {
+        type: String,
+        default: 'closed',
+        validator: (v) => ['open', 'mid', 'closed'].includes(v),
+    },
     /** fab icon class, e.g. 'pi pi-map' */
     fabIcon: {
         type: String,
@@ -50,21 +53,19 @@ const props = defineProps({
         type: Number,
         default: 0.8,
     },
-    /** initial state: 'open' | 'mid' | 'closed' */
-    initialState: {
-        type: String,
-        default: 'closed',
-        validator: (v) => ['open', 'mid', 'closed'].includes(v),
-    },
     /** whether to show the FAB button */
     showFab: {
         type: Boolean,
         default: true,
-    }
+    },
+    /** whether to show backdrop */
+    showBackdrop: {
+        type: Boolean,
+        default: true,
+    },
 })
 
 const emit = defineEmits(['update:state'])
-const { isMobileOpen } = useSidebar()
 
 // Drag state
 const isDragging = ref(false)
@@ -72,12 +73,12 @@ const startY = ref(0)
 const currentY = ref(0)
 const baseHeight = ref(0)
 
-// Heights 
+// Heights
 const openHeight = ref(0)
 const midHeight = ref(0)
 const closedHeight = ref(0)
 
-const currentState = ref(props.initialState) // 'open' | 'mid' | 'closed'
+const currentState = ref(props.state) // 'open' | 'mid' | 'closed'
 const currentHeight = ref(0)
 
 onMounted(() => {
@@ -85,10 +86,10 @@ onMounted(() => {
     const fullSheet = vh * props.heightRatio // e.g. 0.8 * vh
 
     openHeight.value = fullSheet
-    midHeight.value = fullSheet * 0.5      // half sheet when “mid”
+    midHeight.value = fullSheet * 0.5
+    closedHeight.value = 0
 
     updateHeightForState()
-
 })
 
 onBeforeUnmount(() => {
@@ -96,23 +97,26 @@ onBeforeUnmount(() => {
     window.removeEventListener('pointerup', handlePointerUp)
 })
 
+/**
+ * Sync internal state -> parent
+ */
 watch(currentState, (val) => {
     emit('update:state', val)
+    updateHeightForState()
 })
 
-watch(isMobileOpen, (val) => {
-    if (isDragging.value) return
-
-    if (val) {
-        if (currentState.value === 'closed') {
-            setState('mid', false)
-        }
-    } else {
-        if (currentState.value !== 'closed') {
-            setState('closed', false)
+/**
+ * Sync parent prop -> internal state
+ * (allows v-model:state to control the sheet)
+ */
+watch(
+    () => props.state,
+    (val) => {
+        if (val !== currentState.value) {
+            setState(val)
         }
     }
-})
+)
 
 const updateHeightForState = () => {
     if (currentState.value === 'open') {
@@ -122,18 +126,12 @@ const updateHeightForState = () => {
     } else {
         currentHeight.value = closedHeight.value
     }
-
-    isMobileOpen.value = currentState.value !== 'closed'
 }
-
-
 
 const setState = async (nextState) => {
     const prevState = currentState.value
     const openingFromClosed =
-        !isDragging.value &&
-        prevState === 'closed' &&
-        nextState !== 'closed'
+        !isDragging.value && prevState === 'closed' && nextState !== 'closed'
 
     currentState.value = nextState
 
@@ -144,11 +142,9 @@ const setState = async (nextState) => {
     }
 
     currentHeight.value = closedHeight.value
-    isMobileOpen.value = true
 
     // Wait for Vue to update the DOM with height
     await nextTick()
-
     // Use double requestAnimationFrame to ensure the browser paints the 0px frame
     // before applying the new height. This forces the CSS transition to trigger.
     requestAnimationFrame(() => {
@@ -163,13 +159,11 @@ const goMid = () => setState('mid')
 const goClosed = () => setState('closed')
 
 const handlePointerDown = (event) => {
-    // Only primary mouse button
     if (event.pointerType === 'mouse' && event.button !== 0) return
 
     isDragging.value = true
     startY.value = event.clientY
     currentY.value = event.clientY
-
     // remember height at drag start
     baseHeight.value = currentHeight.value
 
@@ -184,8 +178,6 @@ const handlePointerMove = (event) => {
     currentY.value = event.clientY
 
     const deltaY = currentY.value - startY.value
-    // dragging down → deltaY > 0 → smaller height
-    // dragging up   → deltaY < 0 → larger height
     let newHeight = baseHeight.value - deltaY
 
     // clamp between closed and open

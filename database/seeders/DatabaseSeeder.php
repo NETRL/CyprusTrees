@@ -27,5 +27,8 @@ class DatabaseSeeder extends Seeder
             TreeTagsTableSeeder::class,
             PhotosTableSeeder::class,
         ]);
+
+        $this->call(ReportTypeTableSeeder::class);
+
     }
 }
