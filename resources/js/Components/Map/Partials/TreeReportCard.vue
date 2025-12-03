@@ -78,9 +78,9 @@
                         <form @submit.prevent="handleSubmit" class="flex flex-col space-y-6">
 
                             <!-- Report Type -->
-                            <FormField component="Dropdown" v-model="form.report_type_id" :displayErrors="displayErrors" :required="true"
-                                label="Issue Type" name="report_type_id" :options="reportTypeOptions" optionLabel="label"
-                                optionValue="value" />
+                            <FormField component="Dropdown" v-model="form.report_type_id" :displayErrors="true"
+                                :required="true" label="Issue Type" name="report_type_id" :options="reportTypeOptions"
+                                optionLabel="label" optionValue="value" />
 
                             <!-- Description -->
                             <div>
@@ -105,32 +105,73 @@
                                 </label>
                                 <div
                                     class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-red-500 dark:hover:border-red-500 transition-colors">
-                                    <input type="file" @change="handleFileUpload" accept="image/*" class="hidden"
-                                        ref="fileInput" />
+                                    <!-- Hidden file inputs -->
+                                    <input 
+                                        type="file" 
+                                        @change="handleFileUpload" 
+                                        accept="image/*"
+                                        class="hidden"
+                                        ref="fileInput" 
+                                    />
+                                    <input 
+                                        type="file" 
+                                        @change="handleFileUpload" 
+                                        accept="image/*"
+                                        capture="environment"
+                                        class="hidden"
+                                        ref="cameraInput" 
+                                    />
 
                                     <!-- Upload Preview -->
                                     <div v-if="photoPreview" class="relative inline-block">
                                         <img :src="photoPreview" class="max-h-40 rounded-lg" />
                                         <button type="button" @click="removePhoto"
-                                            class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition-colors">
+                                            class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1.5 hover:bg-red-700 transition-colors shadow-lg">
                                             <X class="w-4 h-4" />
                                         </button>
                                     </div>
 
-                                    <!-- Upload Button -->
-                                    <div v-else @click="$refs.fileInput.click()" class="cursor-pointer">
+                                    <!-- Upload Options -->
+                                    <div v-else>
                                         <Camera class="w-12 h-12 mx-auto text-gray-400 mb-3" />
-                                        <button type="button"
-                                            class="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium">
-                                            Click to upload a photo
-                                        </button>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            JPG up to 5MB
-                                        </p>
+                                        
+                                        <!-- Mobile: Show camera button -->
+                                        <div v-if="isMobile" class="space-y-2">
+                                            <button
+                                                type="button"
+                                                @click="$refs.cameraInput.click()"
+                                                class="w-full px-4 py-3 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                                            >
+                                                <Camera class="w-4 h-4" />
+                                                Take Photo
+                                            </button>
+                                            <button
+                                                type="button"
+                                                @click="$refs.fileInput.click()"
+                                                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                                            >
+                                                <ImageIcon class="w-4 h-4" />
+                                                Choose from Gallery
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Desktop: Show single upload button -->
+                                        <div v-else>
+                                            <button
+                                                type="button"
+                                                @click="$refs.fileInput.click()"
+                                                class="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium"
+                                            >
+                                                Click to upload a photo
+                                            </button>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                JPG, PNG up to 15MB
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-                                <p v-if="form.errors.photo_url" class="mt-1.5 text-xs text-red-600 dark:text-red-400">
-                                    {{ form.errors.photo_url }}
+                                <p v-if="form.errors.photo" class="mt-1.5 text-xs text-red-600 dark:text-red-400">
+                                    {{ form.errors.photo }}
                                 </p>
                             </div>
 
@@ -141,7 +182,7 @@
                                     <Info class="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                                     <div class="text-xs text-blue-700 dark:text-blue-400">
                                         Your report will be submitted as <strong>{{ user?.name || user?.email
-                                            }}</strong>.
+                                        }}</strong>.
                                         Our team will review your report.
                                     </div>
                                 </div>
@@ -172,20 +213,11 @@
 </template>
 
 <script setup>
-import { ref, computed, inject, watch } from 'vue';
+import { ref, computed, inject, onMounted, onUnmounted } from 'vue';
 import { useForm, Link } from '@inertiajs/vue3';
 import Modal from '@/Components/Modal.vue';
 import { useAuth } from '@/Composables/useAuth';
-import {
-    Flag,
-    AlertCircle,
-    LogIn,
-    TreeDeciduous,
-    Camera,
-    X,
-    Info,
-    Loader2
-} from 'lucide-vue-next';
+import { Flag, AlertCircle, LogIn, TreeDeciduous, Camera, X, Info, Loader2, Image as ImageIcon } from 'lucide-vue-next';
 import FormField from '@/Components/Primitives/FormField.vue';
 
 const emit = defineEmits(['closeModal']);
@@ -208,12 +240,35 @@ const reportTypeOptions = computed(() =>
         label: `${index.name}`,
         value: index.id,
     }))
-)
+);
+
 const { user, isAuthenticated } = useAuth();
 
-// File input ref
+// File input refs
 const fileInput = ref(null);
+const cameraInput = ref(null);
 const photoPreview = ref(null);
+
+// Detect if mobile device
+const isMobile = ref(false);
+
+onMounted(() => {
+    // Simple mobile detection
+    isMobile.value = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+        || window.innerWidth < 768;
+    
+    // Add resize listener for responsive detection
+    window.addEventListener('resize', handleResize);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('resize', handleResize);
+});
+
+const handleResize = () => {
+    isMobile.value = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+        || window.innerWidth < 768;
+};
 
 // Parse tree species data
 const treeSpecies = computed(() => {
@@ -229,16 +284,16 @@ const treeSpecies = computed(() => {
 
 // Form setup
 const form = useForm({
-    report_type_id: '',
-    created_by: null,
+    report_type_id: null,
+    // created_by: user.value.id,
     created_at: new Date(),
     tree_id: computed(() => props.tree?.id),
     lat: computed(() => props.tree?.lat),
     lon: computed(() => props.tree?.lon),
     description: '',
-    status: props.tree?.status,
     photo: null,
     resolved_at: null,
+    source: null,
 });
 
 // Handle file upload
@@ -246,9 +301,15 @@ const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Validate file size (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-        alert('File size must be less than 5MB');
+    if(event.target.attributes.capture){
+        form.source = 'camera'
+    }else{
+        form.source = 'upload'
+    }
+
+    // Validate file size
+    if (file.size > 15 * 1024 * 1024) {
+        alert('File size must be less than 15MB');
         return;
     }
 
@@ -274,6 +335,9 @@ const removePhoto = () => {
     photoPreview.value = null;
     if (fileInput.value) {
         fileInput.value.value = '';
+    }
+    if (cameraInput.value) {
+        cameraInput.value.value = '';
     }
 };
 

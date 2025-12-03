@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Photo;
 use App\Models\ReportType;
 use App\Models\Tree;
 use App\Models\User;
@@ -20,12 +21,12 @@ return new class extends Migration
             $table->foreignIdFor(ReportType::class)->constrained();
             $table->foreignIdFor(User::class, 'created_by')->nullable()->constrained();
             $table->foreignIdFor(Tree::class)->nullable()->constrained();
+            $table->foreignIdFor(Photo::class)->nullable()->constrained();
 
             $table->decimal('lat', 9, 6)->nullable();
             $table->decimal('lon', 9, 6)->nullable();
             $table->text('description')->nullable();
             $table->string('status', 20)->nullable();
-            $table->string('photo_url', 255)->nullable();
 
             $table->timestamp('created_at')->nullable();
             $table->timestamp('resolved_at')->nullable();

@@ -38,4 +38,9 @@ class Photo extends Model
     {
         return $this->belongsTo(Tree::class);
     }
+
+    public function citizenReports()
+    {
+        return $this->hasMany(CitizenReport::class);
+    }
 }

@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
-use Spatie\LaravelImageOptimizer\Facades\ImageOptimizer;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class PhotoController extends Controller
@@ -24,6 +23,12 @@ class PhotoController extends Controller
     {
         // automatically applies policy to all resource methods
         $this->authorizeResource(Photo::class, 'photo');
+    }
+
+    public function show(Photo $photo)
+    {
+        $this->authorize('view', $photo);
+        return response()->json($photo);
     }
 
     public function index(Request $request): Response

@@ -19,6 +19,7 @@ class CitizenReport extends Model
         'report_type_id',
         'created_by',
         'tree_id',
+        'photo_id',
         'lat',
         'lon',
         'description',
@@ -37,6 +38,7 @@ class CitizenReport extends Model
         'lon',
         'description',
         'status',
+        'photo_id',
         'photo_url',
         'created_at',
         'resolved_at',
@@ -51,6 +53,7 @@ class CitizenReport extends Model
         'lon',
         'description',
         'status',
+        'photo_id',
         'photo_url',
         'created_at',
         'resolved_at',
@@ -65,6 +68,7 @@ class CitizenReport extends Model
         'lon',
         'description',
         'status',
+        'photo_id',
         'photo_url',
         'created_at',
         'resolved_at',
@@ -74,7 +78,8 @@ class CitizenReport extends Model
     {
         return [
             'type',
-            // 'creator',
+            'creator',
+            'photo',
             // 'tree',
         ];
     }
@@ -106,6 +111,11 @@ class CitizenReport extends Model
     public function tree()
     {
         return $this->belongsTo(Tree::class);
+    }
+
+    public function photo()
+    {
+        return $this->belongsTo(Photo::class);
     }
 
     public static function getReportStatusOptions(): array

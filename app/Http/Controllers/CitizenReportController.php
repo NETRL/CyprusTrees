@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ReportStatus;
 use App\Enums\TreeStatus;
+use App\Jobs\ProcessPhotoUpload;
 use App\Models\CitizenReport;
+use App\Models\Photo;
 use App\Models\ReportType;
 use App\Models\Tree;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -43,6 +47,7 @@ class CitizenReportController extends Controller
                 ->select(['id', 'first_name', 'last_name'])
                 ->get(),
             'reportStatus' => CitizenReport::getReportStatusOptions(),
+            'reportTypes' => ReportType::all(),
         ]);
     }
 
@@ -50,22 +55,52 @@ class CitizenReportController extends Controller
     public function store(Request $request): RedirectResponse
     {
 
-        dd($request->all());
-
         $validated = $request->validate([
             "report_type_id" => 'required|integer|exists:report_types,id',
-            "created_by"    => 'nullable|integer|exists:users,id',
             "created_at"    => 'nullable|date',
             "tree_id"       => 'required|integer|exists:trees,id',
             'lat'           => ['nullable', 'numeric', 'between:-90,90'],
             'lon'           => ['nullable', 'numeric', 'between:-180,180'],
             "description"   => 'nullable|string|max:5000',
-            "status"        => ['nullable', new Enum(TreeStatus::class)],
-            "photo_url"     => 'nullable|string|max:255',
+            'photo'         => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:15360'],
             "resolved_at"   => 'nullable|date',
+            "source"        => ['nullable', 'in:camera,upload'],
+
         ]);
 
-        CitizenReport::create($validated);
+        $photo = null;
+        $report = null;
+
+        DB::transaction(function () use ($request, &$validated, &$photo, &$report) {
+            if ($request->hasFile('photo')) {
+                // Store with .jpg extension to match job output
+                $file = $validated['photo'];
+                $filename = uniqid('photo_', true) . '.jpg';
+                $path = $file->storeAs('tree-photos', $filename, 'public');
+
+                $photo = Photo::create([
+                    'tree_id'     => $validated['tree_id'],
+                    'caption'     => $validated['description'] ?? null,
+                    'url'         => null,
+                    'captured_at' => $validated['created_at'],
+                    'source'      => $validated['source'] ?? 'upload',
+                    'path'        => $path,
+                    'status'      => 'processing',
+                ]);
+                unset($validated['photo']);
+            }
+
+            $validated['created_by'] = auth()->id();
+            $validated['status'] = ReportStatus::OPEN;
+            if($photo){
+                $validated['photo_id'] = $photo->id;
+            }
+            $report = CitizenReport::create($validated);
+
+            if ($photo) {
+                ProcessPhotoUpload::dispatch($photo->id);
+            }
+        });
 
         $request->session()->flash('message', [
             'type'    => 'success',
@@ -78,7 +113,9 @@ class CitizenReportController extends Controller
 
     public function update(Request $request, CitizenReport $citizenReport): RedirectResponse
     {
+        
         $validated = $request->validate([
+            "report_id" => 'required|integer|exists:citizen_reports,report_id',
             "report_type_id" => 'required|integer|exists:report_types,id',
             "created_by"    => 'nullable|integer|exists:users,id',
             "created_at"    => 'nullable|date',
@@ -87,7 +124,6 @@ class CitizenReportController extends Controller
             'lon'           => ['nullable', 'numeric', 'between:-180,180'],
             "description"   => 'nullable|string|max:5000',
             "status"        => 'nullable|string|max:20',
-            "photo_url"     => 'nullable|string|max:255',
             "created_at"    => 'nullable|date',
             "resolved_at"   => 'nullable|date',
         ]);

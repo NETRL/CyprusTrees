@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\CitizenReport;
 use App\Models\Photo;
 use Exception;
 use Illuminate\Bus\Batchable;

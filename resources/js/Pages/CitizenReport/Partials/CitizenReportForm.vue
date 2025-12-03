@@ -6,7 +6,8 @@
             <!-- Type -->
             <div class="col-span-12">
                 <FormField component="Dropdown" filter v-model="formData.report_type_id" :displayErrors="displayErrors"
-                    label="Report Type" name="report_type_id" :options="typeOptions" optionLabel="label" optionValue="value" />
+                    label="Report Type" name="report_type_id" :options="typeOptions" optionLabel="label"
+                    optionValue="value" />
             </div>
 
             <div class="col-span-12">
@@ -38,11 +39,6 @@
                     name="status" :options="reportStatusOptions" optionLabel="label" optionValue="value" />
             </div>
 
-            <div class="col-span-12">
-                <FormField v-model="formData.photo_url" :displayErrors="displayErrors" label="Photo Url"
-                    name="photo_url" />
-            </div>
-
             <div class="col-span-6">
                 <FormField component="Calendar" v-model="formData.created_at" :displayErrors="displayErrors"
                     label="Created At" name="created_at" />
@@ -61,7 +57,7 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { router } from '@inertiajs/vue3'
 import FormField from '@/Components/Primitives/FormField.vue'
 import { useDateParser } from '@/Composables/useDateParser'
@@ -121,7 +117,7 @@ const treeOptions = computed(() =>
 )
 
 const typeOptions = computed(() =>
-(props.types ?? []).map(index => {
+    (props.types ?? []).map(index => {
         const name = index.name ?? '';
         const label = name
 
@@ -151,7 +147,7 @@ const userOptions = computed(() => (props.users ?? []).map(index => {
 
 // state
 const formData = reactive({
-    event_id: null,
+    report_id: null,
     tree_id: null,
     report_type_id: null,
     created_by: null,
@@ -159,10 +155,18 @@ const formData = reactive({
     lon: '',
     description: '',
     status: null,
-    photo_url: '',
     created_at: null,
     resolved_at: null,
 })
+console.log(props.reportStatus)
+watch(() => formData.status,
+    (v) => {
+        if(formData.status === 'resolved'){
+            formData.resolved_at = new Date();
+        }else{
+            formData.resolved_at = null;
+        }
+    })
 
 const displayErrors = ref(false)
 
@@ -176,7 +180,7 @@ const initForm = () => {
 
     displayErrors.value = false
 
-    formData.event_id = row?.event_id ?? null
+    formData.report_id = row?.report_id ?? null
     formData.tree_id = row?.tree_id ?? null
     formData.report_type_id = row?.report_type_id ?? null
     formData.created_by = row?.created_by ?? null
@@ -184,7 +188,6 @@ const initForm = () => {
     formData.lon = row?.lon ?? ''
     formData.description = row?.description ?? ''
     formData.status = row?.status ?? null
-    formData.photo_url = row?.photo_url ?? ''
     formData.created_at = parseDate(row?.created_at)
     formData.resolved_at = parseDate(row?.resolved_at)
 }
