@@ -29,50 +29,6 @@ class CitizenReport extends Model
         'resolved_at',
     ];
 
-    protected $tableColumns = [
-        'report_id',
-        'type_id',
-        'created_by',
-        'tree_id',
-        'lat',
-        'lon',
-        'description',
-        'status',
-        'photo_id',
-        'photo_url',
-        'created_at',
-        'resolved_at',
-    ];
-
-    protected $searchable = [
-        'report_id',
-        'report_type_id',
-        'created_by',
-        'tree_id',
-        'lat',
-        'lon',
-        'description',
-        'status',
-        'photo_id',
-        'photo_url',
-        'created_at',
-        'resolved_at',
-    ];
-
-    protected $sortable = [
-        'report_id',
-        'report_type_id',
-        'created_by',
-        'tree_id',
-        'lat',
-        'lon',
-        'description',
-        'status',
-        'photo_id',
-        'photo_url',
-        'created_at',
-        'resolved_at',
-    ];
 
     public static function relationships(): array
     {

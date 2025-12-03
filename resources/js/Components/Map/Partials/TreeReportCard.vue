@@ -349,10 +349,7 @@ const handleSubmit = () => {
             // Reset form
             form.reset();
             photoPreview.value = null;
-
-            // Show success message (you can replace with toast notification)
-            alert('Thank you for your report! Our team will review it shortly.');
-
+            
             // Close modal
             emit('closeModal');
         },

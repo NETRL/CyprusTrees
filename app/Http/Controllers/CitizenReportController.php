@@ -104,10 +104,10 @@ class CitizenReportController extends Controller
 
         $request->session()->flash('message', [
             'type'    => 'success',
-            'message' => __('Item type has been created.'),
+            'message' => __('Thank you for your report! Our team will review it shortly.'),
         ]);
 
-        return redirect()->route('citizenReports.index');
+        return redirect()->back();
     }
 
 

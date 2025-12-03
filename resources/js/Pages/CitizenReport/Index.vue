@@ -13,7 +13,7 @@
           </template>
         </Column>
 
-        <Column v-if="isColumnVisible('type_id')" field="type_id" header="Report Type" sortable>
+        <Column v-if="isColumnVisible('report_type_id')" field="report_type_id" header="Report Type" sortable>
           <template #body="{ data }">
             {{ typeLabel(data) }}
           </template>
@@ -76,7 +76,7 @@
               </div>
 
               <!-- Photo Link -->
-              <NavLinkButton :href="route('photos.index', { tree_id: data.tree_id })"
+              <NavLinkButton :href="route('photos.index', { tree_id: data.tree_id, search: data.photo_id })"
                 class="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-1">
                 <ExternalLink class="w-3.5 h-3.5 mr-1" />
                 #{{ data.photo_id }}
