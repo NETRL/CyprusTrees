@@ -3,7 +3,7 @@
         :hiddenCategories="hiddenCategories" :currentMode="selectedFilter" @toggleCategory="onToggleCategory" />
     <div ref="mapContainer" class="map-container w-full h-full"></div>
 
-    <TreeCard :hovered="hoveredData" :selected="selectedData"/>
+    <TreeCard :hovered="hoveredData" :selected="selectedData"  @update:selected="selectedData = $event"/>
 
     <!-- Loading overlay -->
     <MapLoadingOverlay :isLoading="isLoading" />

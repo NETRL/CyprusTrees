@@ -1,5 +1,19 @@
 import maplibregl from 'maplibre-gl'
 
+export async function fetchTreeDetails(treeId, { onDataLoaded } = {}) {
+  const res = await fetch(`/api/trees/${treeId}`)
+
+  if (!res.ok) {
+    throw new Error(`Failed to load tree ${treeId}: ${res.status}`)
+  }
+
+  const data = await res.json()
+  onDataLoaded?.(data)
+  return data
+}
+
+
+
 export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected, onTreeHovered, setInitialFilter }) {
   const res = await fetch('/api/trees')
   if (!res.ok) {
@@ -136,19 +150,19 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
         console.warn('Failed to parse nested props', err);
       }
 
-  //     const html = `
-  //   <div>
-  //     <strong>Tree #${p.id}</strong><br/>
-  //     ${species ? `<div>${species.common_name ?? ''}</div>` : ''}
-  //     ${neighborhood ? `<div>${neighborhood.name ?? ''}</div>` : ''}
-  //     ${p.address ? `<div>${p.address}</div>` : ''}
-  //   </div>
-  // `;
+      //     const html = `
+      //   <div>
+      //     <strong>Tree #${p.id}</strong><br/>
+      //     ${species ? `<div>${species.common_name ?? ''}</div>` : ''}
+      //     ${neighborhood ? `<div>${neighborhood.name ?? ''}</div>` : ''}
+      //     ${p.address ? `<div>${p.address}</div>` : ''}
+      //   </div>
+      // `;
 
-  //     new maplibregl.Popup()
-  //       .setLngLat(e.lngLat)
-  //       .setHTML(html)
-  //       .addTo(mapInstance);
+      //     new maplibregl.Popup()
+      //       .setLngLat(e.lngLat)
+      //       .setHTML(html)
+      //       .addTo(mapInstance);
     });
 
 
@@ -157,7 +171,7 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
     })
 
     mapInstance.on('mousemove', 'trees-circle', (e) => {
-      if(selectedId) return
+      if (selectedId) return
       const feature = e.features?.[0];
       if (!feature) return;
 
@@ -198,7 +212,7 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
       }
     });
     mapInstance.on('dragstart', () => {
-      if(selectedId) return
+      if (selectedId) return
       clearSelection(mapInstance)
     });
 

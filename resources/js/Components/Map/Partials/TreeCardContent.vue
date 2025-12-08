@@ -106,6 +106,73 @@
                 </div>
             </div>
 
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                        <MessageSquare class="w-4 h-4" />
+                        Reports
+                    </h4>
+                </div>
+
+                <!-- Status Summary -->
+                <div class="flex gap-2">
+                    <div
+                        class="flex-1 bg-red-50 dark:bg-red-900/20 rounded-lg p-2.5 text-center border border-red-200 dark:border-red-800">
+                        <div class="text-lg font-bold text-red-700 dark:text-red-400">
+                            {{reportsWithNames.filter(r => r.status === 'open').length}}
+                        </div>
+                        <div class="text-xs text-red-600 dark:text-red-500">Open</div>
+                    </div>
+                    <div
+                        class="flex-1 bg-amber-50 dark:bg-amber-900/20 rounded-lg p-2.5 text-center border border-amber-200 dark:border-amber-800">
+                        <div class="text-lg font-bold text-amber-700 dark:text-amber-400">
+                            {{reportsWithNames.filter(r => r.status === 'triaged').length}}
+                        </div>
+                        <div class="text-xs text-amber-600 dark:text-amber-500">Triaged</div>
+                    </div>
+                    <div
+                        class="flex-1 bg-green-50 dark:bg-green-900/20 rounded-lg p-2.5 text-center border border-green-200 dark:border-green-800">
+                        <div class="text-lg font-bold text-green-700 dark:text-green-400">
+                            {{reportsWithNames.filter(r => r.status === 'resolved').length}}
+                        </div>
+                        <div class="text-xs text-green-600 dark:text-green-500">Resolved</div>
+                    </div>
+                </div>
+
+                <!-- Recent Reports List -->
+                <details v-if="reportsWithNames.length > 0" class="space-y-1.5">
+                    <summary
+                        class="font-medium cursor-pointer text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all">
+                        View Recent Activity
+                    </summary>
+                    <p class="text-xs font-medium text-gray-600 dark:text-gray-400 px-1">Recent Activity</p>
+                    <div v-for="report in reportsWithNames.slice(0, 3)" :key="report.id"
+                        class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                        <div :class="[
+                            'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0',
+                            report.status === 'resolved'
+                                ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+                                : report.status === 'open'
+                                    ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                                    : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
+                        ]">
+                            <Flag class="w-3.5 h-3.5" />
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">
+                                {{ report.reportTypeName }}
+                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                {{ formatRelativeTime(report.created_at) }}
+                            </p>
+                        </div>
+                        <Check v-if="report.status === 'resolved'" class="w-4 h-4 text-green-600 dark:text-green-400" />
+                        <Clock v-else-if="report.status === 'open'" class="w-4 h-4 text-red-600 dark:text-red-400" />
+                        <Clock v-else class="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                    </div>
+                </details>
+            </div>
+
             <!-- Environmental Impact -->
             <div class="space-y-2">
                 <h4
@@ -223,23 +290,58 @@
             </div>
             <!-- Report Issue Button -->
             <div v-if="isSelected" class="pt-2 pb-1">
-                <button @click="toggleReportModal"
-                    class="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-[0.98]">
+                <div v-if="userHasActiveReports"
+                    class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-3">
+                    <div class="flex items-center gap-2 text-sm text-yellow-800 dark:text-yellow-300">
+                        <Info class="w-4 h-4" />
+                        You have a pending report for this tree. Thank you for your contribution!
+                    </div>
+                </div>
+                <button @click="toggleReportModal" :class="[
+                    'w-full bg-gradient-to-r text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-[0.98]',
+                    {
+                        ' from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700': !userHasActiveReports,
+                        ' from-yellow-600 to-yellow-600 hover:from-yellow-700 hover:to-yellow-700': userHasActiveReports
+                    }
+
+                ]">
                     <Flag class="w-4 h-4" />
-                    Report an Issue
+                    <span v-if="userHasActiveReports"> Report another Issue</span>
+                    <span v-else> Report an Issue</span>
+
                 </button>
             </div>
         </div>
-        <TreeReportCard  @closeModal="toggleReportModal" :showModal="showModal" :tree="selected"/>
+        <TreeReportCard @closeModal="toggleReportModal" @submitted="handleSubmitted" :showModal="showModal"
+            :tree="selected" />
     </div>
 
 
 </template>
 
 <script setup>
-import { MapPin, Activity, Heart, Leaf, AlertTriangle, Info, Calendar, FileText, Flag } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { MapPin, Activity, Heart, Leaf, AlertTriangle, Info, Calendar, FileText, Flag, CheckCircle, Clock, User, History, ChevronDown, MessageSquare, Check, AlertCircle } from 'lucide-vue-next';
+import { computed, inject, ref, watch } from 'vue';
 import TreeReportCard from '@/Components/Map/Partials/TreeReportCard.vue';
+import { safeJsonParse } from '@/Composables/safeJsonParser';
+import { usePage } from '@inertiajs/vue3';
+import { fetchTreeDetails } from '@/Lib/Map/DataLayers';
+
+const emit = defineEmits(['update:selected'])
+
+const formatRelativeTime = (date) => {
+    const now = new Date();
+    const reportDate = new Date(date);
+    const diffInHours = Math.floor((now - reportDate) / (1000 * 60 * 60));
+
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInHours < 48) return 'Yesterday';
+    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`;
+    return formatDate(date);
+};
+
+const page = usePage();
 
 const props = defineProps({
     hovered: {
@@ -260,26 +362,95 @@ const props = defineProps({
     }
 });
 
+const reportTypes = inject('reportTypes');
+
+const userId = computed(() => page.props.auth.user?.id);
+
+const userHasActiveReports = computed(() => {
+
+    const reports = reportData.value;
+    if (!reports || reports.length === 0) {
+        return false;
+    }
+    const currentUserId = userId.value;
+    if (!currentUserId) {
+        return false;
+    }
+    return reports.some(report =>
+        report.created_by === currentUserId &&
+        report.status !== 'resolved' &&
+        report.status !== 'triaged'
+    );
+})
+
 const showModal = ref(false)
 
+const treeOverride = ref(null)
 // Active tree is selected if available, otherwise hovered
-const activeTree = computed(() => props.selected || props.hovered || {});
+const activeTree = computed(() => treeOverride.value || props.selected || props.hovered || {});
+
+watch(
+  () => props.selected?.id,
+  () => {
+    // whenever selection changes from outside, drop override
+    treeOverride.value = null
+  }
+)
 
 // Parse JSON strings from data
 const speciesData = computed(() => {
-    if (!activeTree.value.species) return null;
-    try {
-        return typeof activeTree.value.species === 'string'
-            ? JSON.parse(activeTree.value.species)
-            : activeTree.value.species;
-    } catch {
-        return null;
+    return safeJsonParse(activeTree.value?.species)
+});
+
+const reportData = computed(() => {
+    return safeJsonParse(activeTree.value?.citizenReports)
+});
+
+const reportsWithNames = computed(() => {
+    const reports = reportData.value;
+
+    if (!reports.length) {
+        return [];
     }
+
+    // Create a simple lookup map for report types (e.g., {1: "Irrigation", 2: "Pests"})
+    // This is much faster than looping through the reportTypes array for every report.
+    const typeLookup = reportTypes.reduce((acc, type) => {
+        acc[type.id] = type.name;
+        return acc;
+    }, {});
+
+    // Map the reports to include the readable name
+    const mappedReports = reports.map(report => ({
+        ...report,
+        reportTypeName: typeLookup[report.report_type_id] || 'Unknown Type',
+    }));
+
+    // Sort the final array by creation date (most recent first)
+    return mappedReports.sort((a, b) => {
+        const dateA = new Date(a.created_at || 0);
+        const dateB = new Date(b.created_at || 0);
+        return dateB - dateA;
+    });
 });
 
 const toggleReportModal = () => {
-        showModal.value = !showModal.value
+    showModal.value = !showModal.value
 }
+
+const handleSubmitted = () => {
+    toggleReportModal()
+    fetchTreeDetails(
+        activeTree.value.id,
+        {
+            onDataLoaded: (data) => {
+                treeOverride.value = data 
+            },
+        }
+    )
+}
+
+
 
 
 const neighborhoodData = computed(() => {
@@ -352,6 +523,4 @@ const formatDate = (dateString) => {
         day: 'numeric'
     });
 };
-
-
 </script>

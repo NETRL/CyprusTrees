@@ -32,7 +32,6 @@ const props = defineProps({
     },
 })
 
-
 useCustomToast();
 
 provide('reportTypes', props.reportTypes)

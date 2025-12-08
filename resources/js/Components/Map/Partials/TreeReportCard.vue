@@ -220,7 +220,7 @@ import { useAuth } from '@/Composables/useAuth';
 import { Flag, AlertCircle, LogIn, TreeDeciduous, Camera, X, Info, Loader2, Image as ImageIcon } from 'lucide-vue-next';
 import FormField from '@/Components/Primitives/FormField.vue';
 
-const emit = defineEmits(['closeModal']);
+const emit = defineEmits(['closeModal', 'submitted']);
 
 const props = defineProps({
     showModal: {
@@ -349,9 +349,8 @@ const handleSubmit = () => {
             // Reset form
             form.reset();
             photoPreview.value = null;
-            
             // Close modal
-            emit('closeModal');
+            emit('submitted');
         },
         onError: (errors) => {
             console.error('Form submission errors:', errors);
