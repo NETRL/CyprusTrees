@@ -56,19 +56,34 @@
                     <MapPin class="w-4 h-4" />
                     Location
                 </h4>
-                <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 space-y-1">
-                    <div class="text-sm text-gray-900 dark:text-gray-100 font-medium">
-                        {{ activeTree.address || 'No address available' }}
+
+                <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                    <!-- Address Information -->
+                    <div class="space-y-1 mb-3">
+                        <div class="text-sm text-gray-900 dark:text-gray-100 font-medium">
+                            {{ activeTree.address || 'No address available' }}
+                        </div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400">
+                            {{ neighborhoodData?.name }}, {{ neighborhoodData?.district }}
+                        </div>
+                        <div class="text-xs text-gray-500 dark:text-gray-500 font-mono">
+                            {{ activeTree.lat?.toFixed(6) }}, {{ activeTree.lon?.toFixed(6) }}
+                        </div>
                     </div>
-                    <div class="text-xs text-gray-600 dark:text-gray-400">
-                        {{ neighborhoodData?.name }}, {{ neighborhoodData?.district }}
-                    </div>
-                    <div class="text-xs text-gray-500 dark:text-gray-500 font-mono">
-                        {{ activeTree.lat?.toFixed(6) }}, {{ activeTree.lon?.toFixed(6) }}
-                    </div>
+
+                    <!-- Google Maps Button -->
+                    <a :href="`https://www.google.com/maps/search/?api=1&query=${activeTree.lat},${activeTree.lon}`"
+                        target="_blank" rel="noopener noreferrer"
+                        class="inline-flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-sm font-medium transition-colors shadow-sm">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd"
+                                d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a3 3 0 100-6 3 3 0 000 6z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                        View in Google Maps
+                    </a>
                 </div>
             </div>
-
             <!-- Status & Health -->
             <div class="grid grid-cols-2 gap-3">
                 <div class="space-y-2">
@@ -390,11 +405,11 @@ const treeOverride = ref(null)
 const activeTree = computed(() => treeOverride.value || props.selected || props.hovered || {});
 
 watch(
-  () => props.selected?.id,
-  () => {
-    // whenever selection changes from outside, drop override
-    treeOverride.value = null
-  }
+    () => props.selected?.id,
+    () => {
+        // whenever selection changes from outside, drop override
+        treeOverride.value = null
+    }
 )
 
 // Parse JSON strings from data
@@ -409,11 +424,11 @@ const reportData = computed(() => {
 const reportsWithNames = computed(() => {
 
     const reports = reportData.value;
-    
+
     if (!reports) {
         return [];
     }
-    
+
     // Create a simple lookup map for report types (e.g., {1: "Irrigation", 2: "Pests"})
     // This is much faster than looping through the reportTypes array for every report.
     const typeLookup = reportTypes.reduce((acc, type) => {
@@ -445,7 +460,7 @@ const handleSubmitted = () => {
         activeTree.value.id,
         {
             onDataLoaded: (data) => {
-                treeOverride.value = data 
+                treeOverride.value = data
             },
         }
     )
