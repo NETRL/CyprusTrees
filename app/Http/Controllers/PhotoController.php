@@ -69,8 +69,12 @@ class PhotoController extends Controller
         // - neighborhood name
         if ($search !== '') {
             $baseQuery->where(function ($q) use ($search) {
-                $q->where('id', $search)
-                    ->orWhere('caption', 'like', "%{$search}%")
+                // If the search is all digits, treat it as an ID search too
+                if (ctype_digit($search)) {
+                    $q->orWhere('id', (int) $search);
+                }
+
+                $q->orWhere('caption', 'like', "%{$search}%")
                     ->orWhereHas('tree', function ($qt) use ($search) {
                         $qt->where('address', 'like', "%{$search}%")
                             ->orWhereHas('species', function ($qs) use ($search) {
@@ -83,6 +87,7 @@ class PhotoController extends Controller
                     });
             });
         }
+
 
         // Date range
         if ($dateFrom) {
@@ -147,8 +152,10 @@ class PhotoController extends Controller
         }
         if ($search !== '') {
             $speciesQuery->where(function ($q) use ($search) {
-                $q->where('photos.id', $search)
-                    ->orWhere('photos.caption', 'like', "%{$search}%")
+                if (ctype_digit($search)) {
+                    $q->orWhere('photos.id', (int) $search);
+                }
+                $q->orWhere('photos.caption', 'like', "%{$search}%")
                     ->orWhere('trees.address', 'like', "%{$search}%")
                     ->orWhere('species.common_name', 'like', "%{$search}%")
                     ->orWhere('species.latin_name', 'like', "%{$search}%")
@@ -187,8 +194,10 @@ class PhotoController extends Controller
         }
         if ($search !== '') {
             $neighborhoodQuery->where(function ($q) use ($search) {
-                $q->where('photos.id', $search)
-                    ->orWhere('photos.caption', 'like', "%{$search}%")
+                if (ctype_digit($search)) {
+                    $q->orWhere('photos.id', (int) $search);
+                }
+                $q->orWhere('photos.caption', 'like', "%{$search}%")
                     ->orWhere('trees.address', 'like', "%{$search}%")
                     ->orWhere('neighborhoods.name', 'like', "%{$search}%");
             });

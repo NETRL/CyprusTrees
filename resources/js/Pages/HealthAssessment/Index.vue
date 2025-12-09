@@ -14,7 +14,11 @@
 
         <Column v-if="isColumnVisible('tree_id')" field="tree_id" header="Tree" sortable>
           <template #body="{ data }">
+            <Link :href="route('/', { tree_id: data.tree_id })"
+              class="flex justify-center items-center spece-x-2 hover:cursor-pointer hover:text-brand-600">
             {{ treeLabel(data) }}
+            <ExternalLink class="w-3.5 h-3.5 mx-1" />
+            </Link>
           </template>
         </Column>
 
@@ -43,7 +47,8 @@
           </template>
         </Column>
 
-        <Column v-if="isColumnVisible('actions_recommended')" field="actions_recommended" header="Actions Recommended" sortable>
+        <Column v-if="isColumnVisible('actions_recommended')" field="actions_recommended" header="Actions Recommended"
+          sortable>
           <template #body="{ data }">
             {{ data.actions_recommended ?? '-' }}
           </template>
@@ -69,6 +74,7 @@ import { ref, defineOptions, defineProps } from "vue";
 import { useRenamedHeaders } from "@/Composables/useRenamedHeaders";
 import HealthAssessmentForm from "@/Pages/HealthAssessment/Partials/HealthAssessmentForm.vue";
 import { useDateFormatter } from "@/Composables/useDateFormatter";
+import { ExternalLink } from "lucide-vue-next";
 
 defineOptions({
   layout: AuthenticatedLayout,
@@ -101,11 +107,11 @@ const props = defineProps({
 const { formatDate } = useDateFormatter();
 
 const healthLabel = (row) => {
-    const field = row.health_status;
-    if (!field) return '-';
+  const field = row.health_status;
+  if (!field) return '-';
 
-    const item = props.healthStatus.find(s => s.value === field);
-    return item ? item.label : '-';
+  const item = props.healthStatus.find(s => s.value === field);
+  return item ? item.label : '-';
 };
 
 const treeLabel = (row) => {

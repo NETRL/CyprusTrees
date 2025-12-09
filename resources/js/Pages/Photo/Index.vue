@@ -36,7 +36,7 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <FormField v-model="filters.search" name="search"
-                                placeholder="Search by caption, address, species, or neighborhood..." />
+                                placeholder="Search by photo ID, caption, address, species, or neighborhood..." />
                         </div>
                     </div>
                 </div>
@@ -129,6 +129,10 @@
                                     class="text-gray-600 dark:text-gray-400 select-none">
                                     ({{ selectedTree.species_label }})
                                 </span>
+                                <Link :href="route('/', { tree_id: selectedTree.id })"
+                                    class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200">
+                                (View in map)
+                                </Link>
                             </span>
                             <span v-if="tableData.total > 0"
                                 class="text-sm text-gray-500 dark:text-gray-400 select-none">

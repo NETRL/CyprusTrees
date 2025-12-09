@@ -399,20 +399,21 @@ watch(
 
 // Parse JSON strings from data
 const speciesData = computed(() => {
-    return safeJsonParse(activeTree.value?.species)
+    return safeJsonParse(activeTree.value?.species, null)
 });
 
 const reportData = computed(() => {
-    return safeJsonParse(activeTree.value?.citizenReports)
+    return safeJsonParse(activeTree.value?.citizenReports, null)
 });
 
 const reportsWithNames = computed(() => {
-    const reports = reportData.value;
 
-    if (!reports.length) {
+    const reports = reportData.value;
+    
+    if (!reports) {
         return [];
     }
-
+    
     // Create a simple lookup map for report types (e.g., {1: "Irrigation", 2: "Pests"})
     // This is much faster than looping through the reportTypes array for every report.
     const typeLookup = reportTypes.reduce((acc, type) => {
@@ -449,8 +450,6 @@ const handleSubmitted = () => {
         }
     )
 }
-
-
 
 
 const neighborhoodData = computed(() => {

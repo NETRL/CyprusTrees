@@ -11,7 +11,7 @@
 
         <main class="flex-1 relative overflow-hidden">
             <MapFilterProvider>
-                <MapLibreView />
+                <MapLibreView :initialTreeId="initialTreeId"/>
             </MapFilterProvider>
         </main>
     </div>
@@ -30,6 +30,10 @@ const props = defineProps({
         type: Array,
         default: () => []
     },
+    initialTreeId : {
+        type: Number,
+        default: null,
+    }
 })
 
 useCustomToast();

@@ -16,8 +16,7 @@
                     </template>
                 </Column>
 
-                <Column v-if="isColumnVisible('neighborhood')" field="neighborhood_id" header="Neighborhood"
-                    sortable>
+                <Column v-if="isColumnVisible('neighborhood')" field="neighborhood_id" header="Neighborhood" sortable>
                     <template #body="{ data }">
                         {{ neighborhoodLabel(data) }}
                     </template>
@@ -25,7 +24,11 @@
 
                 <Column v-if="isColumnVisible('location')" field="location" header="Location" sortable>
                     <template #body="{ data }">
+                        <Link :href="route('/', { tree_id: data.id })"
+                            class="flex justify-center items-center spece-x-2 hover:cursor-pointer hover:text-brand-600">
                         {{ locationLabel(data) }}
+                        <ExternalLink class="w-3.5 h-3.5 mx-1" />
+                        </Link>
                     </template>
                 </Column>
 
@@ -125,6 +128,7 @@ import { ref, computed, watch } from "vue";
 import TreeForm from "@/Pages/Tree/Partials/TreeForm.vue";
 import NavLinkButton from "@/Components/NavLinkButton.vue";
 import { useDateFormatter } from "@/Composables/useDateFormatter";
+import { ExternalLink } from "lucide-vue-next";
 
 defineOptions({
     layout: AuthenticatedLayout,

@@ -3,7 +3,7 @@
         :hiddenCategories="hiddenCategories" :currentMode="selectedFilter" @toggleCategory="onToggleCategory" />
     <div ref="mapContainer" class="map-container w-full h-full"></div>
 
-    <TreeCard :hovered="hoveredData" :selected="selectedData"  @update:selected="selectedData = $event"/>
+    <TreeCard :hovered="hoveredData" :selected="selectedData" @update:selected="selectedData = $event" />
 
     <!-- Loading overlay -->
     <MapLoadingOverlay :isLoading="isLoading" />
@@ -20,6 +20,14 @@ import { loadTreesLayer, loadNeighborhoodsLayer } from '@/Lib/Map/DataLayers'
 import { useMapFilter } from '@/Composables/useMapFilter'
 import { useMapColors } from '@/Composables/useMapColors'
 import TreeCard from '@/Components/Map/Partials/TreeCard.vue'
+
+
+const props = defineProps({
+    initialTreeId: {
+        type: Number,
+        default: null,
+    },
+})
 
 const mapContainer = ref(null)
 const map = ref(null)
@@ -83,7 +91,7 @@ onMounted(async () => {
             vectorStyles: CUSTOM_VECTOR_STYLES,
         })
 
-        await Promise.all([
+        const [_, treesApi] = await Promise.all([
             loadNeighborhoodsLayer(m, {
                 onDataLoaded: (data) => (neighborhoodData.value = data),
                 onNeighborhoodSelected: (props) => (selectedData.value = props),
@@ -97,6 +105,9 @@ onMounted(async () => {
         ])
         if (map.value && map.value.getLayer('trees-circle')) {
             visualiseTreeData(selectedFilter.value ?? 'status')
+        }
+        if (props.initialTreeId) {
+            treesApi.selectTreeById(props.initialTreeId);
         }
     } catch (e) {
         console.error(e)
@@ -117,12 +128,13 @@ watch(
 
 watch(hoveredData, data => {
 
-    if(!data) {
+    if (!data) {
         toggleTreeCard.value = false
         return
     }
-        toggleTreeCard.value = true
+    toggleTreeCard.value = true
 })
+
 
 const visualiseTreeData = (mode) => {
     if (!map.value || !map.value.getLayer('trees-circle')) return
@@ -229,27 +241,27 @@ const onToggleCategory = ({ mode, key }) => {
 
 
 const applyVisibility = (mode = selectedFilter.value) => {
-  if (!map.value || !map.value.getLayer('trees-circle')) return;
+    if (!map.value || !map.value.getLayer('trees-circle')) return;
 
-  const propName = modeToPropName[mode];
-  if (!propName) {
-    // reset any filter
-    map.value.setFilter('trees-circle', null);
-    return;
-  }
+    const propName = modeToPropName[mode];
+    if (!propName) {
+        // reset any filter
+        map.value.setFilter('trees-circle', null);
+        return;
+    }
 
-  const hidden = Array.from(hiddenCategories.value[mode] || []);
+    const hidden = Array.from(hiddenCategories.value[mode] || []);
 
-  // If nothing is hidden, remove the filter: everything is visible + clickable
-  if (!hidden.length) {
-    map.value.setFilter('trees-circle', null);
-    return;
-  }
+    // If nothing is hidden, remove the filter: everything is visible + clickable
+    if (!hidden.length) {
+        map.value.setFilter('trees-circle', null);
+        return;
+    }
 
-  // Keep ONLY features whose propName is NOT in `hidden`
-  const filter = ['!', ['in', ['get', propName], ['literal', hidden]]];
+    // Keep ONLY features whose propName is NOT in `hidden`
+    const filter = ['!', ['in', ['get', propName], ['literal', hidden]]];
 
-  map.value.setFilter('trees-circle', filter);
+    map.value.setFilter('trees-circle', filter);
 };
 
 

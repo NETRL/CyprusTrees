@@ -1,3 +1,4 @@
+import { safeJsonParse } from '@/Composables/safeJsonParser'
 import maplibregl from 'maplibre-gl'
 
 export async function fetchTreeDetails(treeId, { onDataLoaded } = {}) {
@@ -51,7 +52,6 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
     })
 
 
-
     // Hover ring (no pulse, just a halo while hovering)
     mapInstance.addLayer({
       id: 'trees-circle-hover',
@@ -87,59 +87,24 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
     let pulseAnimationId = null;
     const baseSelectedRadius = 10;
 
-    function startPulse(map) {
-      if (pulseAnimationId != null) return; // already running
-
-      const start = performance.now();
-
-      const frame = (time) => {
-        const t = (time - start) / 300; // speed factor
-        const pulse = baseSelectedRadius + Math.sin(t) * 2; // between 4 and 8
-
-        map.setPaintProperty('trees-circle-selected', 'circle-radius', pulse);
-        pulseAnimationId = requestAnimationFrame(frame);
-      };
-
-      pulseAnimationId = requestAnimationFrame(frame);
-    }
-
-    function stopPulse(map) {
-      if (pulseAnimationId != null) {
-        cancelAnimationFrame(pulseAnimationId);
-        pulseAnimationId = null;
-      }
-      map.setPaintProperty('trees-circle-selected', 'circle-radius', baseSelectedRadius);
-    }
-
-    function clearSelection(map) {
-      selectedId = null;
-      hoveredId = null;
-      stopPulse(map);
-      map.setFilter('trees-circle-selected', ['==', ['get', 'id'], -1]);
-      map.setFilter('trees-circle-hover', ['==', ['get', 'id'], -1]);
-      onTreeSelected?.(null);
-      onTreeHovered?.(null);
-    }
-
     mapInstance.on('click', 'trees-circle', (e) => {
+      const feature = e.features?.[0];
+      handleTreeClick(feature)
+    });
+
+
+    mapInstance.on('mouseenter', 'trees-circle', () => {
+      mapInstance.getCanvas().style.cursor = 'crosshair'
+    })
+
+    mapInstance.on('mousemove', 'trees-circle', (e) => {
+      if (selectedId) return;
       const feature = e.features?.[0];
       if (!feature) return;
 
       const p = feature.properties;
       const id = p?.id ?? feature.id;
       if (!id) return;
-
-      // --- selection logic ---
-      selectedId = id;
-      // selected ring: show only this id
-      mapInstance.setFilter('trees-circle-selected', ['==', ['get', 'id'], selectedId]);
-      // hover ring: hide when selected
-      hoveredId = null;
-      mapInstance.setFilter('trees-circle-hover', ['==', ['get', 'id'], -1]);
-      // start pulsating
-      startPulse(mapInstance);
-
-      onTreeSelected?.(p);
 
       let species = null;
       let neighborhood = null;
@@ -150,45 +115,16 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
         console.warn('Failed to parse nested props', err);
       }
 
-      //     const html = `
-      //   <div>
-      //     <strong>Tree #${p.id}</strong><br/>
-      //     ${species ? `<div>${species.common_name ?? ''}</div>` : ''}
-      //     ${neighborhood ? `<div>${neighborhood.name ?? ''}</div>` : ''}
-      //     ${p.address ? `<div>${p.address}</div>` : ''}
-      //   </div>
-      // `;
+      const propsWithParsed = { ...p, species, neighborhood };
 
-      //     new maplibregl.Popup()
-      //       .setLngLat(e.lngLat)
-      //       .setHTML(html)
-      //       .addTo(mapInstance);
-    });
-
-
-    mapInstance.on('mouseenter', 'trees-circle', () => {
-      mapInstance.getCanvas().style.cursor = 'crosshair'
-    })
-
-    mapInstance.on('mousemove', 'trees-circle', (e) => {
-      if (selectedId) return
-      const feature = e.features?.[0];
-      if (!feature) return;
-
-      const p = feature.properties;
-      const id = p?.id ?? feature.id;
-      if (!id) return;
-
-      // If this feature is selected, don't show hover ring on top – keep only selected ring
       if (id === selectedId) {
         hoveredId = null;
         mapInstance.setFilter('trees-circle-hover', ['==', ['get', 'id'], -1]);
       } else {
         hoveredId = id;
         mapInstance.setFilter('trees-circle-hover', ['==', ['get', 'id'], hoveredId]);
-        onTreeHovered?.(p)
+        onTreeHovered?.(propsWithParsed);
       }
-
 
       mapInstance.getCanvas().style.cursor = 'crosshair';
     });
@@ -216,10 +152,106 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
       clearSelection(mapInstance)
     });
 
-  }
+    function startPulse() {
+      if (pulseAnimationId != null) return; // already running
 
-  setInitialFilter?.('status')
+      const start = performance.now();
+
+      const frame = (time) => {
+        const t = (time - start) / 300; // speed factor
+        const pulse = baseSelectedRadius + Math.sin(t) * 2; // between 4 and 8
+
+        if (mapInstance.getLayer('trees-circle-selected')) {
+          mapInstance.setPaintProperty('trees-circle-selected', 'circle-radius', pulse);
+        }
+        pulseAnimationId = requestAnimationFrame(frame);
+      };
+
+      pulseAnimationId = requestAnimationFrame(frame);
+    }
+
+    function stopPulse() {
+      if (pulseAnimationId != null) {
+        cancelAnimationFrame(pulseAnimationId);
+        pulseAnimationId = null;
+      }
+      if (mapInstance.getLayer('trees-circle-selected')) {
+        mapInstance.setPaintProperty('trees-circle-selected', 'circle-radius', baseSelectedRadius);
+      }
+    }
+
+    function clearSelection() {
+      selectedId = null;
+      hoveredId = null;
+      stopPulse();
+      mapInstance.setFilter('trees-circle-selected', ['==', ['get', 'id'], -1]);
+      mapInstance.setFilter('trees-circle-hover', ['==', ['get', 'id'], -1]);
+      onTreeSelected?.(null);
+      onTreeHovered?.(null);
+    }
+
+    function handleTreeClick(feature) {
+      if (!feature) return;
+
+      const p = feature.properties;
+      const id = p?.id ?? feature.id;
+      if (!id) return;
+
+      // --- selection logic ---
+      selectedId = id;
+      // selected ring: show only this id
+      mapInstance.setFilter('trees-circle-selected', ['==', ['get', 'id'], id]);
+      // hover ring: hide when selected
+      hoveredId = null;
+      mapInstance.setFilter('trees-circle-hover', ['==', ['get', 'id'], -1]);
+      // start pulsating
+      startPulse();
+
+      onTreeSelected?.(p);
+    }
+
+
+    function selectTreeById(treeId) {
+      if (!treeId) return;
+
+      // treeId might be a string; normalize to number
+      const numericId = Number(treeId);
+
+      const feature = data.features?.find(
+        f => f.properties?.id === numericId
+      );
+
+      if (!feature) {
+        console.warn('No tree feature found for id', treeId);
+        return;
+      }
+
+      if (feature.geometry?.type === 'Point') {
+        const [lng, lat] = feature.geometry.coordinates;
+        mapInstance.easeTo({
+          center: [lng, lat],
+          duration: 800,
+          zoom: Math.max(mapInstance.getZoom(), 16),
+        });
+      }
+
+      // this will set filters, start pulse, and pass parsed species/neighborhood to Vue
+      handleTreeClick(feature);
+    }
+
+    setInitialFilter?.('status')
+
+
+
+    return {
+      selectTreeById,
+    };
+
+  }
 }
+
+
+
 
 export async function loadNeighborhoodsLayer(mapInstance, { onDataLoaded, onNeighborhoodSelected }) {
   const res = await fetch('/api/neighborhoods')
@@ -255,13 +287,6 @@ export async function loadNeighborhoodsLayer(mapInstance, { onDataLoaded, onNeig
         'line-width': 0,
       },
     })
-
-    // mapInstance.on('mouseenter', 'neighborhoods-fill', () => {
-    //   mapInstance.getCanvas().style.cursor = 'crosshair'
-    // })
-    // mapInstance.on('mouseleave', 'neighborhoods-fill', () => {
-    //   mapInstance.getCanvas().style.cursor = ''
-    // })
   } else {
     mapInstance.getSource('neighborhoods').setData(data)
   }

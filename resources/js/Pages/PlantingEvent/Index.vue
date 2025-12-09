@@ -15,7 +15,11 @@
         <!-- Tree -->
         <Column v-if="isColumnVisible('tree_id')" field="tree_id" header="Tree" sortable>
           <template #body="{ data }">
+            <Link :href="route('/', { tree_id: data.tree_id })"
+              class="flex justify-center items-center spece-x-2 hover:cursor-pointer hover:text-brand-600">
             {{ treeLabel(data) }}
+            <ExternalLink class="w-3.5 h-3.5 mx-1" />
+            </Link>
           </template>
         </Column>
 
@@ -72,6 +76,7 @@ import { ref, defineOptions, defineProps } from "vue";
 import { useRenamedHeaders } from "@/Composables/useRenamedHeaders";
 import PlantingEventForm from "@/Pages/PlantingEvent/Partials/PlantingEventForm.vue";
 import { useDateFormatter } from "@/Composables/useDateFormatter";
+import { ExternalLink } from "lucide-vue-next";
 
 defineOptions({
   layout: AuthenticatedLayout,
