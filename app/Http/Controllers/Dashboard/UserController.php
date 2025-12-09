@@ -23,7 +23,7 @@ class UserController extends Controller
 
     public function index(): \Inertia\Response
     {
-        return Inertia::render('User/Index', [
+        return Inertia::render('Users/Index', [
             'users' => User::all(),
             'roles' => Role::all()
         ]);

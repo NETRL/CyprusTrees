@@ -1,8 +1,7 @@
 <template>
   <div>
     <ReusableDataTable routeResource="citizenReports" :columns="dataColumns" :tableData="tableData"
-      inertiaKey="tableData" pageTitle="Manage Citizen Reports" :showCreateButton="false" @edit="openEditForm"
-      @afterDelete="onAfterDelete" @afterMassDelete="onAfterMassDelete">
+      inertiaKey="tableData" pageTitle="Manage My Reports" :showToolbar="false" :showEditButton="false" :showDeleteButton="false">
 
 
       <template #columns="{ isColumnVisible }">
@@ -16,12 +15,6 @@
         <Column v-if="isColumnVisible('report_type_id')" field="report_type_id" header="Report Type" sortable>
           <template #body="{ data }">
             {{ typeLabel(data) }}
-          </template>
-        </Column>
-
-        <Column v-if="isColumnVisible('created_by')" field="created_by" header="Created By" sortable>
-          <template #body="{ data }">
-            {{ userLabel(data) }}
           </template>
         </Column>
 
@@ -111,10 +104,6 @@
       </template>
 
     </ReusableDataTable>
-
-    <CitizenReportForm v-model:visible="formVisible" routeResource="citizenReports" :action="formAction"
-      :dataRow="formRow" @updated="reloadTable" @created="reloadTable" :trees="treeData" :types="typeData"
-      :users="userData" :reportStatus="reportStatus" />
     <PhotoPreview v-model:visible="previewVisible" :photo="previewPhoto" />
   </div>
 </template>
@@ -124,7 +113,6 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import ReusableDataTable from "@/Components/ReusableDataTable.vue";
 import { router } from "@inertiajs/vue3";
 import { ref, defineOptions, defineProps } from "vue";
-import CitizenReportForm from "@/Pages/CitizenReport/Partials/CitizenReportForm.vue";
 import { useDateFormatter } from "@/Composables/useDateFormatter";
 import NavLinkButton from "@/Components/NavLinkButton.vue";
 import { Eye, ImageIcon, ImageOff, ExternalLink } from 'lucide-vue-next';
@@ -217,51 +205,4 @@ const typeLabel = (row) => {
   return type.name;
 };
 
-const userLabel = (row) => {
-  const id = row.created_by;
-  const creator = row.creator;
-
-  if (!id && !creator) return '-';
-
-  if (!creator) return id;
-
-  const roles = Array.isArray(creator.roles) ? creator.roles : [];
-  const roleNames = roles.length ? roles.map(r => r.name).join(', ') : 'No role';
-
-  const firstName = creator.first_name ?? '';
-  const lastName = creator.last_name ?? '';
-  const fullName = [firstName, lastName].filter(Boolean).join(' ');
-
-  return fullName ? `${id} - ${fullName} (${roleNames})` : `${id}`;
-};
-
-// --- form state ---
-const formVisible = ref(false);
-const formAction = ref('');      // 'Create' or 'Edit'
-const formRow = ref(null);       // current row
-
-const openCreateForm = () => {
-  formRow.value = null;
-  formAction.value = 'Create';
-  formVisible.value = true;
-};
-
-const openEditForm = (row) => {
-  formRow.value = row;
-  formAction.value = 'Edit';
-  formVisible.value = true;
-};
-
-// optional: reload table when form finishes
-const reloadTable = () => {
-  router.reload({ only: ['tableData'] });
-};
-
-const onAfterDelete = () => {
-  reloadTable();
-};
-
-const onAfterMassDelete = () => {
-  reloadTable();
-};
 </script>

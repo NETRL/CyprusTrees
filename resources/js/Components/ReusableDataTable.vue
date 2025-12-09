@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Toolbar class="m-4 dark:border-gray-800! dark:bg-transparent! ">
+    <Toolbar v-if="showToolbar" class="m-4 dark:border-gray-800! dark:bg-transparent! ">
       <template #start>
         <Button v-if="showCreateButton" v-has-permission="{ props: $page.props, permissions: [finalPermissionCreate] }"
           severity="success" class="mr-2 mb-2 max-sm:text-sm!" icon="pi pi-plus" label="New" @click="onCreateClick" />
@@ -176,6 +176,10 @@ const props = defineProps({
     default: true,
   },
   showJumpToPage: {
+    type: Boolean,
+    default: true,
+  },
+    showToolbar: {
     type: Boolean,
     default: true,
   },

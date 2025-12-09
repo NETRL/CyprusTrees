@@ -17,6 +17,7 @@ use App\Http\Controllers\SpeciesController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TreeController;
 use App\Http\Controllers\UserAddressController;
+use App\Http\Controllers\UserReportsController;
 use App\Models\ReportType;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -51,44 +52,46 @@ Route::middleware('auth', '2fa')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::resource('/user/reports', UserReportsController::class)->only('index', 'update' ,'destroy');
+
     Route::patch('/address', [UserAddressController::class, 'update'])->name('address.update');
 
-    Route::resource('trees', TreeController::class);
+    Route::resource('trees', TreeController::class)->except(['create', 'edit']);
     Route::post('/trees/mass-destroy', [TreeController::class, 'massDestroy'])->name('trees.massDestroy');
 
-    Route::resource('tags', TagController::class);
+    Route::resource('tags', TagController::class)->except(['create', 'edit']);
     Route::post('/tags/mass-destroy', [TagController::class, 'massDestroy'])->name('tags.massDestroy');
 
-    Route::resource('species', SpeciesController::class);
+    Route::resource('species', SpeciesController::class)->except(['create', 'edit']);
     Route::post('/species/mass-destroy', [SpeciesController::class, 'massDestroy'])->name('species.massDestroy');
 
-    Route::resource('neighborhoods', NeigborhoodController::class);
+    Route::resource('neighborhoods', NeigborhoodController::class)->except(['create', 'edit']);
     Route::post('/neighborhoods/mass-destroy', [NeigborhoodController::class, 'massDestroy'])->name('neighborhoods.massDestroy');
     Route::post('/neighborhoods/remove-file', [NeigborhoodController::class, 'removeFile'])->name('neighborhoods.removeFile');
     Route::post('/neighborhoods/upload-file', [NeigborhoodController::class, 'uploadFile'])->name('neighborhoods.uploadFile');
 
-    Route::resource('photos', PhotoController::class);
+    Route::resource('photos', PhotoController::class)->except(['create', 'edit']);
     Route::post('/photos/mass-destroy', [PhotoController::class, 'massDestroy'])->name('photos.massDestroy');
 
-    Route::resource('campaigns', CampaignController::class);
+    Route::resource('campaigns', CampaignController::class)->except(['create', 'edit']);
     Route::post('/campaigns/mass-destroy', [CampaignController::class, 'massDestroy'])->name('campaigns.massDestroy');
 
-    Route::resource('plantingEvents', PlantingEventController::class);
+    Route::resource('plantingEvents', PlantingEventController::class)->except(['create', 'edit']);
     Route::post('/plantingEvents/mass-destroy', [PlantingEventController::class, 'massDestroy'])->name('plantingEvents.massDestroy');
 
-    Route::resource('maintenanceEvents', MaintenanceEventsController::class);
+    Route::resource('maintenanceEvents', MaintenanceEventsController::class)->except(['create', 'edit']);
     Route::post('/maintenanceEvents/mass-destroy', [MaintenanceEventsController::class, 'massDestroy'])->name('maintenanceEvents.massDestroy');
 
-    Route::resource('maintenanceTypes', MaintenanceTypesController::class);
+    Route::resource('maintenanceTypes', MaintenanceTypesController::class)->except(['create', 'edit']);
     Route::post('/maintenanceTypes/mass-destroy', [MaintenanceTypesController::class, 'massDestroy'])->name('maintenanceTypes.massDestroy');
 
-    Route::resource('healthAssessments', HealthAssessmentController::class);
+    Route::resource('healthAssessments', HealthAssessmentController::class)->except(['create', 'edit']);
     Route::post('/healthAssessments/mass-destroy', [HealthAssessmentController::class, 'massDestroy'])->name('healthAssessments.massDestroy');
 
-    Route::resource('reportTypes', ReportTypeController::class);
+    Route::resource('reportTypes', ReportTypeController::class)->except(['create', 'edit']);
     Route::post('/reportTypes/mass-destroy', [ReportTypeController::class, 'massDestroy'])->name('reportTypes.massDestroy');
 
-    Route::resource('citizenReports', CitizenReportController::class);
+    Route::resource('citizenReports', CitizenReportController::class)->except(['create', 'edit']);
     Route::post('/citizenReports/mass-destroy', [HealthAssessmentController::class, 'massDestroy'])->name('citizenReports.massDestroy');
 });
 

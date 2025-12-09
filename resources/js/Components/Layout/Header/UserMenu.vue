@@ -35,16 +35,18 @@
 </template>
 
 <script setup>
-import { UserCircleIcon, ChevronDownIcon, LogoutIcon } from '@/Icons'
+import { UserCircleIcon, ChevronDownIcon, LogoutIcon, ReportsIcon } from '@/Icons'
 import { ref, onMounted, onUnmounted } from 'vue'
 import UserMenuNavLink from './UserMenuNavLink.vue'
 import ThemeToggler from '@/Components/Common/ThemeToggler.vue'
+import ReportTypeIcon from '@/Icons/ReportTypeIcon.vue'
 
 const dropdownOpen = ref(false)
 const dropdownRef = ref(null)
 
 const menuItems = [
-  { href: 'profile.edit', icon: UserCircleIcon, text: 'Edit profile' },
+  { href: 'profile.edit', icon: UserCircleIcon, text: 'My profile' },
+  { href: 'reports.index', icon: ReportsIcon, text: 'My reports' },
   // { href: '/', icon: SettingsIcon, text: 'Account settings' },
   // { href: '/', icon: InfoCircleIcon, text: 'Support' },
 ]

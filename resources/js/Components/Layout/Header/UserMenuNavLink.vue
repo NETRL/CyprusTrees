@@ -1,6 +1,6 @@
 <template>
     <Link :href="route(item.href)" :method="method" :class="itemClasses" >
-    <component :is="item.icon" :class="iconClasses"  />
+    <component :is="item.icon" :class="iconClasses" class="w-5! h-5!"  />
     {{ item.text }}
     </Link>
 </template>

@@ -14,7 +14,7 @@ class TwoFactorController extends Controller
 
         // if already enabled, just show status
         if ($user->hasTwoFactorEnabled()) {
-            return inertia('Profile/TwoFactor', [
+            return inertia('User/Profile/TwoFactor', [
                 'enabled' => true,
                 'recoveryCodes' => $user->getRecoveryCodes(),
             ]);
@@ -34,7 +34,7 @@ class TwoFactorController extends Controller
             $user->email,
             $secret
         );
-        return inertia('Profile/TwoFactor', [
+        return inertia('User/Profile/TwoFactor', [
             'enabled' => false,
             'secret' => $secret,
             'otpauthUrl' => $otpauthUrl,
