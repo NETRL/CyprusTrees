@@ -171,6 +171,17 @@ class NavlinkSeeder extends Seeder
         );
 
         $this->createOrUpdateNavlink(
+            ['key' => 'maintenance-calendar'],
+            [
+                'name'        => 'Calendar',
+                'permissions' => 'calendar.view',
+                'icon'        => 'pi pi-calendar',
+                'parent_id'   => $events->id,
+                'route_name'  => 'calendar.index'
+            ]
+        );
+
+        $this->createOrUpdateNavlink(
             ['key' => 'maintenance-events'],
             [
                 'name'        => 'Maintenance Events',

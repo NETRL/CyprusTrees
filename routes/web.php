@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\CitizenReportController;
 use App\Http\Controllers\Dashboard\PermissionController;
@@ -97,6 +98,8 @@ Route::middleware('auth', '2fa')->group(function () {
 
     Route::resource('citizenReports', CitizenReportController::class)->except(['create', 'edit']);
     Route::post('/citizenReports/mass-destroy', [HealthAssessmentController::class, 'massDestroy'])->name('citizenReports.massDestroy');
+    
+    Route::resource('calendar', CalendarController::class)->except(['create', 'edit']);
 });
 
 require __DIR__ . '/auth.php';

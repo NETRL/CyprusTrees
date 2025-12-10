@@ -14,6 +14,7 @@ class CitizenReport extends Model
     use HasFactory, BaseModelTrait, Paginatable;
 
     protected $primaryKey = 'report_id';
+    public $timestamps = false;
 
     protected $fillable = [
         'report_type_id',
@@ -40,7 +41,6 @@ class CitizenReport extends Model
         ];
     }
 
-    public $timestamps = false; // we manually handle timestamps above
 
     protected $casts = [
         'lat'         => 'float',

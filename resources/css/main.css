@@ -8,6 +8,49 @@ layer(base);
 
 @custom-variant dark (&:is(.dark *));
 
+
+/* Calendar */
+.fc-scrollgrid-sync-table{
+     @apply min-w-[calc(100vw-6rem)]! text-xs! md:text-lg;
+}
+.fc-col-header {
+     @apply min-w-[calc(100vw-6rem)]! text-xs! md:text-lg;
+}
+.fc-dayGridMonth-view.fc-view.fc-daygrid {
+     @apply min-w-[calc(100vw-6rem)]! text-xs! md:text-lg;
+}
+.fc-daygrid-body.fc-daygrid-body-unbalanced {
+     @apply min-w-[calc(100vw-6rem)]! text-xs! md:text-lg;
+
+}
+.fc-col-header-cell-cushion {
+    @apply text-xs!;
+}
+.fc-scrollgrid-sync-inner {
+    @apply flex justify-center text-xs! overflow-hidden!;
+}
+/* Event Wrapper */
+.fc-daygrid-day-events{
+    @apply m-0! w-full!;
+}
+.fc-event-main{
+    @apply flex shrink! min-w-full! justify-start! items-center py-1 text-xs!;
+}.fc-event-title {
+    @apply text-xs!;
+}.fc-event-time{
+    @apply text-xs!;
+}
+.fc-daygrid-day-frame.fc-scrollgrid-sync-inner{
+    @apply  flex flex-col justify-start! items-center!;
+
+}
+
+/* 
+.fc-header-toolbar.fc-toolbar.fc-toolbar-ltr{
+    @apply flex-row! flex-nowrap! shrink! overflow-scroll;
+}
+     */
+
 /* MapLibre */
 .maplibregl-popup-content {
     @apply dark:text-black!;

@@ -15,7 +15,7 @@
         <Column v-if="isColumnVisible('tree_id')" field="tree_id" header="Tree" sortable>
           <template #body="{ data }">
             <Link :href="route('/', { tree_id: data.tree_id })"
-              class="flex justify-center items-center spece-x-2 hover:cursor-pointer hover:text-brand-600">
+              class="flex items-center spece-x-2 hover:cursor-pointer hover:text-brand-600">
             {{ treeLabel(data) }}
             <ExternalLink class="w-3.5 h-3.5 mx-1" />
             </Link>

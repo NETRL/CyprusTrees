@@ -25,6 +25,12 @@
     },
     "dependencies": {
         "@floating-ui/dom": "^1.7.4",
+        "@fullcalendar/core": "^6.1.19",
+        "@fullcalendar/daygrid": "^6.1.19",
+        "@fullcalendar/interaction": "^6.1.19",
+        "@fullcalendar/list": "^6.1.19",
+        "@fullcalendar/timegrid": "^6.1.19",
+        "@fullcalendar/vue3": "^6.1.19",
         "@primeuix/themes": "^1.2.5",
         "lucide-vue-next": "^0.555.0",
         "maplibre-gl": "^5.10.0",

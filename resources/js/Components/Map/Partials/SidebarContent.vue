@@ -1,3 +1,4 @@
+
 <template>
     <div class="flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
         <!-- Header -->
@@ -6,6 +7,7 @@
                 <span class="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
                     Nicosia Trees
                 </span>
+                
             </div>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Explore urban forestry data

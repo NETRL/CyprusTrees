@@ -69,14 +69,14 @@
             <div v-if="data.photo_id" class="flex items-center gap-2">
               <!-- Thumbnail -->
               <div @click.stop="openPreview(data.photo)"
-                class="relative w-12 h-12 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 cursor-pointer hover:ring-2 hover:ring-emerald-500 transition-all group">
-                <img :src="data.photo_url || '/placeholder-tree.jpg'" :alt="`Tree ${data.tree_id} photo`"
-                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200" />
-                <div
-                  class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                  <Eye class="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-              </div>
+              class="relative w-12 h-12 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 cursor-pointer hover:ring-2 hover:ring-emerald-500 transition-all group">
+              <img :src="data.photo.url || '/placeholder-tree.jpg'" :alt="`Tree ${data.tree_id} photo`"
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200" />
+              <div
+              class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+              <Eye class="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+          </div>
 
               <!-- Photo Link -->
               <NavLinkButton :href="route('photos.index', { tree_id: data.tree_id, search: data.photo_id })"

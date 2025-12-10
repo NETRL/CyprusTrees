@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="h-full flex flex-col">
     <Toolbar v-if="showToolbar" class="m-4 dark:border-gray-800! dark:bg-transparent! ">
       <template #start>
         <Button v-if="showCreateButton" v-has-permission="{ props: $page.props, permissions: [finalPermissionCreate] }"
@@ -25,7 +25,7 @@
         optionValue="value" :maxSelectedLabels="1" filter placeholder="Select columns" />
     </div>
 
-    <div>
+    <div class="flex-1 min-h-0">
       <DataTable class="m-4 rounded-xl border border-gray-200  dark:border-gray-800 truncate" ref="dt"
         v-model:selection="selected" :filters="filters" :value="tableData.data" :lazy="true" :paginator="true"
         :rows="perPage" :totalRecords="tableData.total" :first="(tableData.current_page - 1) * tableData.per_page"

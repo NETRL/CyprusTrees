@@ -15,20 +15,34 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+
         $this->call(NavlinkSeeder::class);
         $this->call(RolePermissionSeeder::class);
         $this->call(UserSeeder::class);
-
+        // Core lookups & users
         $this->call([
+
             TagsTableSeeder::class,
             SpeciesTableSeeder::class,
             NeighborhoodsTableSeeder::class,
+            ReportTypeTableSeeder::class,
+            MaintenanceTypesTableSeeder::class,
+            CampaignsTableSeeder::class,
+        ]);
+
+        // Trees and relations
+        $this->call([
             TreesTableSeeder::class,
             TreeTagsTableSeeder::class,
             PhotosTableSeeder::class,
         ]);
 
-        $this->call(ReportTypeTableSeeder::class);
-
+        // Domain-specific events & reports
+        $this->call([
+            PlantingEventsTableSeeder::class,
+            CitizenReportsTableSeeder::class,
+            MaintenanceEventsTableSeeder::class,
+            HealthAssessmentsTableSeeder::class,
+        ]);
     }
 }

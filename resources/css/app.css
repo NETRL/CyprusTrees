@@ -1,6 +1,9 @@
 
 @import 'tailwindcss';
 
+@import "@fullcalendar/daygrid/index.css";
+@import "@fullcalendar/core/index.css";
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';

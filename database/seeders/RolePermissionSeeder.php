@@ -431,6 +431,7 @@ class RolePermissionSeeder extends Seeder
             'parent_id'   => $maintenance->id
         ]);
 
+
         // maintenanceEvents permissions
         $maintenanceEvents = Permission::firstOrCreate([
             'name'       => 'maintenanceEvents',
@@ -491,6 +492,37 @@ class RolePermissionSeeder extends Seeder
             'group_name'  => 'maintenanceTypes',
             'description' => 'Can delete maintenanceTypes.',
             'parent_id'   => $maintenanceTypes->id
+        ]);
+
+        // calendar permissions
+        $calendar = Permission::firstOrCreate([
+            'name'       => 'calendar',
+            'group_name' => 'calendar'
+        ]);
+
+        Permission::firstOrCreate([
+            'name'        => 'calendar.view',
+            'group_name'  => 'calendar',
+            'description' => 'Can view calendar.',
+            'parent_id'   => $calendar->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'calendar.edit',
+            'group_name'  => 'calendar',
+            'description' => 'Can edit existing calendar.',
+            'parent_id'   => $calendar->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'calendar.create',
+            'group_name'  => 'calendar',
+            'description' => 'Can create new calendar.',
+            'parent_id'   => $calendar->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'calendar.delete',
+            'group_name'  => 'calendar',
+            'description' => 'Can delete calendar.',
+            'parent_id'   => $calendar->id
         ]);
 
         // health permissions
@@ -680,6 +712,7 @@ class RolePermissionSeeder extends Seeder
         $admin->givePermissionTo([$maintenance->children]);
         $admin->givePermissionTo([$maintenanceEvents->children]);
         $admin->givePermissionTo([$maintenanceTypes->children]);
+        $admin->givePermissionTo([$calendar->children]);
 
 
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
