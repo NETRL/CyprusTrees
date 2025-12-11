@@ -1,5 +1,5 @@
 <template>
-    <button type="button" :aria-label="ariaLabel" class="inline-flex items-center justify-center rounded-xl
+    <button type="button" :aria-label="ariaLabel" class="inline-flex items-center justify-center
             w-8 h-8 text-sm sm:text-base
             border border-slate-200 dark:border-slate-700
             bg-slate-50 dark:bg-slate-800

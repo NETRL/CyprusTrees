@@ -1,116 +1,194 @@
 <template>
-    <div ref="rootEl" class="h-full flex flex-col p-2 sm:p-4">
-        <div class="flex items-center justify-between gap-3 mb-4 px-1">
-            <div class="flex items-center gap-2">
-                <button type="button" class="inline-flex items-center justify-center rounded-lg px-3 py-2
-                 border border-slate-200 dark:border-slate-700
-                 bg-white dark:bg-slate-800
-                 text-slate-700 dark:text-slate-100
-                 text-xs sm:text-sm font-medium
-                 hover:bg-slate-50 dark:hover:bg-slate-750
-                 active:scale-95
-                 transition-all duration-150
-                 shadow-sm hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-                    @click="goToToday">
-                    Today
-                </button>
+    <div ref="rootEl"
+        class="h-full flex flex-col bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 select-none">
 
-                <div class="flex items-center gap-0.5 bg-slate-100 dark:bg-slate-800 rounded-xl p-0.5 shadow-inner">
-                    <IconButton @click="prevMonth" aria-label="Previous month" class="text-lg"
-                        :disabled="isAnimating ">
-                        ‹
-                    </IconButton>
-                    <IconButton @click="nextMonth" aria-label="Next month" class="text-lg"
-                        :disabled="isAnimating ">
-                        ›
-                    </IconButton>
+        <header
+            class="flex flex-col md:flex-row items-center justify-between gap-4 py-3 lg:py-5 px-6  bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-20 border-b border-slate-200 dark:border-slate-800">
+
+            <div class="flex items-baseline gap-3">
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                    {{ monthLabel }}
+                </h1>
+                <span class="text-xl font-medium text-slate-400 dark:text-slate-500">
+                    {{ yearLabel }}
+                </span>
+            </div>
+
+            <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+
+                <div
+                    class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <button v-for="mode in ['year', 'month', 'day']" :key="mode" @click="setViewMode(mode)"
+                        class="px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 capitalize"
+                        :class="viewMode === mode
+                            ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10'
+                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'">
+                        {{ mode }}
+                    </button>
+                </div>
+
+                <div class="h-6 w-px bg-slate-300 dark:bg-slate-700 hidden sm:block"></div>
+
+                <div class="flex items-center gap-1">
+                    <button @click="goToToday"
+                        class="hidden sm:inline-flex px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 transition-all">
+                        Today
+                    </button>
+
+                    <div
+                        class="flex items-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                        <IconButton @click="prevStep" :disabled="isAnimating"
+                            class="p-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-emerald-600 transition-colors rounded-l-lg border-r border-slate-100 dark:border-slate-700">
+                            <ChevronLeftIcon class="w-5 h-5" />
+                        </IconButton>
+                        <IconButton @click="nextStep" :disabled="isAnimating"
+                            class="p-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-emerald-600 transition-colors rounded-r-lg">
+                            <ChevronRightIcon class="w-5 h-5" />
+                        </IconButton>
+                    </div>
                 </div>
             </div>
+        </header>
 
-            <div class="text-right">
-                <p class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-slate-50">
-                    {{ monthLabel }}
-                </p>
-                <p class="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                    {{ yearLabel }}
-                </p>
-            </div>
-        </div>
-        <div class="grid grid-cols-7 text-xs sm:text-sm font-bold uppercase tracking-wider
-             text-slate-600 dark:text-slate-400 mb-2 px-1 border-b border-slate-200 dark:border-slate-700 pb-1">
-            <div v-for="dow in weekdays" :key="dow" class="text-center py-1">
-                {{ dow }}
+        <div v-if="viewMode === 'month'"
+            class="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+            <div v-for="dow in weekdays" :key="dow"
+                class="py-2 text-center text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-500">
+                {{ dow.substring(0, 3) }}
             </div>
         </div>
 
-        <div class="flex-1 min-h-0 overflow-hidden relative">
-            <div ref="calendarContainer" class="absolute inset-0 transition-transform duration-500 ease-out" :class="{
-                'translate-x-full opacity-0 scale-[0.9] skew-y-1': isAnimating && transitionDirection === 'right',
-                '-translate-x-full opacity-0 scale-[0.9] -skew-y-1': isAnimating && transitionDirection === 'left',
-                'pointer-events-none': isAnimating,
-            }">
-                <div class="h-full grid grid-cols-7 grid-rows-6 gap-1
-                     rounded-lg overflow-hidden
-                     bg-slate-100/50 dark:bg-slate-800/30 p-1">
-                    <button v-for="day in days" :key="day.iso" type="button" class="day-cell relative flex flex-col items-start justify-start
-                        px-1.5 sm:px-3 py-1.5 sm:py-3
-                        text-left text-xs sm:text-sm
-                        rounded-lg
-                        transition-all duration-150
-                        focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2
-                        hover:bg-slate-50 dark:hover:bg-slate-800/80
-                        active:scale-[0.98] active:shadow-inner
-                        bg-white dark:bg-slate-900/80
-                        min-h-[60px] sm:min-h-[70px] overflow-hidden" :class="[
-                            !day.isCurrentMonth
-                                ? 'text-slate-300 dark:text-slate-600 opacity-60'
-                                : 'text-slate-800 dark:text-slate-100',
-                            day.isToday && day.isCurrentMonth
-                                ? 'ring-2 ring-emerald-500 shadow-xl shadow-emerald-500/20'
-                                : 'shadow-md',
-                        ]" @click="handleDayClick(day.date, $event)">
-                        <div class="absolute inset-0 p-3 flex flex-col transition-opacity duration-150"
-                            :class="{ 'opacity-0': isAnimating }">
-                            <div class="flex items-center justify-between w-full mb-0.5 sm:mb-1">
-                                <span class="inline-flex items-center justify-center min-w-6 h-6 sm:min-w-7 sm:h-7 rounded-full
-                                 text-[0.7rem] sm:text-sm font-semibold
-                                 transition-colors duration-150 z-10" :class="day.isToday
-                                    ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md'
-                                    : 'bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800'
-                                    ">
-                                    {{ day.date.getDate() }}
-                                </span>
+        <main class="flex-1 relative overflow-hidden bg-white dark:bg-slate-900">
+
+            <Transition v-if="viewMode === 'month'" :name="transitionName" mode="out-in">
+                <div :key="monthKey" class="absolute inset-0 grid grid-cols-7 grid-rows-6">
+                    <button v-for="day in days" :key="day.iso" @click="handleDayClick(day.date, $event)"
+                        class="group relative flex flex-col items-stretch justify-start p-1 sm:p-2 border-b border-r border-slate-100 dark:border-slate-800 transition-colors duration-150 outline-none focus:z-10 focus:ring-2 focus:ring-inset focus:ring-emerald-500"
+                        :class="[
+                            !day.isCurrentMonth ? 'bg-slate-50/30 dark:bg-slate-950/30 text-slate-400' : 'bg-white dark:bg-slate-900',
+                            day.isToday ? 'bg-emerald-50/30 dark:bg-emerald-900/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                        ]">
+
+                        <div class="flex items-center justify-center sm:justify-between mb-1">
+                            <span
+                                class="text-xs sm:text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full transition-all"
+                                :class="day.isToday
+                                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
+                                    : 'text-slate-700 dark:text-slate-300 group-hover:bg-slate-200 dark:group-hover:bg-slate-700'">
+                                {{ day.date.getDate() }}
+                            </span>
+                        </div>
+
+                        <div class="flex-1 flex flex-col gap-1 w-full overflow-hidden">
+                            <div v-for="event in day.events.slice(0, getMaxEvents())" :key="event.id"
+                                class="hidden sm:block px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-medium truncate border-l-2 transition-transform hover:scale-[1.02]"
+                                :class="[
+                                    'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 border-emerald-500',
+                                    // Dynamic coloring hook (replace with event.color logic if available)
+                                ]">
+                                {{ event.title }}
                             </div>
 
-                            <div class="flex-1 w-full space-y-0.5 sm:space-y-1 overflow-hidden z-10">
-                                <div v-for="(event, idx) in day.events.slice(0, getMaxEvents())" :key="event.id" class="flex items-center gap-1 px-1 py-0.5 rounded
-                                 bg-opacity-80 transition-all duration-150" :class="[
-                                    day.isCurrentMonth ? 'bg-slate-100 dark:bg-slate-700/50' : 'bg-transparent'
-                                ]" :style="`animation-delay: ${idx * 50}ms`">
-                                    <div class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full shrink-0 shadow-sm"
-                                        :class="event.color"></div>
-                                    <p class="text-[0.55rem] sm:text-xs font-medium truncate leading-tight" :class="!day.isCurrentMonth
-                                        ? 'text-slate-400 dark:text-slate-600'
-                                        : 'text-slate-700 dark:text-slate-300'
-                                        ">
-                                        {{ event.title }}
-                                    </p>
-                                </div>
-                                <template v-if="day.events.length > getMaxEvents()">
-                                    <p
-                                        class="text-[0.55rem] sm:text-xs font-medium text-emerald-600 dark:text-emerald-400 px-1 pt-0.5">
-                                        +{{ day.events.length - getMaxEvents() }} more
-                                    </p>
-                                </template>
+                            <div class="sm:hidden flex gap-0.5 justify-center flex-wrap">
+                                <div v-for="event in day.events.slice(0, 3)" :key="event.id"
+                                    class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                            </div>
+
+                            <div v-if="day.events.length > getMaxEvents()"
+                                class="pl-1 text-[10px] font-semibold text-slate-400">
+                                +{{ day.events.length - getMaxEvents() }}
                             </div>
                         </div>
                     </button>
                 </div>
-            </div>
+            </Transition>
 
-        </div>
+            <Transition v-else-if="viewMode === 'year'" :name="transitionName" mode="out-in" @wheel.stop>
+                <div :key="yearKey" class="absolute inset-0 overflow-y-auto p-6">
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        <button v-for="month in yearMonths" :key="month.index" @click="selectMonthFromYear(month.index)"
+                            class="relative flex flex-col items-center justify-center p-6 rounded-2xl border transition-all duration-200 group"
+                            :class="month.index === currentDate.getMonth()
+                                ? 'bg-white dark:bg-slate-800 border-emerald-500 ring-4 ring-emerald-50 dark:ring-emerald-900/20 shadow-xl shadow-emerald-500/10'
+                                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-lg'">
+
+                            <span class="text-xl font-bold mb-1 group-hover:text-emerald-600 transition-colors"
+                                :class="month.index === currentDate.getMonth() ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'">
+                                {{ month.label }}
+                            </span>
+                            <span class="text-xs font-medium text-slate-400 uppercase tracking-widest">
+                                View
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </Transition>
+
+            <Transition v-else :name="transitionName" mode="out-in">
+                <div :key="dayKey" class="absolute inset-0 flex flex-col bg-slate-50 dark:bg-slate-950">
+
+                    <div
+                        class="px-2 py-2 lg:px-6 lg:py-8 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+                        <h2 class="text-lg lg:text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                            {{ selectedDayLabel }}
+                        </h2>
+                        <p class="text-slate-500 dark:text-slate-400 font-medium">
+                            {{ selectedDayEvents.length }} events scheduled
+                        </p>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto p-6 relative">
+                        <div
+                            class="absolute left-10 top-6 bottom-6 w-px bg-slate-200 dark:bg-slate-800 ml-6 hidden sm:block">
+                        </div>
+
+                        <div v-if="selectedDayEvents.length" class="space-y-4" @wheel.stop>
+                            <div v-for="event in selectedDayEvents" :key="event.id"
+                                class="relative flex flex-col sm:flex-row gap-4 sm:gap-8 group">
+
+                                <div class="sm:w-32 flex-shrink-0 flex max-sm:justify-start justify-end items-center space-x-1">
+                                    <div class="hidden sm:block w-3 h-3 rounded-full border-2 border-white dark:border-slate-900 ml-2 z-10"
+                                        :class="event.color || 'bg-emerald-500'"></div>
+                                    <span class="text-sm font-bold text-slate-900 dark:text-slate-200 block">
+                                        {{ dayEventDateFormatter(event.start) }}
+                                    </span>
+                                </div>
+                                <div
+                                    class="flex-1 px-4 py-2 lg:-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm group-hover:shadow-md group-hover:border-emerald-300 dark:group-hover:border-emerald-700 transition-all cursor-pointer">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <div class="sm:hidden w-2 h-2 rounded-full"
+                                            :class="event.color || 'bg-emerald-500'"></div>
+                                        <h3 class="font-bold text-slate-900 dark:text-white">
+                                            {{ event.title }}
+                                        </h3>
+                                    </div>
+                                    <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">
+                                        {{ event.description || 'No additional details.' }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-else class="h-full flex flex-col items-center justify-center text-center p-8 opacity-60">
+                            <div
+                                class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                                <svg class="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                            </div>
+                            <p class="text-lg font-medium text-slate-900 dark:text-white">No events</p>
+                            <p class="text-sm text-slate-500">Go enjoy your free time!</p>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+
+        </main>
     </div>
 </template>
+
 
 <script setup>
 import {
@@ -119,10 +197,10 @@ import {
     onMounted,
     ref,
     watch,
-    nextTick,
 } from 'vue'
 
-import IconButton from '@/Pages/Calendar/Partials/IconButton.vue'
+import IconButton from './IconButton.vue'
+import { ChevronLeftIcon, ChevronRightIcon } from '@/Icons'
 
 const emit = defineEmits(['day-click'])
 
@@ -135,22 +213,25 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    transitionPreset: {
+        type: String,
+        default: 'fade', // slide | fade| scale
+    },
 })
 
-// ... (other refs remain the same)
 const currentDate = ref(normalizeToDate(props.initialDate))
 const rootEl = ref(null)
 const transitionDirection = ref(null)
 const isAnimating = ref(false)
 const touchStartX = ref(0)
 const touchMoveX = ref(0)
-const swipeThreshold = 50
-const windowWidth = ref(window.innerWidth)
 const touchStartY = ref(0)
 const isHorizontalSwipe = ref(false)
+const swipeThreshold = 50
+const windowWidth = ref(window.innerWidth)
 
-
-const calendarContainer = ref(null) // New ref for the calendar grid container
+const calendarContainer = ref(null)
+const viewMode = ref('month')
 
 watch(
     () => props.initialDate,
@@ -159,12 +240,23 @@ watch(
     }
 )
 
-watch(
-    () => props.events,
-    () => {
-        // Force re-calculation of days when events change (already done by computed)
-    }
-)
+const monthKey = computed(() => {
+    const d = currentDate.value
+    return `${d.getFullYear()}-${d.getMonth()}`
+})
+
+const yearKey = computed(() => currentDate.value.getFullYear())
+
+const dayKey = computed(() => currentDate.value.toISOString().slice(0, 10))
+
+const transitionName = computed(() => {
+    if (props.transitionPreset === 'fade') return 'cal-fade'
+    if (props.transitionPreset === 'scale') return 'cal-scale'
+
+    return transitionDirection.value === 'left'
+        ? 'cal-slide-left'
+        : 'cal-slide-right'
+})
 
 const monthLabel = computed(() =>
     currentDate.value.toLocaleString(undefined, { month: 'long' })
@@ -176,113 +268,176 @@ const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 const days = computed(() => buildMonthGrid(currentDate.value, props.events))
 
-function goToToday() {
-    currentDate.value = new Date()
+const yearMonths = computed(() => {
+    const labels = [
+        'January', 'February', 'March', 'April',
+        'May', 'June', 'July', 'August',
+        'September', 'October', 'November', 'December',
+    ]
+    return labels.map((label, index) => ({
+        label,
+        index,
+    }))
+})
+
+const selectedDayLabel = computed(() => {
+    const d = currentDate.value
+    return d.toLocaleDateString(undefined, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    })
+})
+
+const selectedDayEvents = computed(() => {
+    if (viewMode.value !== 'day') return []
+    const key = currentDate.value.toISOString().slice(0, 10)
+
+    return props.events.filter((event) => {
+        const d = normalizeToDate(event.start)
+        if (!d) return false
+        return d.toISOString().slice(0, 10) === key
+    })
+})
+
+function setViewMode(mode) {
+    viewMode.value = mode
 }
 
-function prevMonth() {
+function goToToday() {
+    const today = new Date()
+    currentDate.value = today
+    viewMode.value = 'month'
+}
+
+function prevStep() {
     if (isAnimating.value) return
+
+    transitionDirection.value = 'right'
+
+    if (viewMode.value === 'year') {
+        const d = new Date(currentDate.value)
+        d.setFullYear(d.getFullYear() - 1)
+        currentDate.value = d
+        return
+    }
+
+    if (viewMode.value === 'day') {
+        const d = new Date(currentDate.value)
+        d.setDate(d.getDate() - 1)
+        currentDate.value = d
+        return
+    }
+
     changeMonth('prev')
 }
 
-function nextMonth() {
+function nextStep() {
     if (isAnimating.value) return
+
+    transitionDirection.value = 'left'
+
+    if (viewMode.value === 'year') {
+        const d = new Date(currentDate.value)
+        d.setFullYear(d.getFullYear() + 1)
+        currentDate.value = d
+        return
+    }
+
+    if (viewMode.value === 'day') {
+        const d = new Date(currentDate.value)
+        d.setDate(d.getDate() + 1)
+        currentDate.value = d
+        return
+    }
+
     changeMonth('next')
 }
+
+
+function selectMonthFromYear(monthIndex) {
+    const d = new Date(currentDate.value)
+    d.setMonth(monthIndex)
+    d.setDate(1)
+    currentDate.value = d
+    viewMode.value = 'month'
+}
+
 function getMaxEvents() {
-    // Show 2 events on small screens, 3 on larger
     return windowWidth.value < 640 ? 2 : 3
 }
 
-const TRANSITION_DURATION = 100
+const TRANSITION_DURATION = 50
 
 function changeMonth(direction) {
     if (isAnimating.value) return
 
-    isAnimating.value = true
     transitionDirection.value = direction === 'next' ? 'left' : 'right'
 
-    nextTick(() => {
-        const d = new Date(currentDate.value)
-        if (direction === 'next') {
-            d.setMonth(d.getMonth() + 1)
-        } else {
-            d.setMonth(d.getMonth() - 1)
-        }
+    const d = new Date(currentDate.value)
+    if (direction === 'next') {
+        d.setMonth(d.getMonth() + 1)
+    } else {
+        d.setMonth(d.getMonth() - 1)
+    }
 
-        setTimeout(() => {
-            currentDate.value = d
-            isAnimating.value = false
-            transitionDirection.value = null
-        }, TRANSITION_DURATION)
-    })
+    currentDate.value = d
 }
 
-
 function handleDayClick(date, event) {
-    // Prevent day click if a drag/swipe just occurred
     if (isHorizontalSwipe.value && Math.abs(touchMoveX.value - touchStartX.value) > 10) return
 
     const button = event.currentTarget
     const rect = button.getBoundingClientRect()
     const ripple = document.createElement('span')
 
-    // Use the maximum dimension for a perfectly round ripple covering the button
     const size = Math.max(rect.width, rect.height)
-
-    // Calculate ripple position relative to the button (centered on the click point)
     const x = event.clientX - rect.left - size / 2
     const y = event.clientY - rect.top - size / 2
 
     ripple.style.width = ripple.style.height = `${size}px`
     ripple.style.left = `${x}px`
     ripple.style.top = `${y}px`
-    // Ensure the ripple is above day content
-    ripple.style.zIndex = 20;
-
+    ripple.style.zIndex = 20
     ripple.classList.add('ripple')
 
-    // Remove previous ripples to prevent stacking if clicked too quickly
-    button.querySelectorAll('.ripple').forEach(r => r.remove());
-
+    button.querySelectorAll('.ripple').forEach((r) => r.remove())
     button.appendChild(ripple)
 
-    // Remove the ripple after animation completion (600ms defined in CSS)
-    setTimeout(() => {
-        ripple.remove()
-    }, 600)
+    setTimeout(() => ripple.remove(), 600)
 
-    // Emit the day-click event
+    currentDate.value = new Date(date)
+    viewMode.value = 'day'
+
     emit('day-click', date)
 }
-
 
 let lastScrollTime = 0
 
 function handleWheel(e) {
     if (!rootEl.value || !rootEl.value.contains(e.target)) return
+    if (isAnimating.value) return
 
     const now = Date.now()
     if (now - lastScrollTime < TRANSITION_DURATION + 100) return
-    if (isAnimating.value) return
 
-    const absX = Math.abs(e.deltaY)
-    const absY = Math.abs(e.deltaY)
+    const { deltaX, deltaY } = e
+    const useHorizontal = Math.abs(deltaX) > Math.abs(deltaY)
+    const delta = useHorizontal ? deltaX : deltaY
 
-    // Only react to clear horizontal gestures (trackpad swipe)
-    if (absX < 20 || absX < absY) return
+    if (Math.abs(delta) < 20) return
 
     e.preventDefault()
     lastScrollTime = now
 
-    if (e.deltaY > 0) {
-        nextMonth()
+    if (delta > 0) {
+        nextStep()
     } else {
-        prevMonth()
+        prevStep()
     }
 }
 
-// --- TOUCH/DRAG HANDLERS ---
 function handleTouchStart(e) {
     if (isAnimating.value) return
 
@@ -300,18 +455,14 @@ function handleTouchMove(e) {
     const dx = t.clientX - touchStartX.value
     const dy = t.clientY - touchStartY.value
 
-    // Not yet decided → check if this is a horizontal swipe
     if (!isHorizontalSwipe.value) {
         if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.3) {
-            // Clear horizontal intent
             isHorizontalSwipe.value = true
         } else {
-            // Vertical / small movement → allow normal scroll
             return
         }
     }
 
-    // Once horizontal swipe is confirmed, block page scroll
     e.preventDefault()
     touchMoveX.value = t.clientX
 }
@@ -324,15 +475,13 @@ function handleTouchEnd() {
 
     const dx = touchMoveX.value - touchStartX.value
     const containerWidth = calendarContainer.value?.clientWidth || 0
-    const threshold = Math.max(swipeThreshold, containerWidth * 0.15) // ~15% width or 50px
+    const threshold = Math.max(swipeThreshold, containerWidth * 0.15)
 
     if (Math.abs(dx) > threshold) {
         if (dx < 0) {
-            // swipe left → next month
-            nextMonth()
+            nextStep()
         } else {
-            // swipe right → prev month
-            prevMonth()
+            prevStep()
         }
     }
 
@@ -379,7 +528,6 @@ onBeforeUnmount(() => {
     }
 })
 
-
 function normalizeToDate(val) {
     if (val instanceof Date) return new Date(val)
     if (typeof val === 'string') {
@@ -396,7 +544,6 @@ function buildMonthGrid(activeDate, events) {
     const month = activeDate.getMonth()
 
     const firstOfMonth = new Date(year, month, 1)
-
     const firstDay = firstOfMonth.getDay() || 7
     const gridStart = new Date(firstOfMonth)
     gridStart.setDate(firstOfMonth.getDate() - (firstDay - 1))
@@ -406,14 +553,12 @@ function buildMonthGrid(activeDate, events) {
 
     const eventsByDay = events.reduce((acc, event) => {
         const dateKey = normalizeToDate(event.start).toISOString().slice(0, 10)
-
-        if (!acc[dateKey]) {
-            acc[dateKey] = []
-        }
+        if (!acc[dateKey]) acc[dateKey] = []
         acc[dateKey].push({
             id: event.id,
             title: event.title,
             color: event.color || 'bg-blue-500',
+            start: event.start,
         })
         return acc
     }, {})
@@ -423,7 +568,6 @@ function buildMonthGrid(activeDate, events) {
         date.setDate(gridStart.getDate() + i)
 
         const dateKey = date.toISOString().slice(0, 10)
-
         const isCurrentMonth = date.getMonth() === month
         const isToday = isSameDay(date, today)
 
@@ -450,7 +594,16 @@ function isSameDay(a, b) {
         a.getDate() === b.getDate()
     )
 }
+
+function dayEventDateFormatter(val) {
+    const d = normalizeToDate(val)
+    return d.toLocaleTimeString(undefined, {
+        hour: '2-digit',
+        minute: '2-digit',
+    })
+}
 </script>
+
 
 <style scoped>
 @keyframes ripple-animation {
@@ -471,5 +624,96 @@ function isSameDay(a, b) {
 
 .day-cell {
     overflow: hidden;
+}
+
+/* Clean slide */
+.cal-slide-left-enter-active,
+.cal-slide-left-leave-active,
+.cal-slide-right-enter-active,
+.cal-slide-right-leave-active {
+    transition: transform 50ms ease-out, opacity 50ms ease-out;
+}
+
+.cal-slide-left-enter-from {
+    transform: translateX(12%);
+    opacity: 0;
+}
+
+.cal-slide-left-enter-to {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.cal-slide-left-leave-from {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.cal-slide-left-leave-to {
+    transform: translateX(-12%);
+    opacity: 0.2;
+}
+
+.cal-slide-right-enter-from {
+    transform: translateX(-12%);
+    opacity: 0;
+}
+
+.cal-slide-right-enter-to {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.cal-slide-right-leave-from {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.cal-slide-right-leave-to {
+    transform: translateX(12%);
+    opacity: 0.2;
+}
+
+/* Crossfade */
+
+.cal-fade-enter-active,
+.cal-fade-leave-active {
+    transition: opacity 100ms ease-out;
+}
+
+.cal-fade-enter-from,
+.cal-fade-leave-to {
+    opacity: 0;
+}
+
+.cal-fade-enter-to,
+.cal-fade-leave-from {
+    opacity: 1;
+}
+
+/* Scale */
+.cal-scale-enter-active,
+.cal-scale-leave-active {
+    transition: transform 100ms ease-out, opacity 100ms ease-out;
+}
+
+.cal-scale-enter-from {
+    transform: scale(0.97);
+    opacity: 0;
+}
+
+.cal-scale-enter-to {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.cal-scale-leave-from {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.cal-scale-leave-to {
+    transform: scale(1.03);
+    opacity: 0;
 }
 </style>
