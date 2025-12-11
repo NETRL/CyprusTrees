@@ -13,7 +13,7 @@
                bg-white dark:bg-slate-900
                border border-slate-200/60 dark:border-slate-700/60
                p-3 sm:p-4">
-        <MonthCalendar :initial-date="new Date()" :events="myEvents" @day-click="handleDayClick" />
+        <MonthCalendar :initial-date="new Date()" :events="events" @day-click="handleDayClick" />
       </div>
     </div>
   </div>
@@ -27,12 +27,15 @@ defineOptions({
   layout: AuthenticatedLayout
 })
 
-const myEvents = [
-  { id: 1, title: 'Team Sync Up', start: '2025-12-10T09:30:00', color: 'bg-indigo-500' },
-  { id: 2, title: 'Project Deadline', start: '2025-12-10T17:00:00', color: 'bg-red-500' },
-  { id: 3, title: 'Gym Session', start: '2025-12-12T18:00:00', color: 'bg-emerald-500' },
-  { id: 4, title: 'Project Deadline', start: '2025-12-10T17:00:00', color: 'bg-red-500' },
-  { id: 5, title: 'Project Deadline', start: '2025-12-10T17:00:00', color: 'bg-red-500' },
-  // ... more events
-]
+
+const props = defineProps({
+  maintenanceCalendarEvents: {
+    type: Array,
+    default: () => [],
+  },
+  events: {
+    type: Array,
+    default: () => [],
+  },
+})
 </script>

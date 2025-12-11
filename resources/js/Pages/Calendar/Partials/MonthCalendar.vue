@@ -83,8 +83,8 @@
                             <div v-for="event in day.events.slice(0, getMaxEvents())" :key="event.id"
                                 class="hidden sm:block px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-medium truncate border-l-2 transition-transform hover:scale-[1.02]"
                                 :class="[
-                                    'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 border-emerald-500',
-                                    // Dynamic coloring hook (replace with event.color logic if available)
+                                    eventChipClasses(event)
+                                    // 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 border-emerald-500',
                                 ]">
                                 {{ event.title }}
                             </div>
@@ -146,25 +146,50 @@
                             <div v-for="event in selectedDayEvents" :key="event.id"
                                 class="relative flex flex-col sm:flex-row gap-4 sm:gap-8 group">
 
-                                <div class="sm:w-32 flex-shrink-0 flex max-sm:justify-start justify-end items-center space-x-1">
+                                <div
+                                    class="sm:w-32 shrink-0 flex max-sm:justify-start justify-end items-center space-x-1">
                                     <div class="hidden sm:block w-3 h-3 rounded-full border-2 border-white dark:border-slate-900 ml-2 z-10"
-                                        :class="event.color || 'bg-emerald-500'"></div>
+                                        :class="[eventBulletColors(event)]"></div>
                                     <span class="text-sm font-bold text-slate-900 dark:text-slate-200 block">
                                         {{ dayEventDateFormatter(event.start) }}
                                     </span>
                                 </div>
-                                <div
-                                    class="flex-1 px-4 py-2 lg:-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm group-hover:shadow-md group-hover:border-emerald-300 dark:group-hover:border-emerald-700 transition-all cursor-pointer">
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <div class="sm:hidden w-2 h-2 rounded-full"
-                                            :class="event.color || 'bg-emerald-500'"></div>
-                                        <h3 class="font-bold text-slate-900 dark:text-white">
-                                            {{ event.title }}
+                                <div :key="event.id"
+                                    class="flex-1 px-4 py-3 lg:py-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
+                                    :class="[
+                                        eventCardColors(event, 'hover'),
+                                        { [eventCardColors(event, 'border')]: isExpanded(event.id) }]"
+                                    @click="toggleExpansion(event.id)" role="button"
+                                    :aria-expanded="isExpanded(event.id)"
+                                    :aria-label="`${isExpanded(event.id) ? 'Collapse' : 'Expand'} event details`"
+                                    tabindex="0" @keydown.enter="toggleExpansion(event.id)"
+                                    @keydown.space.prevent="toggleExpansion(event.id)">
+                                    <!-- Header section -->
+                                    <div v-if="event.title" class="flex items-center gap-2 mb-2">
+                                        <h3 class="font-medium text-slate-900 dark:text-slate-100">{{ event.title }}
                                         </h3>
                                     </div>
-                                    <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">
-                                        {{ event.description || 'No additional details.' }}
-                                    </p>
+                                    <!-- Expandable description -->
+                                    <div class="overflow-hidden transition-[max-height] duration-500 ease-in-out"
+                                        :style="{ maxHeight: isExpanded(event.id) ? '500px' : '2.5rem' }">
+                                        <p
+                                            class="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-line leading-relaxed">
+                                            {{ event.description || 'No additional details.' }}
+                                        </p>
+                                    </div>
+
+                                    <!-- Toggle indicator -->
+                                    <div v-if="event.description && event.description.length > 100"
+                                        class="mt-2 flex items-center gap-1 text-xs font-medium"
+                                        :class="[eventCardColors(event, 'text')]">
+                                        <span>{{ isExpanded(event.id) ? 'Show Less' : 'Show More' }}</span>
+                                        <svg class="w-3 h-3 transition-transform duration-300"
+                                            :class="{ 'rotate-180': isExpanded(event.id) }" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -233,6 +258,8 @@ const windowWidth = ref(window.innerWidth)
 const calendarContainer = ref(null)
 const viewMode = ref('month')
 
+const expandedEventIds = ref([]);
+
 watch(
     () => props.initialDate,
     (val) => {
@@ -300,6 +327,115 @@ const selectedDayEvents = computed(() => {
         return d.toISOString().slice(0, 10) === key
     })
 })
+
+const toggleExpansion = (eventId) => {
+    const index = expandedEventIds.value.indexOf(eventId);
+    if (index > -1) {
+        // ID found, collapse it
+        expandedEventIds.value.splice(index, 1);
+    } else {
+        // ID not found, expand it
+        expandedEventIds.value.push(eventId);
+    }
+};
+
+const isExpanded = (eventId) => {
+    return expandedEventIds.value.includes(eventId);
+};
+
+// Single source of truth for color mappings
+const COLOR_MAP = {
+    emerald: 'emerald',
+    amber: 'amber',
+    blue: 'blue',
+    red: 'red',
+    stone: 'stone',
+    yellow: 'yellow',
+    slate: 'slate',
+    teal: 'teal',
+    default: 'default',
+};
+
+const eventChipClasses = (event) => {
+    const color = COLOR_MAP[event?.color] || 'emerald';
+
+    // All classes explicitly written for Tailwind compiler
+    const colors = {
+        emerald: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 border-emerald-500',
+        amber: 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 border-amber-500',
+        blue: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 border-blue-500',
+        red: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 border-red-500',
+        stone: 'bg-stone-100 dark:bg-stone-900/30 text-stone-800 dark:text-stone-200 border-stone-500',
+        yellow: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border-yellow-500',
+        slate: 'bg-slate-100 dark:bg-slate-900/30 text-slate-800 dark:text-slate-200 border-slate-500',
+        teal: 'bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-200 border-teal-500',
+        default: 'bg-black/30 dark:bg-white/30 text-black dark:text-white border-black dark:border-white ',
+    };
+
+    return colors[color] || colors.emerald;
+};
+
+const eventCardColors = (event, type) => {
+    const color = COLOR_MAP[event?.color] || 'emerald';
+
+    const colorsByType = {
+        hover: {
+            emerald: 'hover:border-emerald-300 dark:hover:border-emerald-600',
+            amber: 'hover:border-amber-300 dark:hover:border-amber-600',
+            blue: 'hover:border-blue-300 dark:hover:border-blue-600',
+            red: 'hover:border-red-300 dark:hover:border-red-600',
+            stone: 'hover:border-stone-300 dark:hover:border-stone-600',
+            yellow: 'hover:border-yellow-300 dark:hover:border-yellow-600',
+            slate: 'hover:border-slate-300 dark:hover:border-slate-600',
+            teal: 'hover:border-teal-300 dark:hover:border-teal-600',
+            default: 'hover:border-black dark:hover:border-white',
+        },
+        border: {
+            emerald: 'border-emerald-300 dark:border-emerald-600',
+            amber: 'border-amber-300 dark:border-amber-600',
+            blue: 'border-blue-300 dark:border-blue-600',
+            red: 'border-red-300 dark:border-red-600',
+            stone: 'border-stone-300 dark:border-stone-600',
+            yellow: 'border-yellow-300 dark:border-yellow-600',
+            slate: 'border-slate-300 dark:border-slate-600',
+            teal: 'border-teal-300 dark:border-teal-600',
+            default: 'border-black dark:border-white',
+        },
+        text: {
+            emerald: 'text-emerald-600 dark:text-emerald-400',
+            amber: 'text-amber-600 dark:text-amber-400',
+            blue: 'text-blue-600 dark:text-blue-400',
+            red: 'text-red-600 dark:text-red-400',
+            stone: 'text-stone-600 dark:text-stone-400',
+            yellow: 'text-yellow-600 dark:text-yellow-400',
+            slate: 'text-slate-600 dark:text-slate-400',
+            teal: 'text-teal-600 dark:text-teal-400',
+            default: 'text-black dark:text-white',
+        },
+    };
+
+    return colorsByType[type]?.[color] || colorsByType[type]?.emerald || '';
+};
+
+const eventBulletColors = (event) => {
+    const color = COLOR_MAP[event?.color] || 'emerald';
+
+    const colors = {
+        emerald: 'bg-emerald-500',
+        amber: 'bg-amber-600',
+        blue: 'bg-blue-500',
+        red: 'bg-red-700',
+        stone: 'bg-stone-500',
+        yellow: 'bg-yellow-400',
+        slate: 'bg-slate-500',
+        teal: 'bg-teal-700',
+        default: 'bg-black dark:bg-white',
+    };
+
+    return colors[color] || colors.emerald;
+};
+
+
 
 function setViewMode(mode) {
     viewMode.value = mode
@@ -557,7 +693,7 @@ function buildMonthGrid(activeDate, events) {
         acc[dateKey].push({
             id: event.id,
             title: event.title,
-            color: event.color || 'bg-blue-500',
+            color: event.color || 'blue',
             start: event.start,
         })
         return acc

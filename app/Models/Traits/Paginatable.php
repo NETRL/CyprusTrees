@@ -13,7 +13,16 @@ trait Paginatable
 
     public function scopeSetUpQuery(Builder $baseQuery): Builder
     {
-        $baseQuery->with($this->getModelRelationships());
+        $valid = [];
+
+        foreach ($this->getModelRelationships() as $relation) {
+            if (method_exists($this, $relation)) {
+                $valid[] = $relation;
+            }
+        }
+
+        $baseQuery->with($valid);
+
 
         // accept both camelCase and snake_case params
         $sortOrder = request()->input('sortOrder', request()->input('sort_order'));

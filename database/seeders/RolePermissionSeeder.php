@@ -15,6 +15,8 @@ class RolePermissionSeeder extends Seeder
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
         $guard = 'web';
         $admin = Role::findOrCreate('admin', $guard);
+        Role::findOrCreate('staff', $guard);
+        Role::findOrCreate('citizen', $guard);
 
         // user permissions
         $users = Permission::firstOrCreate([
