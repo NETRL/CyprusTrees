@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function (Request $request) {
-    
+
     $initialTreeId = $request->filled('tree_id') ? (int) $request->input('tree_id') : null;
 
     return Inertia::render('Map/MapView', [
@@ -98,8 +98,10 @@ Route::middleware('auth', '2fa')->group(function () {
 
     Route::resource('citizenReports', CitizenReportController::class)->except(['create', 'edit']);
     Route::post('/citizenReports/mass-destroy', [HealthAssessmentController::class, 'massDestroy'])->name('citizenReports.massDestroy');
-    
-    Route::resource('calendar', CalendarController::class)->except(['create', 'edit']);
+
+    Route::resource('calendar', CalendarController::class)->except(['create', 'edit', 'show']);
+    Route::get('/calendar/events', [CalendarController::class, 'getEvents'])
+        ->name('calendar.events');
 });
 
 require __DIR__ . '/auth.php';

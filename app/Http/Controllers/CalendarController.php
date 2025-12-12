@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MaintenanceEvent;
 use App\Models\PlantingEvent;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -15,84 +16,14 @@ class CalendarController extends Controller
         // throw new \Exception('Not implemented');
     }
 
-    // protected function getEventsData(Request $request)
-    // {
-    //     $start = now()->startOfYear();
-    //     $end   = now()->endOfYear();
-    //     $userId = auth()->id();
-
-    //     $isAdmin = auth()->user()->hasRole('admin');
-
-
-    //     $plantingsQuery = PlantingEvent::with('tree')
-    //         ->whereBetween('planted_at', [$start, $end]);
-
-    //     if (!$isAdmin) {
-    //         $plantingsQuery->where('planted_by', $userId);
-    //     }
-    //     $plantings = $plantingsQuery->get()
-    //         ->map(function ($p) {
-    //             if (!$p->tree) {
-    //                 return null;
-    //             }
-    //             return [
-    //                 'id' => 'planting_' . $p->planting_id,
-    //                 'user_id' => $p->planted_by,
-    //                 'type' => 'planting',
-    //                 'tree' => $p->tree,
-    //                 'title' => 'Planting: ' . $p->tree->species->common_name . '(' . $p->tree->species->latin_name . ')',
-    //                 'start' => $p->planted_at,
-    //                 'color' => 'bg-emerald-500',
-    //                 'meta' => ['method' => $p->method, 'notes' => $p->notes]
-    //             ];
-    //         })
-    //         ->filter()
-    //         ->values();
-
-    //     $maintenanceQuery = MaintenanceEvent::with(['tree', 'type'])
-    //         ->whereBetween('performed_at', [$start, $end]);
-
-    //     if (!$isAdmin) {
-    //         $maintenanceQuery->where('performed_by', $userId);
-    //     }
-
-    //     $maintenance = $maintenanceQuery->get()
-    //         ->map(function ($m) {
-    //             if (!$m->tree || !$m->type) {
-    //                 return null;
-    //             }
-
-    //             $color = match ($m->type->name) {
-    //                 'Prune' => 'bg-amber-500',
-    //                 'Water' => 'bg-blue-500',
-    //                 default => 'bg-slate-500'
-    //             };
-
-    //             return [
-    //                 'id' => 'maint_' . $m->event_id,
-    //                 'user_id' => $m->performed_by,
-    //                 'type' => 'maintenance',
-    //                 'tree' => $m->tree,
-    //                 'title' => $m->type->name . ': ' . $m->tree->species->common_name . '(' . $m->tree->species->latin_name . ')',
-    //                 'start' => $m->performed_at,
-    //                 'color' => $color,
-    //                 // 'description' => 
-    //                 'meta' => ['cost' => $m->cost, 'quantity' => $m->quantity, 'notes' => $m->notes]
-    //             ];
-    //         })
-    //         ->filter()
-    //         ->values();
-
-    //     return collect($plantings)->merge(collect($maintenance))->toArray();
-    //     // return $plantings->merge($maintenance)->toArray();
-    // }
 
     public function index(Request $request)
     {
-        $eventsData = $this->getEventsData($request);
+        // $eventsData = $this->getEventsData($request);
 
         return Inertia::render('Calendar/Index3', [
-            'events' => $eventsData,
+            // 'events' => $eventsData,
+            'events' => [],
         ]);
     }
 
@@ -104,8 +35,17 @@ class CalendarController extends Controller
 
     protected function getEventsData(Request $request): array
     {
-        $start  = now()->startOfYear();
-        $end    = now()->endOfYear();
+
+        $view = $request->string('view')->toString() ?: 'month';
+        $date = $request->string('date')->toString(); // expects YYYY-MM-DD
+
+        $base = $date ? Carbon::parse($date) : now();
+
+        [$start, $end] = match ($view) {
+            'day' => [$base->copy()->startOfDay(), $base->copy()->endOfDay()],
+            'year' => [$base->copy()->startOfYear(), $base->copy()->endOfYear()],
+            default => [$base->copy()->startOfMonth(), $base->copy()->endOfMonth()],
+        };
         $user   = auth()->user();
         $userId = $user?->id;
 
@@ -139,25 +79,24 @@ class CalendarController extends Controller
                 $treeLabel = $species->common_name
                     . ' (' . $species->latin_name . ')';
 
-                $userName = $planter?->first_name . ' ' . $planter?->last_name . '(' . $planter->roles->pluck('name')->join(', ') . ')';
+                $roles = ($planter?->roles?->isNotEmpty())
+                    ? ' (' . $planter->roles->pluck('name')->join(', ') . ')'
+                    : '';
+
+                $userName = trim(
+                    $planter?->first_name . ' ' . $planter?->last_name
+                ) . $roles;
+
 
                 // Human-readable description for Day view
                 $descriptionParts = [];
-
-                if ($campaign) {
-                    $descriptionParts[] = 'Campaign: ' . $campaign->name;
-                }
-                if ($planter) {
-                    $descriptionParts[] = 'Planted by: ' . $userName;
-                }
-                if ($p->method) {
-                    $descriptionParts[] = 'Method: ' . $p->method;
-                }
-                if ($p->notes) {
-                    $descriptionParts[] = $p->notes;
-                }
+                if ($campaign) $descriptionParts[] = 'Campaign: ' . $campaign->name;
+                if ($planter)  $descriptionParts[] = 'Planted by: ' . $userName;
+                if ($p->method) $descriptionParts[] = 'Method: ' . $p->method;
+                if ($p->notes)  $descriptionParts[] = $p->notes;
 
                 $description = implode("\n", array_filter($descriptionParts));
+
 
                 return [
                     'id'          => 'planting_' . $p->planting_id,
@@ -224,24 +163,27 @@ class CalendarController extends Controller
                     default     => 'default'
                 };
 
-                $userName = $performer?->first_name . ' ' . $performer?->last_name . '(' . $performer->roles->pluck('name')->join(', ') . ')';
+
+                $roles = ($performer?->roles?->isNotEmpty())
+                    ? ' (' . $performer->roles->pluck('name')->join(', ') . ')'
+                    : '';
+
+
+                $userName = trim(
+                    $performer?->first_name . ' ' . $performer?->last_name
+                ) . $roles;
+
                 // Description for Day view
                 $descriptionParts = [];
-
                 $descriptionParts[] = 'Type: ' . $type->name;
-
-                if ($performer) {
-                    $descriptionParts[] = 'Performed by: ' . $userName;
-                }
+                if ($performer) $descriptionParts[] = 'Performed by: ' . $userName;
                 if (!is_null($m->quantity)) {
                     $descriptionParts[] = 'Quantity: ' . rtrim(rtrim(number_format($m->quantity, 2, '.', ''), '0'), '.');
                 }
                 if (!is_null($m->cost)) {
                     $descriptionParts[] = 'Cost: €' . number_format($m->cost, 2, '.', '');
                 }
-                if ($m->notes) {
-                    $descriptionParts[] = $m->notes;
-                }
+                if ($m->notes) $descriptionParts[] = $m->notes;
 
                 $description = implode("\n", array_filter($descriptionParts));
 

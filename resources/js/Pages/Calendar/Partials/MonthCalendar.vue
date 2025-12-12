@@ -81,10 +81,9 @@
 
                         <div class="flex-1 flex flex-col gap-1 w-full overflow-hidden">
                             <div v-for="event in day.events.slice(0, getMaxEvents())" :key="event.id"
-                                class="hidden sm:block px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-medium truncate border-l-2 transition-transform hover:scale-[1.02]"
+                                class="hidden sm:block px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-medium truncate border-l-2 transition-transform hover:scale-[0.98]"
                                 :class="[
                                     eventChipClasses(event)
-                                    // 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 border-emerald-500',
                                 ]">
                                 {{ event.title }}
                             </div>
@@ -168,6 +167,10 @@
                                     <div v-if="event.title" class="flex items-center gap-2 mb-2">
                                         <h3 class="font-medium text-slate-900 dark:text-slate-100">{{ event.title }}
                                         </h3>
+                                        <Link :href="route('/', { tree_id: event.tree.id })" @click.stop
+                                            class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200">
+                                        (View in map)
+                                        </Link>
                                     </div>
                                     <!-- Expandable description -->
                                     <div class="overflow-hidden transition-[max-height] duration-500 ease-in-out"
@@ -226,6 +229,7 @@ import {
 
 import IconButton from './IconButton.vue'
 import { ChevronLeftIcon, ChevronRightIcon } from '@/Icons'
+import { useCalendarUrlState } from '@/Composables/useCalendarUrlState'
 
 const emit = defineEmits(['day-click'])
 
@@ -244,6 +248,8 @@ const props = defineProps({
     },
 })
 
+const { view: urlView, date: urlDate, updateQuery, hasCalendarState } = useCalendarUrlState()
+
 const currentDate = ref(normalizeToDate(props.initialDate))
 const rootEl = ref(null)
 const transitionDirection = ref(null)
@@ -257,15 +263,14 @@ const windowWidth = ref(window.innerWidth)
 
 const calendarContainer = ref(null)
 const viewMode = ref('month')
+const applyingFromUrl = ref(false)
 
 const expandedEventIds = ref([]);
 
-watch(
-    () => props.initialDate,
-    (val) => {
-        if (val) currentDate.value = normalizeToDate(val)
-    }
-)
+watch([hasCalendarState, urlView, urlDate], () => {
+    // If URL has state, it should win (back/forward, shared link, reload)
+    if (hasCalendarState.value) setFromUrl()
+}, { immediate: true })
 
 const monthKey = computed(() => {
     const d = currentDate.value
@@ -327,6 +332,48 @@ const selectedDayEvents = computed(() => {
         return d.toISOString().slice(0, 10) === key
     })
 })
+
+
+function toIsoDate(d) {
+    return d.toISOString().slice(0, 10)
+}
+
+function setFromUrl() {
+    if (!hasCalendarState.value) return
+
+    applyingFromUrl.value = true
+
+    const nextView = urlView.value ?? "month"
+    const nextDate = normalizeToDate(urlDate.value ?? new Date())
+
+    // Only assign if actually different (prevents loops / extra renders)
+    if (viewMode.value !== nextView) viewMode.value = nextView
+
+    const curIso = toIsoDate(currentDate.value)
+    const nextIso = toIsoDate(nextDate)
+    if (curIso !== nextIso) currentDate.value = nextDate
+
+    applyingFromUrl.value = false
+}
+
+function syncUrl({ replace = true } = {}) {
+    if (applyingFromUrl.value) return
+
+    const iso = toIsoDate(currentDate.value)
+
+    let normalized = iso
+    if (viewMode.value === "month") normalized = iso.slice(0, 7) + "-01"
+    if (viewMode.value === "year") normalized = iso.slice(0, 4) + "-01-01"
+
+    updateQuery(
+        { view: viewMode.value, date: normalized },
+        { replace }
+    )
+}
+
+
+
+// keep in sync when URL changes (back/forward, shared links, etc.)
 
 const toggleExpansion = (eventId) => {
     const index = expandedEventIds.value.indexOf(eventId);
@@ -439,13 +486,15 @@ const eventBulletColors = (event) => {
 
 function setViewMode(mode) {
     viewMode.value = mode
+    syncUrl({ replace: false }) // clicking tab = push history entry 
 }
 
 function goToToday() {
-    const today = new Date()
-    currentDate.value = today
+    currentDate.value = new Date()
     viewMode.value = 'month'
+    syncUrl({ replace: false })
 }
+
 
 function prevStep() {
     if (isAnimating.value) return
@@ -456,6 +505,7 @@ function prevStep() {
         const d = new Date(currentDate.value)
         d.setFullYear(d.getFullYear() - 1)
         currentDate.value = d
+        syncUrl({ replace: true })
         return
     }
 
@@ -463,6 +513,7 @@ function prevStep() {
         const d = new Date(currentDate.value)
         d.setDate(d.getDate() - 1)
         currentDate.value = d
+        syncUrl({ replace: true })
         return
     }
 
@@ -478,6 +529,7 @@ function nextStep() {
         const d = new Date(currentDate.value)
         d.setFullYear(d.getFullYear() + 1)
         currentDate.value = d
+        syncUrl({ replace: true })
         return
     }
 
@@ -485,6 +537,7 @@ function nextStep() {
         const d = new Date(currentDate.value)
         d.setDate(d.getDate() + 1)
         currentDate.value = d
+        syncUrl({ replace: true })
         return
     }
 
@@ -498,6 +551,7 @@ function selectMonthFromYear(monthIndex) {
     d.setDate(1)
     currentDate.value = d
     viewMode.value = 'month'
+    syncUrl({ replace: false })
 }
 
 function getMaxEvents() {
@@ -519,6 +573,7 @@ function changeMonth(direction) {
     }
 
     currentDate.value = d
+    syncUrl({ replace: true })
 }
 
 function handleDayClick(date, event) {
@@ -545,6 +600,7 @@ function handleDayClick(date, event) {
 
     currentDate.value = new Date(date)
     viewMode.value = 'day'
+    syncUrl({ replace: false })
 
     emit('day-click', date)
 }
@@ -635,7 +691,16 @@ function resetTouch() {
     isHorizontalSwipe.value = false
 }
 
+function handleResize() {
+    windowWidth.value = window.innerWidth
+}
+
 onMounted(() => {
+    if (!hasCalendarState.value) {
+        currentDate.value = normalizeToDate(props.initialDate)
+        viewMode.value = "month"
+        syncUrl({ replace: true }) // set the initial canonical URL once
+    }
     if (rootEl.value) {
         rootEl.value.addEventListener('wheel', handleWheel, { passive: false })
         rootEl.value.addEventListener('touchstart', handleTouchStart, { passive: true })
@@ -643,18 +708,13 @@ onMounted(() => {
         rootEl.value.addEventListener('touchend', handleTouchEnd)
         rootEl.value.addEventListener('touchcancel', handleTouchCancel)
     }
-
-    const handleResize = () => {
-        windowWidth.value = window.innerWidth
-    }
+    
     window.addEventListener('resize', handleResize)
-
-    onBeforeUnmount(() => {
-        window.removeEventListener('resize', handleResize)
-    })
 })
 
 onBeforeUnmount(() => {
+    window.removeEventListener('resize', handleResize)
+
     if (rootEl.value) {
         rootEl.value.removeEventListener('wheel', handleWheel)
         rootEl.value.removeEventListener('touchstart', handleTouchStart)

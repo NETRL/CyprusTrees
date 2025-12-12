@@ -35,10 +35,13 @@ class PlantingEventsTableSeeder extends Seeder
 
             $campaign = $campaigns->random();
 
-            // Use tree’s planted_at if available, otherwise random past date
-            $plantedAt = $tree->planted_at
-                ? Carbon::parse($tree->planted_at)
-                : now()->subYears(rand(1, 10))->subDays(rand(0, 365));
+            if ($tree->planted_at) {
+                // If the tree already exists, stick to its historical planted date.
+                $plantedAt = Carbon::parse($tree->planted_at);
+            } else {
+                // For new events, set a date between today and 3 years in the future.
+                $plantedAt = now()->addYears(rand(0, 3))->addDays(rand(0, 365))->subDays(rand(0, 365));
+            }
 
             PlantingEvent::firstOrCreate(
                 ['tree_id' => $tree->id],

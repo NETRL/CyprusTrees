@@ -16,7 +16,7 @@
             </div>
             <div class="col-span-12 mb-4">
                 <FormField v-model="localUser.password" :displayErrors="displayErrors" component="Password"
-                    label="Password" name="password" />
+                    label="Password" name="password"/>
             </div>
             <div class="col-span-12 mb-4">
                 <FormField v-model="localUser.confirm_password" :displayErrors="displayErrors" component="Password"

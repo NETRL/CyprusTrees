@@ -58,7 +58,11 @@ class TreesTableSeeder extends Seeder
             $ownerType = OwnerType::cases()[array_rand(OwnerType::cases())];
 
 
-            $plantedAt = $today->copy()->subYears(rand(3, 40));
+            $plantedAt = $today->copy()->subYears(rand(0, 5))->subDays(rand(0, 365));
+            // A small chance of very old trees
+            if (rand(1, 10) === 1) { // 10% chance
+                $plantedAt = $today->copy()->subYears(rand(10, 40))->subDays(rand(0, 365));
+            }
             $lastInspected = $today->copy()->subDays(rand(10, 400));
 
             // Tree payload -----------------------------------------------

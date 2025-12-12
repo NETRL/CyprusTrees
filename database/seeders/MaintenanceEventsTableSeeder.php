@@ -34,9 +34,17 @@ class MaintenanceEventsTableSeeder extends Seeder
                     ? Carbon::parse($tree->planted_at)
                     : now()->subYears(5);
 
+                // $performedAt = now()
+                //     ->copy()
+                //     ->addDays(rand(0, 4 * 365)) // 0 days to 4 years in the future
+                //     ->setTime(rand(7, 15), rand(0, 59));
+
+                if ($baseDate->isFuture()) {
+                    $baseDate = now();
+                } // Prevent errors if baseDate is far future
                 $performedAt = $baseDate
                     ->copy()
-                    ->addDays(rand(30, 1500))
+                    ->addDays(rand(30, 4 * 365)) // Start at least 30 days after planting, up to 4 years later
                     ->setTime(rand(7, 15), rand(0, 59));
 
                 MaintenanceEvent::create([

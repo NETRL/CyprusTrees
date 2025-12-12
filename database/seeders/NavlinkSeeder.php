@@ -115,8 +115,6 @@ class NavlinkSeeder extends Seeder
                 'icon'        => 'pi pi-images',
                 'parent_id'   => $tree_management->id,
                 'route_name'  => 'photos.index'
-
-
             ]
         );
 
@@ -171,17 +169,6 @@ class NavlinkSeeder extends Seeder
         );
 
         $this->createOrUpdateNavlink(
-            ['key' => 'maintenance-calendar'],
-            [
-                'name'        => 'Calendar',
-                'permissions' => 'calendar.view',
-                'icon'        => 'pi pi-calendar',
-                'parent_id'   => $events->id,
-                'route_name'  => 'calendar.index'
-            ]
-        );
-
-        $this->createOrUpdateNavlink(
             ['key' => 'maintenance-events'],
             [
                 'name'        => 'Maintenance Events',
@@ -220,6 +207,16 @@ class NavlinkSeeder extends Seeder
                 'icon'        => 'HealthAssessmentIcon',
                 'parent_id'   => $health->id,
                 'route_name'  => 'healthAssessments.index'
+            ]
+        );
+
+        $calendar = $this->createOrUpdateNavlink(
+            ['key' => 'calendar'],
+            [
+                'name'        => 'Calendar',
+                'permissions' => 'calendar.view',
+                'icon'        => 'pi pi-calendar',
+                'route_name'  => 'calendar.index'
             ]
         );
 
