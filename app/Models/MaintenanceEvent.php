@@ -46,6 +46,14 @@ class MaintenanceEvent extends Model
         'quantity',
         'cost',
         'notes',
+
+        'type.name',
+        'tree.address',
+        'tree.species.common_name',
+        'tree.species.latin_name',
+        'tree.tags.name',
+        'performer.first_name',
+        'performer.last_name',
     ];
 
     protected $sortable = [

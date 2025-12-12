@@ -12,21 +12,21 @@
 
                 <Column v-if="isColumnVisible('species')" field="species_id" header="Species" sortable>
                     <template #body="{ data }">
-                        {{ speciesLabel(data) }}
+                        {{ data.species_label }}
                     </template>
                 </Column>
 
                 <Column v-if="isColumnVisible('neighborhood')" field="neighborhood_id" header="Neighborhood" sortable>
                     <template #body="{ data }">
-                        {{ neighborhoodLabel(data) }}
+                        {{ data.neighborhood_label }}
                     </template>
                 </Column>
 
                 <Column v-if="isColumnVisible('location')" field="location" header="Location" sortable>
                     <template #body="{ data }">
                         <Link :href="route('/', { tree_id: data.id })"
-                            class="flex justify-center items-center spece-x-2 hover:cursor-pointer hover:text-brand-600">
-                        {{ locationLabel(data) }}
+                            class="flex justify-start items-center spece-x-2 hover:cursor-pointer hover:text-brand-600">
+                        {{ data.location_label }}
                         <ExternalLink class="w-3.5 h-3.5 mx-1" />
                         </Link>
                     </template>
@@ -46,19 +46,19 @@
 
                 <Column v-if="isColumnVisible('status')" field="status" header="Status" sortable>
                     <template #body="{ data }">
-                        {{ treeStatusLabel(data) }}
+                        {{ data.status_label }}
                     </template>
                 </Column>
 
                 <Column v-if="isColumnVisible('health_status')" field="health_status" header="Health Status" sortable>
                     <template #body="{ data }">
-                        {{ treeHealthLabel(data) }}
+                        {{ data.health_label }}
                     </template>
                 </Column>
 
                 <Column v-if="isColumnVisible('sex')" field="sex" header="Sex" sortable>
                     <template #body="{ data }">
-                        {{ treeSexLabel(data) }}
+                        {{ data.sex_label }}
                     </template>
                 </Column>
 
@@ -83,7 +83,7 @@
 
                 <Column v-if="isColumnVisible('owner_type')" field="owner_type" header="Owner Type" sortable>
                     <template #body="{ data }">
-                        {{ ownerTypeLabel(data) }}
+                        {{ data.owner_type_label }}
                     </template>
                 </Column>
 
@@ -172,73 +172,7 @@ const props = defineProps({
         default: () => [],
     }
 });
-
 const { formatDate } = useDateFormatter();
-
-const ownerTypeLabel = (row) => {
-    const field = row.owner_type;
-    if (!field) return '-';
-
-    const item = props.ownerType.find(s => s.value === field);
-    return item ? item.label : '-';
-};
-const treeStatusLabel = (row) => {
-    const field = row.status;
-    if (!field) return '-';
-
-    const item = props.treeStatus.find(s => s.value === field);
-    return item ? item.label : '-';
-};
-
-const treeHealthLabel = (row) => {
-    const field = row.health_status;
-    if (!field) return '-';
-
-    const item = props.healthStatus.find(s => s.value === field);
-    return item ? item.label : '-';
-};
-
-const treeSexLabel = (row) => {
-    const field = row.sex;
-    if (!field) return '-';
-
-    const item = props.treeSex.find(s => s.value === field);
-    return item ? item.label : '-';
-};
-
-const speciesLabel = (row) => {
-    const id = row.species_id;
-    const species = row.species;
-    if (!id && !species) return '-';
-    if (!species) return id;
-
-    const parts = [];
-    parts.push(`${species.common_name} (${species.latin_name})`);
-
-    return parts.join(' ');
-}
-
-const neighborhoodLabel = (row) => {
-    const id = row.neighborhood_id;
-    const neighborhood = row.neighborhood;
-    if (!id && !neighborhood) return '-';
-    if (!neighborhood) return id;
-
-    const parts = [];
-    parts.push(`${neighborhood.name}, ${neighborhood.city} (${neighborhood.district})`);
-
-    return parts.join(' ');
-}
-
-const locationLabel = (row) => {
-    const lat = row.lat ?? '-';
-    const lon = row.lon ?? '-';
-
-    const parts = [];
-    parts.push(`${lat}, ${lon}`);
-
-    return parts.join(' ');
-}
 
 // --- form state ---
 const formVisible = ref(false);

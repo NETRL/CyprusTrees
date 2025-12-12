@@ -17,7 +17,7 @@
           <template #body="{ data }">
             <Link :href="route('/', { tree_id: data.tree_id })"
               class="flex items-center spece-x-2 hover:cursor-pointer hover:text-brand-600">
-            {{ treeLabel(data) }}
+            {{ data.tree_label }}
             <ExternalLink class="w-3.5 h-3.5 mx-1" />
             </Link>
           </template>
@@ -25,13 +25,13 @@
         <!-- Type-->
         <Column v-if="isColumnVisible('type_id')" field="type_id" header="Type" sortable>
           <template #body="{ data }">
-            {{ typeLabel(data) }}
+            {{ data.type_label }}
           </template>
         </Column>
         <!-- Performed By-->
         <Column v-if="isColumnVisible('performed_by')" field="performed_by" header="Performed By" sortable>
           <template #body="{ data }">
-            {{ userLabel(data) }}
+            {{ data.performer_label }}
           </template>
         </Column>
         <!-- Performed At-->
@@ -74,7 +74,6 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import ReusableDataTable from "@/Components/ReusableDataTable.vue";
 import { router } from "@inertiajs/vue3";
 import { ref, defineOptions, defineProps } from "vue";
-import { useRenamedHeaders } from "@/Composables/useRenamedHeaders";
 import MaintenanceEventForm from "@/Pages/MaintenanceEvent/Partials/MaintenanceEventForm.vue";
 import { useDateFormatter } from "@/Composables/useDateFormatter";
 import { ExternalLink } from "lucide-vue-next";
@@ -106,52 +105,7 @@ const props = defineProps({
 
 });
 
-console.log(props.tableData)
-
-
 const { formatDate } = useDateFormatter();
-
-const treeLabel = (row) => {
-  const id = row.tree_id;
-  const tree = row.tree;
-  if (!id && !tree) return '-';
-  if (!tree) return id;
-
-  const species = row.tree.species;
-  const parts = [];
-  parts.push(`${id} - ${species.common_name} (${species.latin_name}) ${tree.tags_label}`);
-
-  return parts.join(' ');
-}
-
-const typeLabel = (row) => {
-  const id = row.type_id;
-  const type = row.type;
-
-  if (!id && !type) return '-';
-
-  if (!type) return id;
-
-  return `${id} - ${type.name}`;
-};
-
-const userLabel = (row) => {
-  const id = row.performed_by;
-  const performer = row.performer;
-
-  if (!id && !performer) return '-';
-
-  if (!performer) return id;
-
-  const roles = Array.isArray(performer.roles) ? performer.roles : [];
-  const roleNames = roles.length ? roles.map(r => r.name).join(', ') : 'No role';
-
-  const firstName = performer.first_name ?? '';
-  const lastName = performer.last_name ?? '';
-  const fullName = [firstName, lastName].filter(Boolean).join(' ');
-
-  return fullName ? `${id} - ${fullName} (${roleNames})` : `${id}`;
-};
 
 // --- form state ---
 const formVisible = ref(false);

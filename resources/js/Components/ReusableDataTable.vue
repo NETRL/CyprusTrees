@@ -46,7 +46,7 @@
         <Column :exportable="false" selectionMode="multiple" style="width: 3rem"></Column>
 
         <!-- If parent provides #columns, use that -->
-        <template v-if="$slots.columns" >
+        <template v-if="$slots.columns">
           <slot name="columns" :isColumnVisible="isColumnVisible" :selectedColumns="selectedColumns"
             :columnsToShow="columnsToShow" />
         </template>
@@ -179,7 +179,7 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
-    showToolbar: {
+  showToolbar: {
     type: Boolean,
     default: true,
   },
@@ -202,6 +202,9 @@ const finalPermissionEdit = props.permissionEdit ?? props.routeResource + ".edit
 const finalPermissionDelete = props.permissionDelete ?? props.routeResource + ".delete";
 const finalPermissionView = props.permissionView ?? props.routeResource + ".view";
 
+const sortField = ref(null)
+const sortOrder = ref(null) // PrimeVue gives 1 or -1
+
 const STORAGE_KEY = `selectedColumns_` + props.routeResource
 const PER_PAGE_KEY = props.routeResource + `_per_page`
 
@@ -211,6 +214,16 @@ const columnsToShow = computed(() =>
     value: item.field,
   }))
 );
+
+const buildQueryParams = (overrides = {}) => ({
+  page: props.tableData?.current_page ?? 1,
+  per_page: perPage.value,
+  search: asSearchParam(searchQuery.value),
+  ...(sortField.value ? { sortField: sortField.value } : {}),
+  ...(sortOrder.value ? { sortOrder: sortOrder.value === 1 ? 'asc' : 'desc' } : {}),
+  ...overrides,
+})
+
 
 const selectedColumns = useColumnPrefs(
   STORAGE_KEY,
@@ -274,74 +287,50 @@ const asSearchParam = (val) => {
 const debouncedSearch = debounce((value) => {
   router.get(
     route(props.routeResource + '.index'),
-    {
-      search: asSearchParam(value),
-      page: 1,
-      per_page: perPage.value,
-    },
-    {
-      preserveState: true,
-      preserveScroll: true,
-      only: [props.inertiaKey],
-      replace: true,
-    }
+    buildQueryParams({ page: 1, search: asSearchParam(value) }),
+    { preserveState: true, preserveScroll: true, only: [props.inertiaKey], replace: true }
   )
 }, 500)
 
+
+// ---- pagination ----
+const onPage = (event) => {
+  const pageNumber = event.page + 1
+  perPage.value = event.rows
+  currentPage.value = pageNumber
+
+  router.get(
+    route(props.routeResource + '.index'),
+    buildQueryParams({ page: pageNumber }),
+    { preserveState: true, preserveScroll: true, only: [props.inertiaKey], replace: true }
+  )
+}
 
 const onPageButton = (pageNum) => {
   const last = props.tableData?.last_page ?? 1
   let desired = parseInt(pageNum, 10)
   if (isNaN(desired)) return
   desired = Math.min(Math.max(desired, 1), last)
-  if (desired === props.tableData?.current_page) return
 
   currentPage.value = desired
-  router.get(
-    route(props.routeResource + '.index'),
-    {
-      page: desired,
-      per_page: perPage.value,
-      search: asSearchParam(searchQuery.value),
-    },
-    { preserveState: true, preserveScroll: true, only: [props.inertiaKey] }
-  )
-}
-
-
-// ---- pagination ----
-const onPage = (event) => {
-  const pageNumber = event.page + 1
-  perPage.value = event.rows // update the ref so localStorage watcher runs
-  currentPage.value = pageNumber
 
   router.get(
     route(props.routeResource + '.index'),
-    {
-      page: pageNumber,
-      per_page: perPage.value,
-      search: asSearchParam(searchQuery.value),
-    },
-    {
-      preserveState: true,
-      preserveScroll: true,
-      only: [props.inertiaKey],
-    }
+    buildQueryParams({ page: desired }),
+    { preserveState: true, preserveScroll: true, only: [props.inertiaKey], replace: true }
   )
 }
+
 
 // ---- Sorting ----
 const onSort = (event) => {
+  sortField.value = event.sortField
+  sortOrder.value = event.sortOrder
+
   router.get(
     route(props.routeResource + '.index'),
-    {
-      sortField: event.sortField,
-      sortOrder: event.sortOrder === 1 ? 'asc' : 'desc',
-      page: 1,
-      per_page: perPage.value,
-      search: asSearchParam(searchQuery.value),
-    },
-    { preserveState: true, preserveScroll: true, only: [props.inertiaKey] }
+    buildQueryParams({ page: 1 }),
+    { preserveState: true, preserveScroll: true, only: [props.inertiaKey], replace: true }
   )
 }
 

@@ -52,6 +52,15 @@ class PlantingEvent extends Model
         'planted_at',
         'method',
         'notes',
+
+        'campaign.name',
+        'campaign.sponsor',
+        'tree.address',
+        'tree.species.common_name',
+        'tree.species.latin_name',
+        'tree.tags.name',
+        'planter.first_name',
+        'planter.last_name',
     ];
 
     protected array $sortable = [
@@ -77,6 +86,7 @@ class PlantingEvent extends Model
     protected $casts = [
         'planted_at' => 'datetime',
     ];
+
 
     public function tree()
     {

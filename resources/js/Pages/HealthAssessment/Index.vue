@@ -16,7 +16,7 @@
           <template #body="{ data }">
             <Link :href="route('/', { tree_id: data.tree_id })"
               class="flex items-center spece-x-2 hover:cursor-pointer hover:text-brand-600">
-            {{ treeLabel(data) }}
+            {{ data.tree_label }}
             <ExternalLink class="w-3.5 h-3.5 mx-1" />
             </Link>
           </template>
@@ -24,14 +24,14 @@
 
         <Column v-if="isColumnVisible('assessed_by')" field="assessed_by" header="Assessed By" sortable>
           <template #body="{ data }">
-            {{ userLabel(data) }}
+            {{ data.assessor_label }}
           </template>
         </Column>
 
 
         <Column v-if="isColumnVisible('health_status')" field="health_status" header="Health Status" sortable>
           <template #body="{ data }">
-            {{ healthLabel(data) }}
+            {{ data.health_label }}
           </template>
         </Column>
 
@@ -105,45 +105,6 @@ const props = defineProps({
 
 
 const { formatDate } = useDateFormatter();
-
-const healthLabel = (row) => {
-  const field = row.health_status;
-  if (!field) return '-';
-
-  const item = props.healthStatus.find(s => s.value === field);
-  return item ? item.label : '-';
-};
-
-const treeLabel = (row) => {
-  const id = row.tree_id;
-  const tree = row.tree;
-  if (!id && !tree) return '-';
-  if (!tree) return id;
-
-  const species = row.tree.species;
-  const parts = [];
-  parts.push(`${id} - ${species.common_name} (${species.latin_name}) ${tree.tags_label}`);
-
-  return parts.join(' ');
-}
-
-const userLabel = (row) => {
-  const id = row.assessed_by;
-  const assessor = row.assessor;
-
-  if (!id && !assessor) return '-';
-
-  if (!assessor) return id;
-
-  const roles = Array.isArray(assessor.roles) ? assessor.roles : [];
-  const roleNames = roles.length ? roles.map(r => r.name).join(', ') : 'No role';
-
-  const firstName = assessor.first_name ?? '';
-  const lastName = assessor.last_name ?? '';
-  const fullName = [firstName, lastName].filter(Boolean).join(' ');
-
-  return fullName ? `${id} - ${fullName} (${roleNames})` : `${id}`;
-};
 
 // --- form state ---
 const formVisible = ref(false);

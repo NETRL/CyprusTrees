@@ -84,7 +84,7 @@ class CalendarController extends Controller
                     : '';
 
                 $userName = trim(
-                    $planter?->first_name . ' ' . $planter?->last_name
+                    $planter?->id . ' - ' . $planter?->first_name . ' ' . $planter?->last_name
                 ) . $roles;
 
 
@@ -170,7 +170,7 @@ class CalendarController extends Controller
 
 
                 $userName = trim(
-                    $performer?->first_name . ' ' . $performer?->last_name
+                    $performer?->id . ' - ' . $performer?->first_name . ' ' . $performer?->last_name
                 ) . $roles;
 
                 // Description for Day view

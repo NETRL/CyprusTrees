@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Enum;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,11 +29,27 @@ class HealthAssessmentController extends Controller
         $perPage = $request->integer('per_page', 10);
 
         $query = HealthAssessment::query()
-            ->with('tree')
+            ->with(['tree', 'assessor'])
             ->setUpQuery();        // this applies search + sort based on request params
 
+        $tableData = $query->paginate($perPage)->withQueryString();
+
+        $tableData->getCollection()->transform(function ($e) {
+            return [
+                ...$e->toArray(),
+                'tree_label' => $e->tree
+                    ? ($e->tree_id . ' - ' . $e->tree->species?->common_name . ' (' . $e->tree->species?->latin_name . ') ' . ($e->tree->tags_label ?? ''))
+                    : (string) $e->tree_id,
+
+                'assessor_label' => $e->assessor
+                    ? ($e->assessed_by . ' - ' . trim(($e->assessor->first_name ?? '') . ' ' . ($e->assessor->last_name ?? '')))
+                    : '-',
+                'health_label' => $e->health_status ? Str::title(strtolower($e->health_status)) : '-',
+            ];
+        });
+
         return Inertia::render('HealthAssessment/Index', [
-            'tableData'     => $query->paginate($perPage)->withQueryString(),
+            'tableData'     =>   $tableData,
             'dataColumns'   => HealthAssessment::getDataColumns(),
             'treeData'      => Tree::with('species:id,latin_name,common_name')
                 ->select(['id', 'species_id', 'lat', 'lon', 'address'])

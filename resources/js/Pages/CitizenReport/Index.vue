@@ -15,20 +15,20 @@
 
         <Column v-if="isColumnVisible('report_type_id')" field="report_type_id" header="Report Type" sortable>
           <template #body="{ data }">
-            {{ typeLabel(data) }}
+            {{ data.type_label }}
           </template>
         </Column>
 
         <Column v-if="isColumnVisible('created_by')" field="created_by" header="Created By" sortable>
           <template #body="{ data }">
-            {{ userLabel(data) }}
+            {{ data.creator_label }}
           </template>
         </Column>
 
         <Column v-if="isColumnVisible('tree_id')" field="tree_id" header="Tree" sortable>
           <template #body="{ data }">
-            <Link :href="route('/', {tree_id: data.tree_id})" class="flex justify-center items-center spece-x-2 hover:cursor-pointer hover:text-brand-600">
-              {{ treeLabel(data) }}
+            <Link :href="route('/', {tree_id: data.tree_id})" class="flex justify-start items-center spece-x-2 hover:cursor-pointer hover:text-brand-600">
+              {{ data.tree_label }}
               <ExternalLink class="w-3.5 h-3.5 mx-1" />
             </Link>
           </template>
@@ -166,10 +166,9 @@ const props = defineProps({
     type: Object,
     default: null,
   },
-
-
 });
 
+console.log(props.tableData)
 const { formatDate } = useDateFormatter();
 
 // --- preview state ---
@@ -196,47 +195,6 @@ const statusInfo = (status) => {
     color: statusColors[status] || ''
   }
 }
-const treeLabel = (row) => {
-  const id = row.tree_id;
-  const tree = row.tree;
-  if (!id && !tree) return '-';
-  if (!tree) return id;
-
-  const species = row.tree.species;
-  const parts = [];
-  parts.push(`${id} - ${species.common_name} (${species.latin_name}) ${tree.tags_label}`);
-
-  return parts.join(' ');
-}
-
-const typeLabel = (row) => {
-  const id = row.report_type_id;
-  const type = props.reportTypes.find(item => item.id === id)
-
-  if (!id && !type) return '-';
-
-  if (!type) return id;
-
-  return type.name;
-};
-
-const userLabel = (row) => {
-  const id = row.created_by;
-  const creator = row.creator;
-
-  if (!id && !creator) return '-';
-
-  if (!creator) return id;
-
-  const roles = Array.isArray(creator.roles) ? creator.roles : [];
-  const roleNames = roles.length ? roles.map(r => r.name).join(', ') : 'No role';
-
-  const firstName = creator.first_name ?? '';
-  const lastName = creator.last_name ?? '';
-  const fullName = [firstName, lastName].filter(Boolean).join(' ');
-
-  return fullName ? `${id} - ${fullName} (${roleNames})` : `${id}`;
-};
 
 // --- form state ---
 const formVisible = ref(false);

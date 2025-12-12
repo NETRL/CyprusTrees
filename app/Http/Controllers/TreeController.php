@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\OwnerType;
+use App\Enums\TreeSex;
+use App\Enums\TreeStatus;
 use App\Http\Requests\Tree\StoreTreeRequest;
 use App\Http\Requests\Tree\UpdateTreeRequest;
 use App\Models\Neighborhood;
@@ -11,6 +14,7 @@ use App\Models\Tree;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -31,12 +35,35 @@ class TreeController extends Controller
 
 
         $query = Tree::query()
-            ->with('species', 'tags')
+            ->with(['species', 'tags', 'neighborhood'])
             ->withCount('photos')
             ->setUpQuery();
 
+
+        $tableData = $query->paginate($perPage)->withQueryString();
+
+
+        $tableData->getCollection()->transform(function ($e) {
+            // dd($e->lon);
+            return [
+                ...$e->toArray(),
+                'species_label' => $e->species
+                    ? ($e->species?->id . ' - ' . $e->species?->common_name . ' (' . $e->species?->latin_name . ')')
+                    : '-',
+                'neighborhood_label' => $e->neighborhood
+                    ? ($e->neighborhood?->name . ',' . $e->neighborhood?->city . ' (' . $e->neighborhood?->district . ')')
+                    : '-',
+                'location_label' => ($e->lat ?? '-') . ', ' . ($e->lon ?? '-'),
+
+                'status_label' => $e->status ? TreeStatus::from($e->status)->label() : '-',
+                'health_label' => $e->health_status ? Str::title(strtolower($e->health_status)) : '-',
+                'sex_label' => $e->sex ? TreeSex::from($e->sex)->label() : '-',
+                'owner_type_label' => $e->owner_type ? OwnerType::from($e->owner_type)->label() : '-',
+            ];
+        });
+
         return Inertia::render('Tree/Index', [
-            'tableData' => $query->paginate($perPage)->withQueryString(),
+            'tableData' => $tableData,
             'speciesData' => Species::orderBy('common_name')
                 ->get(['id', 'latin_name', 'common_name']),
             'neighborhoodData' => Neighborhood::orderBy('name')->get(['id', 'name', 'city']),
@@ -76,10 +103,10 @@ class TreeController extends Controller
     public function update(UpdateTreeRequest $request, Tree $tree): RedirectResponse
     {
         $data = $request->validated();
-        
+
         $tagIdsPresent  = array_key_exists('tag_ids', $data);
         $tagIds         = $tagIdsPresent ? $data['tag_ids'] : null;
-        
+
         unset($data['tag_ids']);
 
         $tree->update($data);

@@ -71,26 +71,109 @@ trait Paginatable
 
     public function scopeCustomSearch(Builder $query, string $searchTerm): Builder
     {
-        foreach ($this->searchable as $key => $value) {
-            if (str_contains($this->searchable[$key], '.')) {
-                if ($key === 0) {
-                    $query->whereHas(explode('.', $value)[0], function ($q) use ($searchTerm, $value) {
-                        $q->Where(explode('.', $value)[1], 'like', '%' . $searchTerm . '%');
-                    });
-                } else {
-                    $query->orWhereHas(explode('.', $value)[0], function ($q) use ($searchTerm, $value) {
-                        $q->Where(explode('.', $value)[1], 'like', '%' . $searchTerm . '%');
-                    });
+
+        $searchTerm = trim($searchTerm);
+        if ($searchTerm === '') return $query;
+
+        return $query->where(function ($outer) use ($searchTerm) {
+
+            foreach ($this->searchable as $i => $path) {
+
+                if (!str_contains($path, '.')) {
+                    $isFirst = ($i === 0);
+
+                    if ($this->applyEnumSearchIfNeeded($outer, $path, $searchTerm, $isFirst)) {
+                        continue;
+                    }
+
+                    // base table column
+                    $method = ($i === 0) ? 'where' : 'orWhere';
+                    $outer->$method($path, 'ILIKE', "%{$searchTerm}%"); // For Postgres ILIKE is Case agnostic. ('like' is the default)
+                    continue;
                 }
-            } elseif ($key === 0) {
-                $query->where($value, 'like', '%' . $searchTerm . '%');
-            } else {
-                $query->orWhere($value, 'like', '%' . $searchTerm . '%');
+
+                // nested relation path: tree.species.common_name etc
+                $parts = explode('.', $path);
+                $column = array_pop($parts); // last segment is column
+                $relations = $parts;         // preceding segments are relations
+
+                $outer->orWhereHas($relations[0], function ($q) use ($relations, $column, $searchTerm) {
+                    $this->applyNestedWhereHas($q, array_slice($relations, 1), $column, $searchTerm);
+                });
+            }
+        });
+    }
+
+    private function applyNestedWhereHas(Builder $q, array $remainingRelations, string $column, string $searchTerm): void
+    {
+        if (empty($remainingRelations)) {
+            $q->where($column, 'ILIKE', "%{$searchTerm}%"); // For Postgres ILIKE is Case agnostic. ('like' is the default)
+            return;
+        }
+
+        $next = array_shift($remainingRelations);
+        $q->whereHas($next, function ($qq) use ($remainingRelations, $column, $searchTerm) {
+            $this->applyNestedWhereHas($qq, $remainingRelations, $column, $searchTerm);
+        });
+    }
+
+    private function applyEnumSearchIfNeeded(Builder $outer, string $column, string $term, bool $isFirst): bool
+    {
+        $values = $this->enumValuesMatching($column, $term);
+        if (empty($values)) return false;
+
+        // Use IN(...) against the stored enum values
+        if ($isFirst) {
+            $outer->whereIn($column, $values);
+        } else {
+            $outer->orWhereIn($column, $values);
+        }
+
+        return true;
+    }
+
+    private function enumValuesMatching(string $column, string $term): array
+    {
+        if (!property_exists($this, 'enumSearchMap')) return [];
+
+        $map = $this->enumSearchMap ?? [];
+        $enumClass = $map[$column] ?? null;
+
+        if (!$enumClass || !enum_exists($enumClass)) return [];
+
+        $t = mb_strtolower(trim($term));
+        if ($t === '') return [];
+
+        $matches = [];
+
+        foreach ($enumClass::cases() as $case) {
+            $value = mb_strtolower($case->value);
+            $label = method_exists($case, 'label') ? mb_strtolower($case->label()) : '';
+
+            // match on: value, label, and also label shorthand tokens like "m", "f", "m/f"
+            if (str_contains($value, $t) || ($label !== '' && str_contains($label, $t))) {
+                $matches[] = $case->value;
+                continue;
+            }
+
+            // extra: match tokens extracted from label, e.g. "m", "male", "m/f", "monoecious"
+            if ($label !== '') {
+                $labelTokens = preg_split('/[^a-z0-9\/]+/i', $label, -1, PREG_SPLIT_NO_EMPTY);
+                foreach ($labelTokens as $tok) {
+                    if ($tok === $t) {
+                        $matches[] = $case->value;
+                        break;
+                    }
+                }
             }
         }
 
-        return $query;
+        return array_values(array_unique($matches));
     }
+
+
+
+
 
     private function tryBaseTableSort($query, $sortField, $sortOrder): bool
     {

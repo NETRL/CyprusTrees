@@ -1,7 +1,7 @@
 <template>
     <div ref="rootEl"
         class="h-full flex flex-col bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 select-none rounded-2xl overflow-hidden shadow-2xl shadow-slate-300/50 dark:shadow-black/50">
-
+        <!-- Header -->
         <header
             class="flex flex-col md:flex-row items-center justify-between gap-4 py-4 lg:py-5 px-6 bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg sticky top-0 z-20 border-b border-slate-200/70 dark:border-slate-800/70">
 
@@ -49,6 +49,7 @@
             </div>
         </header>
 
+        <!-- Month Row -->
         <div v-if="viewMode === 'month'"
             class="grid grid-cols-7 border-b border-slate-200/70 dark:border-slate-800/70 bg-slate-50/50 dark:bg-slate-900/50">
             <div v-for="dow in weekdays" :key="dow"
@@ -58,50 +59,58 @@
         </div>
 
         <main class="flex-1 relative overflow-hidden bg-white dark:bg-slate-900">
+            <!-- Month Grid -->
+        <Transition v-if="viewMode === 'month'" :name="transitionName" mode="out-in">
+    <div :key="monthKey" class="absolute inset-0 grid grid-cols-7 grid-rows-6">
+        <button v-for="day in days" :key="day.iso" @click="handleDayClick(day.date, $event)"
+            class="group relative flex flex-col items-stretch justify-start p-1 lg:p-2 border-b border-r border-slate-100 dark:border-slate-800 transition-colors duration-150 outline-none focus:z-10 focus:ring-1 focus:ring-inset focus:ring-emerald-500/50"
+            :class="[
+                !day.isCurrentMonth ? 'bg-slate-50/50 dark:bg-slate-950/50 text-slate-400/70' : 'bg-white dark:bg-slate-900',
+                day.isToday ? 'bg-emerald-50/10 dark:bg-emerald-900/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+            ]">
 
-            <Transition v-if="viewMode === 'month'" :name="transitionName" mode="out-in">
-                <div :key="monthKey" class="absolute inset-0 grid grid-cols-7 grid-rows-6">
-                    <button v-for="day in days" :key="day.iso" @click="handleDayClick(day.date, $event)"
-                        class="group relative flex flex-col items-stretch justify-start p-1 sm:p-3 border-b border-r border-slate-100 dark:border-slate-800 transition-colors duration-150 outline-none focus:z-10 focus:ring-1 focus:ring-inset focus:ring-emerald-500/50"
-                        :class="[
-                            !day.isCurrentMonth ? 'bg-slate-50/50 dark:bg-slate-950/50 text-slate-400/70' : 'bg-white dark:bg-slate-900',
-                            day.isToday ? 'bg-emerald-50/10 dark:bg-emerald-900/10' : 'hover:bg-slate-100 dark:hover:bg-slate-800/50'
-                        ]">
+            <div class="flex items-center justify-center mb-1 lg:mb-2">
+                <span
+                    class="text-xs lg:text-sm font-medium w-6 h-6 lg:w-7 lg:h-7 flex items-center justify-center rounded-full transition-all"
+                    :class="day.isToday
+                        ? 'bg-emerald-100 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500/50'
+                        : 'text-slate-700 dark:text-slate-300 group-hover:bg-slate-200/70 dark:group-hover:bg-slate-700/70'">
+                    {{ day.date.getDate() }}
+                </span>
+            </div>
 
-                        <div class="flex items-center justify-center mb-1">
-                            <span
-                                class="text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full transition-all"
-                                :class="day.isToday
-                                    ? 'bg-emerald-100 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500/50'
-                                    : 'text-slate-700 dark:text-slate-300 group-hover:bg-slate-200/70 dark:group-hover:bg-slate-700/70'">
-                                {{ day.date.getDate() }}
-                            </span>
-                        </div>
-
-                        <div class="flex-1 flex flex-col gap-1 w-full overflow-hidden">
-                            <div v-for="event in day.events.slice(0, getMaxEvents())" :key="event.id"
-                                class="hidden sm:block px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-medium truncate border-l-2 transition-transform hover:scale-[0.99]"
-                                :class="[
-                                    eventChipClasses(event),
-                                    'border-l-2 border-current' // Use border-current for the accent color
-                                ]">
-                                {{ event.title }}
-                            </div>
-
-                            <div class="sm:hidden flex gap-1 justify-center flex-wrap mt-1">
-                                <div v-for="event in day.events.slice(0, 3)" :key="event.id"
-                                    class="w-1.5 h-1.5 rounded-full" :class="[eventBulletColors(event)]"></div>
-                            </div>
-
-                            <div v-if="day.events.length > getMaxEvents()"
-                                class="pl-1 text-[10px] font-semibold text-slate-400">
-                                +{{ day.events.length - getMaxEvents() }}
-                            </div>
-                        </div>
-                    </button>
+            <div class="flex-1 w-full overflow-hidden grid content-start gap-1">
+                
+                <div v-for="event in day.events.slice(0, getMaxEvents())" :key="event.id"
+                    class="hidden sm:flex items-center px-1.5 py-0.5 lg:py-1 rounded-[3px] border-l-[3px] transition-all duration-200 hover:brightness-95 hover:translate-x-0.5"
+                    :class="[
+                        eventChipClasses(event), // Should provide bg-color and text-color
+                        'border-current shadow-sm' // border-current uses the text color for the thin line
+                    ]">
+                    <span class="truncate font-medium text-[10px] lg:text-xs leading-tight">
+                        {{ event.title }}
+                    </span>
                 </div>
-            </Transition>
 
+                <div class="sm:hidden flex gap-1 justify-center flex-wrap content-center h-full max-h-[60%]">
+                    <div v-for="event in day.events.slice(0, 4)" :key="event.id"
+                        class="w-1.5 h-1.5 rounded-full ring-1 ring-white dark:ring-slate-900" 
+                        :class="[eventBulletColors(event)]">
+                    </div>
+                </div>
+
+                <div v-if="day.events.length > getMaxEvents()"
+                    class="hidden sm:block text-center sm:text-left px-1">
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                        +{{ day.events.length - getMaxEvents() }} more
+                    </span>
+                </div>
+            </div>
+        </button>
+    </div>
+</Transition>
+
+            <!-- Year Grid -->
             <Transition v-else-if="viewMode === 'year'" :name="transitionName" mode="out-in" @wheel.stop>
                 <div :key="yearKey" class="absolute inset-0 overflow-y-auto p-6">
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -123,6 +132,7 @@
                 </div>
             </Transition>
 
+            <!-- Day View -->
             <Transition v-else :name="transitionName" mode="out-in">
                 <div :key="dayKey" class="absolute inset-0 flex flex-col bg-slate-50 dark:bg-slate-950">
 

@@ -27,11 +27,30 @@ class PlantingEventController extends Controller
         $perPage = $request->integer('per_page', 10);
 
         $query = PlantingEvent::query()
-            ->with('campaign')
+            ->with(['tree', 'planter', 'campaign'])
             ->setUpQuery();        // this applies search + sort based on request params
 
+        $tableData = $query->paginate($perPage)->withQueryString();
+
+        $tableData->getCollection()->transform(function ($e) {
+            return [
+                ...$e->toArray(),
+                'tree_label' => $e->tree
+                    ? ($e->tree_id . ' - ' . $e->tree->species?->common_name . ' (' . $e->tree->species?->latin_name . ') ' . ($e->tree->tags_label ?? ''))
+                    : (string) $e->tree_id,
+
+                'campaign_label' => $e->campaign ? ($e->campaign_id . ' - ' . $e->campaign->name . '(' .$e->campaign->sponsor .')') : '-',
+
+                'planter_label' => $e->planter
+                    ? ($e->planted_by . ' - ' . trim(($e->planter->first_name ?? '') . ' ' . ($e->planter->last_name ?? '')))
+                    : '-',
+            ];
+        });
+
+
+
         return Inertia::render('PlantingEvent/Index', [
-            'tableData' => $query->paginate($perPage)->withQueryString(),
+            'tableData' => $tableData,
             'dataColumns' => PlantingEvent::getDataColumns(),
             'treeData'    => Tree::with('species:id,latin_name,common_name')
                 ->select('id', 'species_id', 'lat', 'lon', 'address')

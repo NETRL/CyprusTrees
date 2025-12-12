@@ -52,12 +52,15 @@ async function fetchEvents() {
   const v = view.value ?? 'month'
   const d = date.value ?? new Date().toISOString().slice(0, 10)
 
-  // you asked specifically: month views
-  if (v !== 'month') return
 
-  const key = `${v}:${d.slice(0, 7)}` // cache by month
-  if (cache.has(key)) {
-    events.value = cache.get(key)
+  // Cache key by view + appropriate granularity
+  const cacheKey =
+    v === 'month' ? `${v}:${d.slice(0, 7)}`
+      : v === 'year' ? `${v}:${d.slice(0, 4)}`
+        : `${v}:${d}`
+
+  if (cache.has(cacheKey)) {
+    events.value = cache.get(cacheKey)
     return
   }
 
@@ -73,7 +76,7 @@ async function fetchEvents() {
   if (!res.ok) throw new Error(`Failed: ${res.status}`)
   const data = await res.json()
 
-  cache.set(key, data)
+  cache.set(cacheKey, data)
   events.value = data
 }
 

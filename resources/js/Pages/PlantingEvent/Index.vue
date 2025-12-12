@@ -17,7 +17,7 @@
           <template #body="{ data }">
             <Link :href="route('/', { tree_id: data.tree_id })"
               class="flex items-center spece-x-2 hover:cursor-pointer hover:text-brand-600">
-            {{ treeLabel(data) }}
+            {{ data.tree_label }}
             <ExternalLink class="w-3.5 h-3.5 mx-1" />
             </Link>
           </template>
@@ -26,14 +26,14 @@
         <!-- Campaign: 1 - Eat all Trees (Goodies) 2025-11-18 -->
         <Column v-if="isColumnVisible('campaign_id')" field="campaign_id" header="Campaign" sortable>
           <template #body="{ data }">
-            {{ campaignLabel(data) }}
+            {{ data.campaign_label ?? '-' }}
           </template>
         </Column>
 
         <!-- Planted By: 2 - Test User -->
         <Column v-if="isColumnVisible('planted_by')" field="planted_by" header="Planted By" sortable>
           <template #body="{ data }">
-            {{ userLabel(data) }}
+            {{ data.planter_label }}
           </template>
         </Column>
 
@@ -105,56 +105,6 @@ const props = defineProps({
 });
 
 const { formatDate } = useDateFormatter();
-
-const treeLabel = (row) => {
-  const id = row.tree_id;
-  const tree = row.tree;
-  if (!id && !tree) return '-';
-  if (!tree) return id;
-
-  const species = row.tree.species;
-  const parts = [];
-  parts.push(`${id} - ${species.common_name} (${species.latin_name}) ${tree.tags_label}`);
-
-  return parts.join(' ');
-}
-
-const userLabel = (row) => {
-  const id = row.planted_by;
-  const planter = row.planter;
-
-  if (!id && !planter) return '-';
-
-  if (!planter) return id;
-
-  const roles = Array.isArray(planter.roles) ? planter.roles : [];
-  const roleNames = roles.length ? roles.map(r => r.name).join(', ') : 'No role';
-
-  const firstName = planter.first_name ?? '';
-  const lastName = planter.last_name ?? '';
-  const fullName = [firstName, lastName].filter(Boolean).join(' ');
-
-  return fullName ? `${id} - ${fullName} (${roleNames})` : `${id}`;
-};
-
-const campaignLabel = (row) => {
-  const id = row.campaign_id;
-  const campaign = row.campaign;
-  if (!id && !campaign) return '-';
-  if (!campaign) return id;
-
-  const parts = [];
-  parts.push(`${id} - ${campaign.name}`);         // "1 - Eat all Trees"
-  if (campaign.sponsor) {
-    parts.push(`(${campaign.sponsor})`);          // "(Goodies)"
-  }
-  if (campaign.start_date) {
-    parts.push(formatDate(campaign.start_date));  // "18/11/2025"
-  }
-
-  return parts.join(' ');
-};
-
 
 const { columns } = useRenamedHeaders(props.dataColumns, {
   Trees_count: 'Tree Count',

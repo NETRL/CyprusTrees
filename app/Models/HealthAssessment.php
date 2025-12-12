@@ -47,6 +47,13 @@ class HealthAssessment extends Model
         'pests_diseases',
         'risk_score',
         'actions_recommended',
+
+        'tree.address',
+        'tree.species.common_name',
+        'tree.species.latin_name',
+        'tree.tags.name',
+        'assessor.first_name',
+        'assessor.last_name',
     ];
 
     protected $sortable = [

@@ -27,11 +27,33 @@ class MaintenanceEventsController extends Controller
         $perPage = $request->integer('per_page', 10);
 
         $query = MaintenanceEvent::query()
-            ->with('type')
-            ->setUpQuery();        // this applies search + sort based on request params
+            ->with([
+                'type',
+                'tree',
+                'performer',
+            ])
+            ->setUpQuery();
+
+        $tableData = $query->paginate($perPage)->withQueryString();
+
+        $tableData->getCollection()->transform(function ($e) {
+            return [
+                ...$e->toArray(),
+                'tree_label' => $e->tree
+                    ? ($e->tree_id . ' - ' . $e->tree->species?->common_name . ' (' . $e->tree->species?->latin_name . ') ' . ($e->tree->tags_label ?? ''))
+                    : (string) $e->tree_id,
+
+                'type_label' => $e->type ? ($e->type_id . ' - ' . $e->type->name) : (string) $e->type_id,
+
+                'performer_label' => $e->performer
+                    ? ($e->performed_by . ' - ' . trim(($e->performer->first_name ?? '') . ' ' . ($e->performer->last_name ?? '')))
+                    : '-',
+            ];
+        });
+
 
         return Inertia::render('MaintenanceEvent/Index', [
-            'tableData' => $query->paginate($perPage)->withQueryString(),
+            'tableData' => $tableData,
             'dataColumns' => MaintenanceEvent::getDataColumns(),
             'treeData' => Tree::with('species:id,latin_name,common_name')
                 ->select('id', 'species_id', 'lat', 'lon', 'address')

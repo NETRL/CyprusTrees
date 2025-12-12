@@ -73,6 +73,12 @@ class Tree extends Model
         'last_inspected_at',
         'owner_type',
         'source',
+
+        'species.common_name',
+        'species.latin_name',
+        'neighborhood.name',
+        'neighborhood.city',
+        'neighborhood.district',
     ];
 
 
@@ -161,6 +167,13 @@ class Tree extends Model
 
         return $tags->pluck('name')->join(', ');
     }
+
+    protected array $enumSearchMap = [
+    'sex' => TreeSex::class,
+    'status' => TreeStatus::class,
+    'health_status' => HealthStatus::class,
+    'owner_type' => OwnerType::class,
+];
 
     public static function getTreeSexOptions(): array
     {
