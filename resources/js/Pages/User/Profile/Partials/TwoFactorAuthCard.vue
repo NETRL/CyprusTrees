@@ -16,6 +16,5 @@ import { Link, usePage } from '@inertiajs/vue3';
 const page = usePage();
 
 const titleDesc = 'Each time you log in, in addition to your password, you\'ll use an authenticator app to generate a one-time code.';
-console.log(page.props.is2fa)
 
 </script>

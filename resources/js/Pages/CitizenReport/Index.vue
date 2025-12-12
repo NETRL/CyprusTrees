@@ -168,7 +168,6 @@ const props = defineProps({
   },
 });
 
-console.log(props.tableData)
 const { formatDate } = useDateFormatter();
 
 // --- preview state ---

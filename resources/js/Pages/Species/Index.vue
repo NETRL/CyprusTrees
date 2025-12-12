@@ -44,8 +44,6 @@ const props = defineProps({
   },
 });
 
-console.log(props.dataColumns)
-
 const { columns } = useRenamedHeaders(props.dataColumns, {
   Trees_count: 'Tree Count',
   'Opals Score': 'OPALS Score',

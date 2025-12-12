@@ -95,7 +95,6 @@ const form = useForm({
 });
 
 const handleSubmit = () => {
-  console.log('Sendingggg')
   form.post(route('password.email'));
 }
 </script>

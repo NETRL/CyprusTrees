@@ -158,7 +158,7 @@ const formData = reactive({
     created_at: null,
     resolved_at: null,
 })
-console.log(props.reportStatus)
+
 watch(() => formData.status,
     (v) => {
         if(formData.status === 'resolved'){

@@ -163,8 +163,6 @@ const user = computed(() => page.props.auth?.user)
 const isProfileInfoModal = ref(false)
 
 const saveProfile = () => {
-  // Implement save profile logic here
-  console.log('Profile saved')
   closeModal();
 }
 
