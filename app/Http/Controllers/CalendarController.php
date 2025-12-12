@@ -21,7 +21,7 @@ class CalendarController extends Controller
     {
         // $eventsData = $this->getEventsData($request);
 
-        return Inertia::render('Calendar/Index3', [
+        return Inertia::render('Calendar/Index', [
             // 'events' => $eventsData,
             'events' => [],
         ]);

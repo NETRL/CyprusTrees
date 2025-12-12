@@ -1,48 +1,47 @@
 <template>
     <div ref="rootEl"
-        class="h-full flex flex-col bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 select-none">
+        class="h-full flex flex-col bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 select-none rounded-2xl overflow-hidden shadow-2xl shadow-slate-300/50 dark:shadow-black/50">
 
         <header
-            class="flex flex-col md:flex-row items-center justify-between gap-4 py-3 lg:py-5 px-6  bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-20 border-b border-slate-200 dark:border-slate-800">
+            class="flex flex-col md:flex-row items-center justify-between gap-4 py-4 lg:py-5 px-6 bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg sticky top-0 z-20 border-b border-slate-200/70 dark:border-slate-800/70">
 
             <div class="flex items-baseline gap-3">
-                <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                <h1 class="text-3xl font-light tracking-normal text-slate-900 dark:text-white">
                     {{ monthLabel }}
                 </h1>
-                <span class="text-xl font-medium text-slate-400 dark:text-slate-500">
+                <span class="text-xl font-thin text-slate-400 dark:text-slate-500">
                     {{ yearLabel }}
                 </span>
             </div>
 
-            <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+            <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
 
                 <div
-                    class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                    class="flex p-0.5 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-800">
                     <button v-for="mode in ['year', 'month', 'day']" :key="mode" @click="setViewMode(mode)"
-                        class="px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 capitalize"
-                        :class="viewMode === mode
-                            ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10'
-                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'">
+                        class="px-3 py-1 text-sm font-medium rounded-md transition-all duration-200 capitalize" :class="viewMode === mode
+                            ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-300 shadow-sm ring-1 ring-black/5 dark:ring-white/10'
+                            : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'">
                         {{ mode }}
                     </button>
                 </div>
 
                 <div class="h-6 w-px bg-slate-300 dark:bg-slate-700 hidden sm:block"></div>
 
-                <div class="flex items-center gap-1">
+                <div class="flex items-center gap-2">
                     <button @click="goToToday"
-                        class="hidden sm:inline-flex px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 transition-all">
+                        class="hidden sm:inline-flex px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-[0.98] transition-all duration-150">
                         Today
                     </button>
 
                     <div
-                        class="flex items-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                        class="flex items-center rounded-lg border border-slate-200 dark:border-slate-700 divide-x divide-slate-200 dark:divide-slate-700">
                         <IconButton @click="prevStep" :disabled="isAnimating"
-                            class="p-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-emerald-600 transition-colors rounded-l-lg border-r border-slate-100 dark:border-slate-700">
+                            class="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-emerald-600 transition-colors rounded-l-lg">
                             <ChevronLeftIcon class="w-5 h-5" />
                         </IconButton>
                         <IconButton @click="nextStep" :disabled="isAnimating"
-                            class="p-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-emerald-600 transition-colors rounded-r-lg">
+                            class="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-emerald-600 transition-colors rounded-r-lg">
                             <ChevronRightIcon class="w-5 h-5" />
                         </IconButton>
                     </div>
@@ -51,9 +50,9 @@
         </header>
 
         <div v-if="viewMode === 'month'"
-            class="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+            class="grid grid-cols-7 border-b border-slate-200/70 dark:border-slate-800/70 bg-slate-50/50 dark:bg-slate-900/50">
             <div v-for="dow in weekdays" :key="dow"
-                class="py-2 text-center text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-500">
+                class="py-2 text-center text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-600">
                 {{ dow.substring(0, 3) }}
             </div>
         </div>
@@ -63,34 +62,35 @@
             <Transition v-if="viewMode === 'month'" :name="transitionName" mode="out-in">
                 <div :key="monthKey" class="absolute inset-0 grid grid-cols-7 grid-rows-6">
                     <button v-for="day in days" :key="day.iso" @click="handleDayClick(day.date, $event)"
-                        class="group relative flex flex-col items-stretch justify-start p-1 sm:p-2 border-b border-r border-slate-100 dark:border-slate-800 transition-colors duration-150 outline-none focus:z-10 focus:ring-2 focus:ring-inset focus:ring-emerald-500"
+                        class="group relative flex flex-col items-stretch justify-start p-1 sm:p-3 border-b border-r border-slate-100 dark:border-slate-800 transition-colors duration-150 outline-none focus:z-10 focus:ring-1 focus:ring-inset focus:ring-emerald-500/50"
                         :class="[
-                            !day.isCurrentMonth ? 'bg-slate-50/30 dark:bg-slate-950/30 text-slate-400' : 'bg-white dark:bg-slate-900',
-                            day.isToday ? 'bg-emerald-50/30 dark:bg-emerald-900/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                            !day.isCurrentMonth ? 'bg-slate-50/50 dark:bg-slate-950/50 text-slate-400/70' : 'bg-white dark:bg-slate-900',
+                            day.isToday ? 'bg-emerald-50/10 dark:bg-emerald-900/10' : 'hover:bg-slate-100 dark:hover:bg-slate-800/50'
                         ]">
 
-                        <div class="flex items-center justify-center sm:justify-between mb-1">
+                        <div class="flex items-center justify-center mb-1">
                             <span
-                                class="text-xs sm:text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full transition-all"
+                                class="text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full transition-all"
                                 :class="day.isToday
-                                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
-                                    : 'text-slate-700 dark:text-slate-300 group-hover:bg-slate-200 dark:group-hover:bg-slate-700'">
+                                    ? 'bg-emerald-100 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500/50'
+                                    : 'text-slate-700 dark:text-slate-300 group-hover:bg-slate-200/70 dark:group-hover:bg-slate-700/70'">
                                 {{ day.date.getDate() }}
                             </span>
                         </div>
 
                         <div class="flex-1 flex flex-col gap-1 w-full overflow-hidden">
                             <div v-for="event in day.events.slice(0, getMaxEvents())" :key="event.id"
-                                class="hidden sm:block px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-medium truncate border-l-2 transition-transform hover:scale-[0.98]"
+                                class="hidden sm:block px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-medium truncate border-l-2 transition-transform hover:scale-[0.99]"
                                 :class="[
-                                    eventChipClasses(event)
+                                    eventChipClasses(event),
+                                    'border-l-2 border-current' // Use border-current for the accent color
                                 ]">
                                 {{ event.title }}
                             </div>
 
-                            <div class="sm:hidden flex gap-0.5 justify-center flex-wrap">
+                            <div class="sm:hidden flex gap-1 justify-center flex-wrap mt-1">
                                 <div v-for="event in day.events.slice(0, 3)" :key="event.id"
-                                    class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                                    class="w-1.5 h-1.5 rounded-full" :class="[eventBulletColors(event)]"></div>
                             </div>
 
                             <div v-if="day.events.length > getMaxEvents()"
@@ -104,19 +104,19 @@
 
             <Transition v-else-if="viewMode === 'year'" :name="transitionName" mode="out-in" @wheel.stop>
                 <div :key="yearKey" class="absolute inset-0 overflow-y-auto p-6">
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         <button v-for="month in yearMonths" :key="month.index" @click="selectMonthFromYear(month.index)"
-                            class="relative flex flex-col items-center justify-center p-6 rounded-2xl border transition-all duration-200 group"
+                            class="relative flex flex-col items-center justify-center p-6 rounded-xl border transition-all duration-200 group"
                             :class="month.index === currentDate.getMonth()
-                                ? 'bg-white dark:bg-slate-800 border-emerald-500 ring-4 ring-emerald-50 dark:ring-emerald-900/20 shadow-xl shadow-emerald-500/10'
-                                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-lg'">
+                                ? 'bg-emerald-50/10 dark:bg-emerald-900/10 border-emerald-300 dark:border-emerald-700 shadow-sm'
+                                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-emerald-400/50 dark:hover:border-emerald-600/50 hover:shadow-lg/50'">
 
-                            <span class="text-xl font-bold mb-1 group-hover:text-emerald-600 transition-colors"
+                            <span class="text-xl font-medium mb-1 group-hover:text-emerald-600 transition-colors"
                                 :class="month.index === currentDate.getMonth() ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'">
                                 {{ month.label }}
                             </span>
-                            <span class="text-xs font-medium text-slate-400 uppercase tracking-widest">
-                                View
+                            <span class="text-xs font-light text-slate-400 uppercase tracking-widest">
+                                View Month
                             </span>
                         </button>
                     </div>
@@ -127,72 +127,82 @@
                 <div :key="dayKey" class="absolute inset-0 flex flex-col bg-slate-50 dark:bg-slate-950">
 
                     <div
-                        class="px-2 py-2 lg:px-6 lg:py-8 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-                        <h2 class="text-lg lg:text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                        class="px-6 py-4 lg:px-8 lg:py-6 bg-white dark:bg-slate-900 border-b border-slate-200/70 dark:border-slate-800/70">
+                        <h2 class="text-2xl font-semibold text-slate-900 dark:text-white mb-1">
                             {{ selectedDayLabel }}
                         </h2>
-                        <p class="text-slate-500 dark:text-slate-400 font-medium">
-                            {{ selectedDayEvents.length }} events scheduled
+                        <p class="text-sm text-slate-500 dark:text-slate-400">
+                            <span class="font-bold text-emerald-600 dark:text-emerald-400">{{ selectedDayEvents.length
+                            }}</span>
+                            events scheduled
                         </p>
                     </div>
 
                     <div class="flex-1 overflow-y-auto p-6 relative">
                         <div
-                            class="absolute left-10 top-6 bottom-6 w-px bg-slate-200 dark:bg-slate-800 ml-6 hidden sm:block">
+                            class="absolute left-10 top-6 bottom-6 w-px bg-slate-200/70 dark:bg-slate-800 ml-6 hidden sm:block">
                         </div>
 
-                        <div v-if="selectedDayEvents.length" class="space-y-4" @wheel.stop>
+                        <div v-if="selectedDayEvents.length" class="space-y-6" @wheel.stop>
                             <div v-for="event in selectedDayEvents" :key="event.id"
                                 class="relative flex flex-col sm:flex-row gap-4 sm:gap-8 group">
 
                                 <div
-                                    class="sm:w-32 shrink-0 flex max-sm:justify-start justify-end items-center space-x-1">
-                                    <div class="hidden sm:block w-3 h-3 rounded-full border-2 border-white dark:border-slate-900 ml-2 z-10"
+                                    class="sm:w-32 shrink-0 flex max-sm:justify-start justify-end items-center space-x-2">
+                                    <div class="hidden sm:block w-3.5 h-3.5 rounded-full ring-4 ring-slate-50 dark:ring-slate-950 ml-2 z-10"
                                         :class="[eventBulletColors(event)]"></div>
-                                    <span class="text-sm font-bold text-slate-900 dark:text-slate-200 block">
+                                    <span class="text-sm font-semibold text-slate-900 dark:text-slate-200 block">
                                         {{ dayEventDateFormatter(event.start) }}
                                     </span>
                                 </div>
+
                                 <div :key="event.id"
-                                    class="flex-1 px-4 py-3 lg:py-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
+                                    class="flex-1 px-4 py-3 lg:py-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition-all duration-300 cursor-pointer group/card"
                                     :class="[
-                                        eventCardColors(event, 'hover'),
-                                        { [eventCardColors(event, 'border')]: isExpanded(event.id) }]"
-                                    @click="toggleExpansion(event.id)" role="button"
-                                    :aria-expanded="isExpanded(event.id)"
+                                        // Subtle hover effect: changes border to accent color and slightly lifts
+                                        'hover:border-current hover:shadow-md',
+                                        // Expanded state: maintains the accent border and shadow
+                                        { [eventCardColors(event, 'border') + ' shadow-md']: isExpanded(event.id) }
+                                    ]" @click="toggleExpansion(event.id)" role="button" :aria-expanded="isExpanded(event.id)"
                                     :aria-label="`${isExpanded(event.id) ? 'Collapse' : 'Expand'} event details`"
                                     tabindex="0" @keydown.enter="toggleExpansion(event.id)"
                                     @keydown.space.prevent="toggleExpansion(event.id)">
-                                    <!-- Header section -->
-                                    <div v-if="event.title" class="flex items-center gap-2 mb-2">
-                                        <h3 class="font-medium text-slate-900 dark:text-slate-100">{{ event.title }}
+
+                                    <div v-if="event.title" class="flex items-start justify-between gap-4 mb-2">
+                                        <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 leading-snug">
+                                            {{ event.title }}
                                         </h3>
                                         <Link :href="route('/', { tree_id: event.tree.id })" @click.stop
-                                            class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200">
-                                        (View in map)
+                                            class="text-xs shrink-0 font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 transition-colors duration-200 mt-0.5">
+                                        View in map
                                         </Link>
                                     </div>
-                                    <!-- Expandable description -->
+
+                                    <div class="h-px w-full bg-slate-200 dark:bg-slate-700/50 mb-3"></div>
+
                                     <div class="overflow-hidden transition-[max-height] duration-500 ease-in-out"
-                                        :style="{ maxHeight: isExpanded(event.id) ? '500px' : '2.5rem' }">
-                                        <p
-                                            class="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-line leading-relaxed">
-                                            {{ event.description || 'No additional details.' }}
+                                        :style="{ maxHeight: isExpanded(event.id) ? '500px' : '48px' }">
+                                        <p class="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-line leading-relaxed line-clamp-2"
+                                            :class="{ 'line-clamp-none': isExpanded(event.id) }">
+                                            {{ event.description || 'No additional details provided for this event.' }}
                                         </p>
                                     </div>
 
-                                    <!-- Toggle indicator -->
-                                    <div v-if="event.description && event.description.length > 100"
-                                        class="mt-2 flex items-center gap-1 text-xs font-medium"
-                                        :class="[eventCardColors(event, 'text')]">
-                                        <span>{{ isExpanded(event.id) ? 'Show Less' : 'Show More' }}</span>
+                                    <button
+                                        v-if="isExpanded(event.id) || (event.description && event.description.length > 70)"
+                                        @click.stop="toggleExpansion(event.id)"
+                                        class="mt-3 flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 transition-colors hover:text-emerald-700 dark:hover:text-emerald-300">
+
+                                        <span>{{ isExpanded(event.id) ? 'Collapse Details' : 'View Full Details'
+                                            }}</span>
+
                                         <svg class="w-3 h-3 transition-transform duration-300"
                                             :class="{ 'rotate-180': isExpanded(event.id) }" fill="none"
                                             stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M19 9l-7 7-7-7" />
                                         </svg>
-                                    </div>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -274,12 +284,12 @@ watch([hasCalendarState, urlView, urlDate], () => {
 
 const monthKey = computed(() => {
     const d = currentDate.value
-    return `${d.getFullYear()}-${d.getMonth()}`
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 })
 
 const yearKey = computed(() => currentDate.value.getFullYear())
 
-const dayKey = computed(() => currentDate.value.toISOString().slice(0, 10))
+const dayKey = computed(() => toLocalYmd(currentDate.value))
 
 const transitionName = computed(() => {
     if (props.transitionPreset === 'fade') return 'cal-fade'
@@ -324,20 +334,27 @@ const selectedDayLabel = computed(() => {
 
 const selectedDayEvents = computed(() => {
     if (viewMode.value !== 'day') return []
-    const key = currentDate.value.toISOString().slice(0, 10)
+    const key = toLocalYmd(currentDate.value)
 
     return props.events.filter((event) => {
         const d = normalizeToDate(event.start)
-        if (!d) return false
-        return d.toISOString().slice(0, 10) === key
+        return d && toLocalYmd(d) === key
     })
 })
 
 
-function toIsoDate(d) {
-    return d.toISOString().slice(0, 10)
+function toLocalYmd(d) {
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
 }
 
+function parseLocalYmd(s) {
+    // expects YYYY-MM-DD
+    const [y, m, d] = s.split('-').map(Number)
+    return new Date(y, (m || 1) - 1, d || 1)
+}
 function setFromUrl() {
     if (!hasCalendarState.value) return
 
@@ -349,8 +366,8 @@ function setFromUrl() {
     // Only assign if actually different (prevents loops / extra renders)
     if (viewMode.value !== nextView) viewMode.value = nextView
 
-    const curIso = toIsoDate(currentDate.value)
-    const nextIso = toIsoDate(nextDate)
+    const curIso = toLocalYmd(currentDate.value)
+    const nextIso = toLocalYmd(nextDate)
     if (curIso !== nextIso) currentDate.value = nextDate
 
     applyingFromUrl.value = false
@@ -359,16 +376,13 @@ function setFromUrl() {
 function syncUrl({ replace = true } = {}) {
     if (applyingFromUrl.value) return
 
-    const iso = toIsoDate(currentDate.value)
+    const iso = toLocalYmd(currentDate.value)
 
     let normalized = iso
     if (viewMode.value === "month") normalized = iso.slice(0, 7) + "-01"
     if (viewMode.value === "year") normalized = iso.slice(0, 4) + "-01-01"
 
-    updateQuery(
-        { view: viewMode.value, date: normalized },
-        { replace }
-    )
+    updateQuery({ view: viewMode.value, date: normalized }, { replace })
 }
 
 
@@ -708,7 +722,7 @@ onMounted(() => {
         rootEl.value.addEventListener('touchend', handleTouchEnd)
         rootEl.value.addEventListener('touchcancel', handleTouchCancel)
     }
-    
+
     window.addEventListener('resize', handleResize)
 })
 
@@ -726,10 +740,18 @@ onBeforeUnmount(() => {
 
 function normalizeToDate(val) {
     if (val instanceof Date) return new Date(val)
+
     if (typeof val === 'string') {
+        // IMPORTANT: parse date-only strings as LOCAL, not UTC
+        if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+            const d = parseLocalYmd(val)
+            return Number.isNaN(d.getTime()) ? new Date() : d
+        }
+
         const d = new Date(val)
-        if (!Number.isNaN(d.getTime())) return d
+        return Number.isNaN(d.getTime()) ? new Date() : d
     }
+
     return new Date()
 }
 
@@ -748,22 +770,24 @@ function buildMonthGrid(activeDate, events) {
     stripTime(today)
 
     const eventsByDay = events.reduce((acc, event) => {
-        const dateKey = normalizeToDate(event.start).toISOString().slice(0, 10)
-        if (!acc[dateKey]) acc[dateKey] = []
-        acc[dateKey].push({
-            id: event.id,
-            title: event.title,
-            color: event.color || 'blue',
-            start: event.start,
-        })
+        const d = normalizeToDate(event.start)
+        if (!d) return acc
+        const dateKey = toLocalYmd(d)
+            ; (acc[dateKey] ||= []).push({
+                id: event.id,
+                title: event.title,
+                color: event.color || 'blue',
+                start: event.start,
+            })
         return acc
     }, {})
+
 
     for (let i = 0; i < 42; i++) {
         const date = new Date(gridStart)
         date.setDate(gridStart.getDate() + i)
 
-        const dateKey = date.toISOString().slice(0, 10)
+        const dateKey = toLocalYmd(date)
         const isCurrentMonth = date.getMonth() === month
         const isToday = isSameDay(date, today)
 
