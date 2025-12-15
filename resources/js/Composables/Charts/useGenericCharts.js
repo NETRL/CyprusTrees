@@ -10,7 +10,7 @@ export function useDonutChartOptions(data, title = 'Data Distribution', isDarkMo
   return {
     title: {
       text: title,
-      left: 'center',
+      top: 'top',
       textStyle: theme.title.textStyle
     },
     tooltip: {
@@ -29,7 +29,7 @@ export function useDonutChartOptions(data, title = 'Data Distribution', isDarkMo
         name: title,
         type: 'pie',
         radius: ['40%', '70%'], // Creates the donut shape
-        center: ['50%', '45%'], // Adjust center to accommodate legend on the left
+        center: ['50%', '50%'], // Adjust center to accommodate legend on the left
         data: data,
         emphasis: {
           itemStyle: {
@@ -61,7 +61,7 @@ export function useLineChartOptions(data, title = 'Timeline Data', yAxisName = '
     color: theme.color,
     title: {
       text: title,
-      left: 'center',
+      top: 'top',
       textStyle: theme.title.textStyle
     },
     tooltip: {
@@ -71,7 +71,7 @@ export function useLineChartOptions(data, title = 'Timeline Data', yAxisName = '
     },
     legend: {
       data: data.seriesData.map(s => s.name),
-      bottom: 5,
+      bottom: 0,
       textStyle: theme.legend.textStyle,
     },
     grid: { top: '25%', left: '3%', right: '4%', bottom: '15%', containLabel: true },
@@ -139,7 +139,7 @@ export function useHistogramOptions(data, title = 'Frequency Distribution', yAxi
   return {
     title: {
       text: title,
-      left: 'center',
+      top: 'top',
       textStyle: theme.title.textStyle
     },
     tooltip: {
@@ -152,7 +152,6 @@ export function useHistogramOptions(data, title = 'Frequency Distribution', yAxi
       type: 'category',
       data: data.xAxisData,
       axisTick: { alignWithLabel: true },
-      axisLabel: { rotate: 30 },
       axisLabel: {
         rotate: 45,
         interval: 0
@@ -187,7 +186,7 @@ export function useStackedBarChartOptions(data, title = 'Stacked Comparison', yA
   return {
     title: {
       text: title,
-      left: 'center',
+      top: 'top',
       textStyle: theme.title.textStyle
     },
     tooltip: {
@@ -197,7 +196,7 @@ export function useStackedBarChartOptions(data, title = 'Stacked Comparison', yA
     },
     legend: {
       data: data.seriesData.map(s => s.name),
-      bottom: 5,
+      bottom: 0,
       textStyle: theme.legend.textStyle,
     },
     grid: { top: '25%', left: '3%', right: '4%', bottom: '15%', containLabel: true },

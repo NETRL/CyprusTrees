@@ -6,6 +6,7 @@ use App\Http\Controllers\CitizenReportController;
 use App\Http\Controllers\Dashboard\PermissionController;
 use App\Http\Controllers\Dashboard\RoleController;
 use App\Http\Controllers\Dashboard\UserController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HealthAssessmentController;
 use App\Http\Controllers\MaintenanceEventsController;
 use App\Http\Controllers\MaintenanceTypesController;
@@ -35,10 +36,7 @@ Route::get('/', function (Request $request) {
 })->name('/');
 
 
-
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth', '2fa')->group(function () {
 

@@ -1,30 +1,17 @@
 <template>
   <div class="chart-container" ref="chartRef" :style="{ height: height, width: width }">
-    <v-chart :option="chartOptions" :autoresize="true" :style="{ height: '100%', width: '100%' }" />
+    <VChart :option="chartOptions" :autoresize="true" :style="{ height: '100%', width: '100%' }" />
   </div>
 </template>
 
 <script setup>
 import { defineProps, watch, shallowRef } from 'vue';
-import VChart from 'vue-echarts'; 
+import VChart from 'vue-echarts';
 import { use } from 'echarts/core';
 
-// Import the rendered
-import { CanvasRenderer } from 'echarts/renderers';
-
-// Import the chart types
-import { PieChart } from 'echarts/charts'; // For Donut Charts
-import { BarChart } from 'echarts/charts';
-import { LineChart } from 'echarts/charts';
-
-// Import the components
-import {
-  TitleComponent,
-  TooltipComponent,
-  LegendComponent,
-  GridComponent,
-  DataZoomComponent,
-} from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers'; // Import the rendered
+import { PieChart, BarChart, LineChart } from 'echarts/charts'; // Import the chart types
+import { TitleComponent, TooltipComponent, LegendComponent, GridComponent, DataZoomComponent } from 'echarts/components'; // Import the components
 
 // Props
 const props = defineProps({
