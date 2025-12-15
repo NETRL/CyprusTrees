@@ -154,5 +154,3 @@ const closeModal = () => {
   form.reset();
 };
 </script>
-
-<style></style>
