@@ -2,13 +2,10 @@
 
   <Head title="Dashboard" />
 
-  <div class="chart-gallery">
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-auto-fit gap-5 sm:gap-2.5 p-2 ">
     <BaseChart :options="donutChartOptions" title="Ownership Distribution" height="400px" />
-
     <BaseChart :options="lineChartOptions" title="Citizen Reports Filed" height="400px" />
-
     <BaseChart :options="histogramOptions" title="DBH (cm) Distribution" height="400px" />
-
     <BaseChart :options="stackedBarOptions" title="Health Status by Neighborhood" height="400px" />
   </div>
 </template>
@@ -89,25 +86,3 @@ onMounted(() => {
   createChartOptions();
 });
 </script>
-
-<style scoped>
-.chart-gallery {
-  /* Desktop/Tablet Default */
-  display: grid;
-  /* Use minmax(350px, 1fr) for better tablet flow */
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 20px;
-  padding: 20px;
-}
-
-/* 🎯 Mobile Optimization: Single Column Below 600px */
-@media (max-width: 600px) {
-  .chart-gallery {
-    /* Force a single column for true mobile view */
-    grid-template-columns: 1fr;
-    gap: 10px;
-    /* Reduce gap for less scrolling */
-    padding: 10px;
-  }
-}
-</style>

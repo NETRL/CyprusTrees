@@ -103,23 +103,26 @@ export function useLineChartOptions(data, title = 'Timeline Data', yAxisName = '
     ...(withZoom && {
       dataZoom: [
         {
-          type: 'inside', // The scrollbar type component
+          type: 'inside',
           xAxisIndex: 0,
           filterMode: 'filter',
-          zoomOnMouseWheel: true,
-          moveOnMouseMove: true,
+
+          moveOn: 'mousemove|touch', // Allows pan/move with single touch
+          zoomOn: 'mouseWheel|pinch', // Allows zoom with two-finger pinch
+          zoomLock: false,
         },
         {
-          type: 'inside', // Drag and drop inside the chart area
+          type: 'inside',
           yAxisIndex: 0,
           filterMode: 'none',
-          zoomOnMouseWheel: false,
-          moveOnMouseMove: true,
+          // Ensure vertical pan is enabled if needed
+          moveOn: 'mousemove|touch',
+          // Keep zoomOn disabled here so pinch only affects X-axis if needed
+          zoomOn: false,
         }
       ]
     })
   };
-
 
   return options;
 }

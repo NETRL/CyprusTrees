@@ -6,20 +6,18 @@
 
 <script setup>
 import { defineProps, watch, shallowRef } from 'vue';
-import VChart from 'vue-echarts'; // Ensure this import matches your library name
+import VChart from 'vue-echarts'; 
 import { use } from 'echarts/core';
 
-// 1. IMPORT THE RENDERER
-// Choose either CanvasRenderer (generally faster for simpler charts)
-// OR SVGRenderer (generally better for zooming/high-DPI, but slower initialization)
+// Import the rendered
 import { CanvasRenderer } from 'echarts/renderers';
 
-// 2. IMPORT THE CHART TYPES YOU ARE USING
+// Import the chart types
 import { PieChart } from 'echarts/charts'; // For Donut Charts
 import { BarChart } from 'echarts/charts';
 import { LineChart } from 'echarts/charts';
 
-// 3. IMPORT THE NECESSARY COMPONENTS (Tooltip, Legend, Grid, etc.)
+// Import the components
 import {
   TitleComponent,
   TooltipComponent,
@@ -28,7 +26,7 @@ import {
   DataZoomComponent,
 } from 'echarts/components';
 
-// Define props to receive the ECharts options and component size
+// Props
 const props = defineProps({
   options: {
     type: Object,
