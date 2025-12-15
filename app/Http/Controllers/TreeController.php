@@ -44,7 +44,6 @@ class TreeController extends Controller
 
 
         $tableData->getCollection()->transform(function ($e) {
-            // dd($e->lon);
             return [
                 ...$e->toArray(),
                 'species_label' => $e->species

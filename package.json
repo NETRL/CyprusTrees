@@ -32,10 +32,12 @@
         "@fullcalendar/timegrid": "^6.1.19",
         "@fullcalendar/vue3": "^6.1.19",
         "@primeuix/themes": "^1.2.5",
+        "echarts": "^6.0.0",
         "lucide-vue-next": "^0.555.0",
         "maplibre-gl": "^5.10.0",
         "primeicons": "^7.0.0",
         "primevue": "^4.4.1",
-        "qrcode": "^1.5.4"
+        "qrcode": "^1.5.4",
+        "vue-echarts": "^8.0.1"
     }
 }

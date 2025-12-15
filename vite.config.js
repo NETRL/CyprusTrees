@@ -46,4 +46,7 @@ export default defineConfig({
             '@assets': path.resolve(__dirname, 'resources/assets'),
         },
     },
+    optimizeDeps: {
+        include: ['echarts', 'vue-echarts'],
+    },
 });

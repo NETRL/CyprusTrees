@@ -44,7 +44,9 @@ class HealthAssessmentController extends Controller
                 'assessor_label' => $e->assessor
                     ? ($e->assessed_by . ' - ' . trim(($e->assessor->first_name ?? '') . ' ' . ($e->assessor->last_name ?? '')))
                     : '-',
-                'health_label' => $e->health_status ? Str::title(strtolower($e->health_status)) : '-',
+                'health_label' => $e->health_status
+                    ? Str::title($e->health_status->value)
+                    : '-',
             ];
         });
 
