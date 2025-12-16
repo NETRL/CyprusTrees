@@ -5,48 +5,64 @@ import { getThemeConfig } from './getThemeConfig';
  * @param {Array<Object>} data - Array of objects: [{name: string, value: number}, ...]
  * @param {string} title - The title of the chart.
  */
-export function useDonutChartOptions(data, title = 'Data Distribution', isDarkMode = false) {
-  const theme = getThemeConfig(isDarkMode);
+export function useDonutChartOptions(
+  data,
+  title = 'Data Distribution',
+  isDarkMode = false,
+  extra = {}
+) {
+  const theme = getThemeConfig(isDarkMode)
+
+  const centerLabel = extra.centerLabel
+
   return {
-    title: {
-      text: title,
-      top: 'top',
-      textStyle: theme.title.textStyle
-    },
+    title: [
+      {
+        text: title,
+        left: 'center',
+        top: 10,
+        textStyle: theme.title.textStyle
+      },
+      ...(centerLabel ? [{
+        text: `${centerLabel.value}`,
+        left: 'center',
+        top: '45%',
+        textStyle: {
+          fontSize: 22,
+          fontWeight: 600,
+          color: theme.title.textStyle.color
+        }
+      },
+      {
+        text: centerLabel.label,
+        left: 'center',
+        top: '55%',
+        textStyle: {
+          fontSize: 12,
+          color: theme.legend.textStyle.color
+        }
+      }] : [])
+    ],
     tooltip: {
       trigger: 'item',
-      formatter: '{b} <br/>{c} ({d}%)', // Shows name, value, and percentage
-      ...theme.tooltip,
+      formatter: '{b}<br/>{c} ({d}%)',
+      ...theme.tooltip
     },
     legend: {
       orient: 'horizontal',
-      left: 'center',
-      bottom: '5%',
-      textStyle: theme.legend.textStyle,
+      bottom: 5,
+      textStyle: theme.legend.textStyle
     },
-    series: [
-      {
-        name: title,
-        type: 'pie',
-        radius: ['40%', '70%'], // Creates the donut shape
-        center: ['50%', '50%'], // Adjust center to accommodate legend on the left
-        data: data,
-        emphasis: {
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)'
-          }
-        },
-        label: {
-          show: true,
-          formatter: '{d}%', // Show percentage on the slices
-          position: 'inside'
-        }
-      }
-    ]
-  };
+    series: [{
+      type: 'pie',
+      radius: ['40%', '70%'],
+      center: ['50%', '52%'],
+      data,
+      label: { show: false }
+    }]
+  }
 }
+
 
 
 /**
@@ -74,7 +90,7 @@ export function useLineChartOptions(data, title = 'Timeline Data', yAxisName = '
       bottom: 0,
       textStyle: theme.legend.textStyle,
     },
-    grid: { top: '25%', left: '3%', right: '4%', bottom: '15%', containLabel: true },
+    grid: { top: '17%', left: '3%', right: '4%', bottom: '15%', containLabel: true },
     xAxis: {
       type: 'category',
       data: data.xAxisData,
@@ -147,7 +163,7 @@ export function useHistogramOptions(data, title = 'Frequency Distribution', yAxi
       axisPointer: { type: 'shadow' },
       ...theme.tooltip,
     },
-    grid: { top: '25%', left: '3%', right: '4%', bottom: '15%', containLabel: true },
+    grid: { top: '17%', left: '3%', right: '4%', bottom: '15%', containLabel: true },
     xAxis: {
       type: 'category',
       data: data.xAxisData,
@@ -199,7 +215,7 @@ export function useStackedBarChartOptions(data, title = 'Stacked Comparison', yA
       bottom: 0,
       textStyle: theme.legend.textStyle,
     },
-    grid: { top: '25%', left: '3%', right: '4%', bottom: '15%', containLabel: true },
+    grid: { top: '17%', left: '3%', right: '4%', bottom: '15%', containLabel: true },
     xAxis: {
       type: 'category',
       data: data.xAxisData,

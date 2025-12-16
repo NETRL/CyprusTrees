@@ -1,6 +1,18 @@
 <template>
-  <div class="chart-container" ref="chartRef" :style="{ height: height, width: width }">
-    <VChart :option="chartOptions" :autoresize="true" :style="{ height: '100%', width: '100%' }" />
+  <div class="bg-white dark:bg-gray-800 dark:border dark:border-gray-700 
+           touch-pan-y p-3 rounded-lg shadow-md 
+           flex flex-col" ref="chartRef" :style="{ height: height, width: width }">
+
+    <div class="mb-2">
+      <slot name="control">
+      </slot>
+    </div>
+
+    <VChart :option="chartOptions" :autoresize="true" class="grow" :style="{ width: '100%', minHeight: '0' }" />
+    <div class="mb-2">
+      <slot name="info">
+      </slot>
+    </div>
   </div>
 </template>
 
@@ -21,7 +33,7 @@ const props = defineProps({
   },
   height: {
     type: String,
-    default: '300px'
+    default: '400px'
   },
   width: {
     type: String,

@@ -36,9 +36,13 @@ Route::get('/', function (Request $request) {
 })->name('/');
 
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+
+
 
 Route::middleware('auth', '2fa')->group(function () {
+
+    Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['verified'])->name('dashboard');
+    Route::get('/dashboard/methodology', [DashboardController::class, 'methodology'])->name('dashboard.methodology');
 
 
     Route::resource('users', UserController::class)->except(['create', 'edit']);

@@ -10,6 +10,15 @@ class NavlinkSeeder extends Seeder
     public function run(): void
     {
         $this->createOrUpdateNavlink(
+            ['key' => 'dashboard'],
+            [
+                'name'       => 'Dashboard',
+                'icon'       => 'LayoutDashboardIcon',
+                'route_name' => 'dashboard',
+            ]
+        );
+
+        $this->createOrUpdateNavlink(
             ['key' => 'map'],
             [
                 'name'       => 'Map',

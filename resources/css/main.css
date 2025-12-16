@@ -8,14 +8,6 @@ layer(base);
 
 @custom-variant dark (&:is(.dark *));
 
-
-/* ECharts  */
-.chart-container {
-  @apply p-3 rounded-lg shadow-md;
-  @apply bg-white;
-  @apply dark:bg-gray-800 dark:border dark:border-gray-700 touch-pan-y;
-}
-
 /* Calendar */
 .fc-scrollgrid-sync-table{
      @apply min-w-[calc(100vw-6rem)]! text-xs! md:text-lg;
