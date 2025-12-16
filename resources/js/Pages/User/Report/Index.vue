@@ -112,7 +112,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import ReusableDataTable from "@/Components/ReusableDataTable.vue";
 import { router } from "@inertiajs/vue3";
-import { ref, defineOptions, defineProps } from "vue";
+import { ref } from "vue";
 import { useDateFormatter } from "@/Composables/useDateFormatter";
 import NavLinkButton from "@/Components/NavLinkButton.vue";
 import { Eye, ImageIcon, ImageOff, ExternalLink } from 'lucide-vue-next';

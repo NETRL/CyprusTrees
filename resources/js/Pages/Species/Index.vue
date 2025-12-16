@@ -15,7 +15,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import SpeciesForm from "@/Pages/Species/Partials/SpeciesForm.vue";
 import ReusableDataTable from "@/Components/ReusableDataTable.vue";
 import { router } from "@inertiajs/vue3";
-import { ref, defineOptions, defineProps } from "vue";
+import { ref } from "vue";
 import { useRenamedHeaders } from "@/Composables/useRenamedHeaders";
 
 defineOptions({

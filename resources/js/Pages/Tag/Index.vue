@@ -15,7 +15,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 
 import ReusableDataTable from "@/Components/ReusableDataTable.vue";
 import { router } from "@inertiajs/vue3";
-import { ref, defineOptions, defineProps } from "vue";
+import { ref } from "vue";
 import { useRenamedHeaders } from "@/Composables/useRenamedHeaders";
 import TagForm from "@/Pages/Tag/Partials/TagForm.vue";
 

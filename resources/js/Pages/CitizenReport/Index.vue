@@ -126,7 +126,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import ReusableDataTable from "@/Components/ReusableDataTable.vue";
 import { router } from "@inertiajs/vue3";
-import { ref, defineOptions, defineProps } from "vue";
+import { ref } from "vue";
 import CitizenReportForm from "@/Pages/CitizenReport/Partials/CitizenReportForm.vue";
 import { useDateFormatter } from "@/Composables/useDateFormatter";
 import NavLinkButton from "@/Components/NavLinkButton.vue";

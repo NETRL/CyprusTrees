@@ -40,7 +40,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import ReusableDataTable from "@/Components/ReusableDataTable.vue";
 import { router } from "@inertiajs/vue3";
-import { ref, defineOptions, defineProps, computed, watch, reactive } from "vue";
+import { ref, computed, watch, reactive } from "vue";
 import { useRenamedHeaders } from "@/Composables/useRenamedHeaders";
 import NeighborhoodForm from "@/Pages/Neighborhood/Partials/NeighborhoodForm.vue";
 

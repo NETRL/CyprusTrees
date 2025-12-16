@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { defineProps, watch, shallowRef } from 'vue';
+import { watch, shallowRef } from 'vue';
 import VChart from 'vue-echarts';
 import { use } from 'echarts/core';
 

@@ -72,7 +72,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 
 import ReusableDataTable from "@/Components/ReusableDataTable.vue";
 import { router } from "@inertiajs/vue3";
-import { ref, defineOptions, defineProps } from "vue";
+import { ref } from "vue";
 import { useRenamedHeaders } from "@/Composables/useRenamedHeaders";
 import PlantingEventForm from "@/Pages/PlantingEvent/Partials/PlantingEventForm.vue";
 import { useDateFormatter } from "@/Composables/useDateFormatter";
