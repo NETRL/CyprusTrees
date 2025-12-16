@@ -2,116 +2,117 @@
 
   <Head title="Dashboard" />
 
-  <!-- ===================== -->
-  <!-- SNAPSHOT SECTION -->
-  <!-- ===================== -->
-  <section class="p-2">
-    <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">
-      Inventory snapshot
-    </h2>
-    <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">
-      Current state of the urban forest.
-    </p>
+  <div class="mx-auto max-w-7xl space-y-10 p-4 pb-20">
 
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-auto-fit gap-5">
-      <BaseChart :options="snapshotDonutOptions" />
-      <BaseChart :options="snapshotHistogramOptions" />
-      <BaseChart :options="snapshotStackedBarOptions" />
-      <BaseChart :options="co2ChartOptions">
-        <template #info>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
-            CO₂ values are estimates derived from DBH and planting year. Coverage:
-            {{ props.snapshot?.co2?.coverage_pct ?? 0 }}% ({{ props.snapshot?.co2?.eligible ?? 0 }}/{{
-              props.snapshot?.co2?.total ?? 0 }} trees).
-            <a :href="route('dashboard.methodology')" class="underline">Methodology</a>
-          </p>
-        </template>
-      </BaseChart>
-      <BaseChart :options="co2ByNeighborhoodOptions">
-        <template #info>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
-            CO₂ values are estimates derived from DBH and planting year. Coverage:
-            {{ props.snapshot?.co2?.coverage_pct ?? 0 }}% ({{ props.snapshot?.co2?.eligible ?? 0 }}/{{
-              props.snapshot?.co2?.total ?? 0 }} trees).
-            <a :href="route('dashboard.methodology')" class="underline">Methodology</a>
-          </p>
-        </template>
-      </BaseChart>
-
-      <BaseChart :options="co2ByDbhBinsOptions">
-        <template #info>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
-            CO₂ values are estimates derived from DBH and planting year. Coverage:
-            {{ props.snapshot?.co2?.coverage_pct ?? 0 }}% ({{ props.snapshot?.co2?.eligible ?? 0 }}/{{
-              props.snapshot?.co2?.total ?? 0 }} trees).
-            <a :href="route('dashboard.methodology')" class="underline">Methodology</a>
-          </p>
-        </template>
-      </BaseChart>
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+        Urban Forest Monitor
+      </h1>
+      <p class="mt-2 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
+        High-level overview of the current forest inventory and recent maintenance operations.
+      </p>
     </div>
-  </section>
 
-  <!-- Divider -->
-  <div class="my-6 border-t border-slate-200 dark:border-slate-700"></div>
-
-  <!-- ===================== -->
-  <!-- ACTIVITY SECTION -->
-  <!-- ===================== -->
-  <section class="p-2">
-    <div class="flex items-center justify-between mb-3">
-      <div>
-        <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">
-          Activity within selected period
+    <section>
+      <div class="mb-5 border-l-4 border-blue-500 pl-4">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">
+          Inventory Snapshot
         </h2>
-        <p class="text-sm text-slate-500 dark:text-slate-400">
-          From {{ filters.startDate }} to {{ filters.endDate }}
+        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+          Current State
         </p>
       </div>
 
-      <!-- Date Range Control -->
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-slate-600 dark:text-slate-300">Range</span>
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
 
-        <select v-model.number="months" class="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm
-                 text-slate-900 shadow-sm outline-none
-                 focus:ring-2 focus:ring-slate-300
-                 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-slate-600">
-          <option v-for="opt in monthOptions" :key="opt.value" :value="opt.value">
-            {{ opt.label }}
-          </option>
-        </select>
+        <BaseChart :options="snapshotDonutOptions" />
+        <BaseChart :options="snapshotHistogramOptions" />
+        <BaseChart :options="snapshotStackedBarOptions" />
 
-        <span v-if="isLoading" class="text-xs text-slate-500 dark:text-slate-400">
-          Updating…
-        </span>
+        <BaseChart :options="co2ChartOptions">
+          <template #info>
+            <ImpactFootnote :data="props.snapshot?.co2" />
+          </template>
+        </BaseChart>
+
+        <BaseChart :options="co2ByNeighborhoodOptions">
+          <template #info>
+            <ImpactFootnote :data="props.snapshot?.co2" />
+          </template>
+        </BaseChart>
+
+        <BaseChart :options="co2ByDbhBinsOptions">
+          <template #info>
+            <ImpactFootnote :data="props.snapshot?.co2" />
+          </template>
+        </BaseChart>
       </div>
-    </div>
+    </section>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-auto-fit gap-5">
-      <BaseChart :options="activityLineOptions">
-        <template #control>
-          <div class="flex items-center gap-2 text-xs">
-            <span class="rounded-full border border-slate-200 bg-white px-2 py-1 text-slate-700
-                 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
-              New: <span class="font-semibold">{{ reportsNewTotal.toLocaleString() }}</span>
-            </span>
+    <div class="border-t border-slate-200 dark:border-slate-800"></div>
 
-            <span class="rounded-full border border-slate-200 bg-white px-2 py-1 text-slate-700
-                 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
-              Resolved: <span class="font-semibold">{{ reportsResolvedTotal.toLocaleString() }}</span>
-            </span>
+    <section>
+      <div class="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div class="border-l-4 border-emerald-500 pl-4">
+          <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">
+            Activity & Maintenance
+          </h2>
+          <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+            Performance & Operations
+          </p>
+        </div>
+
+        <div
+          class="flex items-center gap-3 bg-white p-1 rounded-full shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:ring-gray-700">
+          <span class="pl-3 text-xs font-bold text-slate-400 uppercase">Range</span>
+          <div class="relative">
+            <select v-model.number="months" :disabled="isLoading"
+              class="h-8 cursor-pointer appearance-none rounded-full border-0 bg-slate-50 py-0 pl-3 pr-8 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-blue-500 disabled:opacity-50 dark:bg-slate-700 dark:text-slate-200">
+              <option v-for="opt in monthOptions" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
+            <div class="pointer-events-none absolute right-2 top-0 flex h-full items-center text-slate-500">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
           </div>
-        </template>
-      </BaseChart>
-
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-        <KpiCard label="Maintenance events" :value="activity.maintenance_summary.events" />
-        <KpiCard label="Trees maintained" :value="activity.maintenance_summary.trees" />
-        <KpiCard label="Total cost" :value="`€${activity.maintenance_summary.total_cost}`" />
-        <KpiCard label="Avg cost / event" :value="`€${activity.maintenance_summary.avg_cost_event}`" />
+        </div>
       </div>
-    </div>
-  </section>
+
+      <div class="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <KpiCard label="Maintenance Events" :value="activity.maintenance_summary.events" />
+        <KpiCard label="Trees Maintained" :value="activity.maintenance_summary.trees" />
+        <KpiCard label="Total Cost" :value="`€${activity.maintenance_summary.total_cost}`" />
+        <KpiCard label="Avg Cost / Event" :value="`€${activity.maintenance_summary.avg_cost_event}`" />
+      </div>
+
+      <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <div class="xl:col-span-2">
+          <BaseChart :options="activityLineOptions" height="400px">
+            <template #control>
+              <div class="flex max-sm:flex-col gap-1 text-xs font-medium">
+                <div class="flex items-center gap-2 rounded-full bg-slate-100 px-2 py-1 dark:bg-slate-700">
+                  <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+                  <span class="text-slate-600 dark:text-slate-300">New: {{ reportsNewTotal }}</span>
+                </div>
+                <div class="flex items-center gap-2 rounded-full bg-slate-100 px-2 py-1 dark:bg-slate-700">
+                  <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                  <span class="text-slate-600 dark:text-slate-300">Resolved: {{ reportsResolvedTotal }}</span>
+                </div>
+              </div>
+            </template>
+          </BaseChart>
+        </div>
+
+        <div class="hidden sm:block xl:col-span-1">
+          <BaseChart />
+        </div>
+      </div>
+    </section>
+
+  </div>
 </template>
 
 <script setup>
@@ -126,21 +127,22 @@ import {
 } from '@/Composables/Charts/useGenericCharts'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import KpiCard from '@/Components/Charts/KpiCard.vue'
+import ImpactFootnote from '@/Components/Charts/ImpactFootnote.vue'
 
 defineOptions({ layout: AuthenticatedLayout })
 
-/* ======================
+/* 
    PROPS
-====================== */
+ */
 const props = defineProps({
   snapshot: Object,
   activity: Object,
   filters: Object,
 })
 
-/* ======================
+/* 
    THEME
-====================== */
+ */
 const isDarkMode = ref(false)
 
 function syncDarkMode() {
@@ -153,9 +155,9 @@ onMounted(() => {
   observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
 })
 
-/* ======================
+/* 
    SNAPSHOT CHARTS
-====================== */
+ */
 const snapshotOwnerTotal = computed(() =>
   (props.snapshot?.owner_distribution ?? [])
     .reduce((sum, r) => sum + Number(r.value || 0), 0)
@@ -230,9 +232,11 @@ const co2ByDbhBinsOptions = computed(() =>
 
 
 
-/* ======================
+
+
+/* 
    ACTIVITY CHARTS
-====================== */
+ */
 const reportsTimeline = computed(() =>
   props.activity?.reports_timeline ?? { xAxisData: [], seriesData: [] }
 )
@@ -266,9 +270,9 @@ const co2YearlyOptions = computed(() =>
   )
 )
 
-/* ======================
+/* 
    DATE FILTER
-====================== */
+ */
 const monthOptions = [
   { value: 3, label: 'Last 3 months' },
   { value: 6, label: 'Last 6 months' },

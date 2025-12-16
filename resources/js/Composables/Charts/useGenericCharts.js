@@ -1,9 +1,18 @@
-
 import { getThemeConfig } from './getThemeConfig';
 
+const COLOR_PALETTE = [
+  '#3b82f6', // Blue 500
+  '#10b981', // Emerald 500
+  '#f59e0b', // Amber 500
+  '#8b5cf6', // Violet 500
+  '#ec4899', // Pink 500
+  '#06b6d4', // Cyan 500
+  '#6366f1', // Indigo 500
+  '#f97316'  // Orange 500
+];
+
 /**
- * @param {Array<Object>} data - Array of objects: [{name: string, value: number}, ...]
- * @param {string} title - The title of the chart.
+ * Donut Chart
  */
 export function useDonutChartOptions(
   data,
@@ -12,109 +21,209 @@ export function useDonutChartOptions(
   extra = {}
 ) {
   const theme = getThemeConfig(isDarkMode)
-
   const centerLabel = extra.centerLabel
 
   return {
+    color: COLOR_PALETTE,
     title: [
       {
         text: title,
         left: 'center',
-        top: 10,
-        textStyle: theme.title.textStyle
+        top: 10, // Tighter to top to match card padding
+        textStyle: {
+          ...theme.title.textStyle,
+          fontSize: 15,
+          fontWeight: 600,
+          fontFamily: 'Inter, system-ui, sans-serif',
+          
+        }
       },
+      // Center Metric Label
       ...(centerLabel ? [{
         text: `${centerLabel.value}`,
         left: 'center',
-        top: '45%',
+        top: '44%',
         textStyle: {
-          fontSize: 22,
-          fontWeight: 600,
-          color: theme.title.textStyle.color
+          fontSize: 24,
+          fontWeight: 700,
+          color: theme.title.textStyle.color,
+          fontFamily: 'Inter, system-ui, sans-serif'
         }
       },
       {
         text: centerLabel.label,
         left: 'center',
-        top: '55%',
+        top: '56%',
         textStyle: {
           fontSize: 12,
-          color: theme.legend.textStyle.color
+          color: theme.legend.textStyle.color,
+          fontWeight: 500,
+          fontFamily: 'Inter, system-ui, sans-serif',
         }
       }] : [])
     ],
     tooltip: {
       trigger: 'item',
-      formatter: '{b}<br/>{c} ({d}%)',
-      ...theme.tooltip
+      formatter: '{b}<br/><span style="font-weight:600">{c}</span> ({d}%)',
+      backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+      borderColor: isDarkMode ? '#374151' : '#e5e7eb',
+      borderWidth: 1,
+      padding: [8, 12],
+      textStyle: { color: isDarkMode ? '#f3f4f6' : '#1f2937' },
+      extraCssText: 'box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 8px;'
     },
     legend: {
       orient: 'horizontal',
-      bottom: 5,
-      textStyle: theme.legend.textStyle
+      bottom: 0,
+      icon: 'circle',
+      textStyle: {
+        ...theme.legend.textStyle,
+        fontSize: 12
+      },
+      itemGap: 15
     },
     series: [{
       type: 'pie',
-      radius: ['40%', '70%'],
+      radius: ['50%', '72%'],
       center: ['50%', '52%'],
       data,
-      label: { show: false }
+      label: { show: false },
+      itemStyle: {
+        borderRadius: 5,
+        borderColor: isDarkMode ? '#1f2937' : '#fff',
+        borderWidth: 2
+      },
+      // Subtle emphasis, no heavy glow
+      emphasis: {
+        scale: true,
+        scaleSize: 5,
+        itemStyle: {
+          shadowBlur: 5,
+          shadowOffsetX: 0,
+          shadowColor: 'rgba(0, 0, 0, 0.2)'
+        }
+      }
     }]
   }
 }
 
-
-
 /**
- * @param {Object} data - {xAxisData: string[], seriesData: Array<{name: string, data: number[]}>}
- * @param {string} title - The title of the chart.
- * @param {string} yAxisName - The label for the Y-axis.
+ * Line Chart
  */
-export function useLineChartOptions(data, title = 'Timeline Data', yAxisName = 'Value', isDarkMode = false, withZoom = true) {
+export function useLineChartOptions(
+  data,
+  title = 'Timeline Data',
+  yAxisName = 'Value',
+  isDarkMode = false,
+  withZoom = true
+) {
   const theme = getThemeConfig(isDarkMode);
 
-  const options = {
-    color: theme.color,
+  return {
+    color: COLOR_PALETTE,
     title: {
       text: title,
-      top: 'top',
-      textStyle: theme.title.textStyle
+      top: 10,
+      left: 0,
+      textStyle: {
+        ...theme.title.textStyle,
+        fontSize: 15,
+        fontWeight: 600,
+        fontFamily: 'Inter, system-ui, sans-serif',
+        
+      }
     },
     tooltip: {
       trigger: 'axis',
-      axisPointer: { type: 'cross' },
-      ...theme.tooltip,
+      axisPointer: {
+        type: 'line',
+        lineStyle: {
+          color: theme.xAxis.axisLine.lineStyle.color,
+          width: 1,
+          type: 'solid'
+        }
+      },
+      backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+      borderColor: isDarkMode ? '#374151' : '#e5e7eb',
+      borderWidth: 1,
+      padding: [8, 12],
+      textStyle: { color: isDarkMode ? '#f3f4f6' : '#1f2937' },
+      extraCssText: 'box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 8px;'
     },
     legend: {
       data: data.seriesData.map(s => s.name),
       bottom: 0,
-      textStyle: theme.legend.textStyle,
+      icon: 'roundRect',
+      textStyle: {
+        ...theme.legend.textStyle,
+        fontSize: 12
+      },
+      itemGap: 20
     },
-    grid: { top: '17%', left: '3%', right: '4%', bottom: '15%', containLabel: true },
+    // Adjusted grid to ensure Title fits without HTML header
+    grid: {
+      top: 90,
+      left: 10,
+      right: 20,
+      bottom: 60,
+      containLabel: true
+    },
     xAxis: {
       type: 'category',
       data: data.xAxisData,
-      boundaryGap: false, // Makes the line start at the edge
+      boundaryGap: false,
       axisLabel: {
-        rotate: 45,
-        interval: 0
+        rotate: 0, // Try horizontal first for cleanliness
+        hideOverlap: true, // ECharts auto-hides if crowded
+        fontSize: 11,
+        color: theme.xAxis.axisLine.lineStyle.color,
+        margin: 15
       },
-      axisLine: theme.xAxis.axisLine
+      axisLine: { show: false }, // Cleaner look without bottom line
+      axisTick: { show: false }
     },
     yAxis: {
       type: 'value',
       name: yAxisName,
-      axisLabel: theme.yAxis.axisLabel,
-      axisLine: theme.yAxis.axisLine,
-      splitLine: theme.yAxis.splitLine
+      nameTextStyle: {
+        fontSize: 10,
+        align: 'center',
+        color: theme.yAxis.axisLabel.color
+      },
+      axisLabel: {
+        fontSize: 11,
+        color: theme.yAxis.axisLabel.color
+      },
+      splitLine: {
+        lineStyle: {
+          color: isDarkMode ? '#374151' : '#f1f5f9', // Slate-100 or Slate-700
+          type: 'dashed'
+        }
+      }
     },
     series: data.seriesData.map(seriesItem => ({
       name: seriesItem.name,
       type: 'line',
       data: seriesItem.data,
-      smooth: true, // Smooth lines for a cleaner look
+      smooth: true,
       symbol: 'circle',
-      symbolSize: 8
+      symbolSize: 6,
+      showSymbol: false, // Only show on hover for cleaner look
+      lineStyle: {
+        width: 2.5
+      },
+      areaStyle: {
+        opacity: 0.05 // Very subtle fill
+      },
+      emphasis: {
+        focus: 'series',
+        itemStyle: {
+          borderWidth: 2,
+          borderColor: '#fff',
+          shadowBlur: 5,
+          shadowColor: 'rgba(0,0,0,0.2)'
+        }
+      }
     })),
     ...(withZoom && {
       dataZoom: [
@@ -122,60 +231,89 @@ export function useLineChartOptions(data, title = 'Timeline Data', yAxisName = '
           type: 'inside',
           xAxisIndex: 0,
           filterMode: 'filter',
-
-          moveOn: 'mousemove|touch', // Allows pan/move with single touch
-          zoomOn: 'mouseWheel|pinch', // Allows zoom with two-finger pinch
           zoomLock: false,
         },
-        {
-          type: 'inside',
-          yAxisIndex: 0,
-          filterMode: 'none',
-          // Ensure vertical pan is enabled if needed
-          moveOn: 'mousemove|touch',
-          // Keep zoomOn disabled here so pinch only affects X-axis if needed
-          zoomOn: false,
-        }
+        // Removed Y-Axis zoom for stability
       ]
     })
   };
-
-  return options;
 }
 
-
 /**
- * @param {Object} data - {xAxisData: string[], seriesData: number[]}
- * @param {string} title - The title of the chart.
- * @param {string} yAxisName - The label for the Y-axis.
- * @param {string} seriesName - The name of the data series.
+ * Clean Histogram
+ * Flat gradient, no heavy shadows
  */
-export function useHistogramOptions(data, title = 'Frequency Distribution', yAxisName = 'Count', seriesName = 'Frequency', isDarkMode = false) {
+export function useHistogramOptions(
+  data,
+  title = 'Frequency Distribution',
+  yAxisName = 'Count',
+  seriesName = 'Frequency',
+  isDarkMode = false
+) {
   const theme = getThemeConfig(isDarkMode);
+
   return {
     title: {
       text: title,
-      top: 'top',
-      textStyle: theme.title.textStyle
+      top: 10,
+      left: 0,
+      textStyle: {
+        ...theme.title.textStyle,
+        fontSize: 15,
+        fontWeight: 600,
+        fontFamily: 'Inter, system-ui, sans-serif',
+        
+
+      }
     },
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
-      ...theme.tooltip,
+      backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+      borderColor: isDarkMode ? '#374151' : '#e5e7eb',
+      borderWidth: 1,
+      padding: [8, 12],
+      textStyle: { color: isDarkMode ? '#f3f4f6' : '#1f2937' },
+      extraCssText: 'box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 8px;'
     },
-    grid: { top: '17%', left: '3%', right: '4%', bottom: '15%', containLabel: true },
+    grid: {
+      top: 90,
+      left: 10,
+      right: 20,
+      bottom: 20,
+      containLabel: true
+    },
     xAxis: {
       type: 'category',
       data: data.xAxisData,
-      axisTick: { alignWithLabel: true },
+      axisTick: { show: false },
+      axisLine: { show: false },
       axisLabel: {
         rotate: 45,
-        interval: 0
+        interval: 0, // Can remove if crowded
+        fontSize: 11,
+        color: theme.xAxis.axisLine.lineStyle.color
       }
     },
     yAxis: {
       type: 'value',
-      name: yAxisName
+      name: yAxisName,
+      nameTextStyle: {
+        fontSize: 10,
+        align: 'center',
+        padding: [0, 0, 0, 10],
+        color: theme.yAxis.axisLabel.color
+      },
+      axisLabel: {
+        fontSize: 11,
+        color: theme.yAxis.axisLabel.color
+      },
+      splitLine: {
+        lineStyle: {
+          color: isDarkMode ? '#374151' : '#f1f5f9',
+          type: 'dashed'
+        }
+      }
     },
     series: [
       {
@@ -183,59 +321,127 @@ export function useHistogramOptions(data, title = 'Frequency Distribution', yAxi
         type: 'bar',
         data: data.seriesData,
         itemStyle: {
-          color: '#3498db', // Default blue color
-          borderRadius: [5, 5, 0, 0]
+          // Subtle vertical gradient, not too shiny
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: '#60a5fa' }, // Blue 400
+              { offset: 1, color: '#3b82f6' }  // Blue 500
+            ]
+          },
+          borderRadius: [4, 4, 0, 0] // Slightly sharper corners
+        },
+        barMaxWidth: 40,
+        emphasis: {
+          itemStyle: {
+            color: '#3b82f6' // Flat color on hover
+          }
         }
       }
     ]
   };
 }
 
-
 /**
- * @param {Object} data - {xAxisData: string[], seriesData: Array<{name: string, data: number[]}>}
- * @param {string} title - The title of the chart.
- * @param {string} yAxisName - The label for the Y-axis.
+ * Clean Stacked Bar
+ * Aligns with the StackedBar snapshot
  */
-export function useStackedBarChartOptions(data, title = 'Stacked Comparison', yAxisName = 'Count', isDarkMode = false) {
+export function useStackedBarChartOptions(
+  data,
+  title = 'Stacked Comparison',
+  yAxisName = 'Count',
+  isDarkMode = false
+) {
   const theme = getThemeConfig(isDarkMode);
+
   return {
+    color: COLOR_PALETTE,
     title: {
       text: title,
-      top: 'top',
-      textStyle: theme.title.textStyle
+      top: 10,
+      left: 0,
+      textStyle: {
+        ...theme.title.textStyle,
+        fontSize: 15,
+        fontWeight: 600,
+        fontFamily: 'Inter, system-ui, sans-serif',
+        
+      }
     },
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
-      ...theme.tooltip,
+      backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+      borderColor: isDarkMode ? '#374151' : '#e5e7eb',
+      borderWidth: 1,
+      padding: [8, 12],
+      textStyle: { color: isDarkMode ? '#f3f4f6' : '#1f2937' },
+      extraCssText: 'box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 8px;'
     },
     legend: {
       data: data.seriesData.map(s => s.name),
       bottom: 0,
-      textStyle: theme.legend.textStyle,
+      icon: 'roundRect',
+      textStyle: {
+        ...theme.legend.textStyle,
+        fontSize: 12
+      },
+      itemGap: 15
     },
-    grid: { top: '17%', left: '3%', right: '4%', bottom: '15%', containLabel: true },
+    grid: {
+      top: 90,
+      left: 10,
+      right: 20,
+      bottom: 90,
+      containLabel: true
+    },
     xAxis: {
       type: 'category',
       data: data.xAxisData,
+      axisTick: { show: false },
+      axisLine: { show: false },
       axisLabel: {
         rotate: 45,
-        interval: 0
+        fontSize: 11,
+        color: theme.xAxis.axisLine.lineStyle.color
       }
     },
     yAxis: {
       type: 'value',
-      name: yAxisName
+      name: yAxisName,
+      nameTextStyle: {
+        fontSize: 10,
+        align: 'right',
+        color: theme.yAxis.axisLabel.color
+      },
+      axisLabel: {
+        fontSize: 11,
+        color: theme.yAxis.axisLabel.color
+      },
+      splitLine: {
+        lineStyle: {
+          color: isDarkMode ? '#374151' : '#f1f5f9',
+          type: 'dashed'
+        }
+      }
     },
     series: data.seriesData.map(seriesItem => ({
       name: seriesItem.name,
       type: 'bar',
-      stack: 'total', // Crucial for stacking
-      emphasis: { focus: 'series' },
+      stack: 'total',
       data: seriesItem.data,
-      label: {
-        show: false,
+      label: { show: false },
+      itemStyle: {
+        borderRadius: [2, 2, 0, 0] // Very subtle rounding
+      },
+      barMaxWidth: 40,
+      emphasis: {
+        focus: 'series',
+        itemStyle: {
+          shadowBlur: 0, // Clean flat hover
+          opacity: 0.9
+        }
       }
     }))
   };

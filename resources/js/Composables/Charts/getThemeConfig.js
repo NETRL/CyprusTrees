@@ -11,7 +11,8 @@ export function getThemeConfig(isDarkMode) {
   return {
     title: {
       textStyle: {
-        color: textColor
+        color: textColor,
+        lineHeight: 22,
       }
     },
     legend: {

@@ -58,7 +58,7 @@ class DashboardController extends Controller
   }
 
   /** --------------------------
-   * Snapshot KPIs (current state)
+   * Snapshot KPIs
    * ------------------------- */
 
   private function buildSnapshotKpis(): array
@@ -68,7 +68,7 @@ class DashboardController extends Controller
       return [
         'owner_distribution'     => $this->kpiOwnerDistributionSnapshot(),
         'dbh_distribution'       => $this->kpiDbhDistributionSnapshot(),
-        'health_by_neighborhood' => $this->kpiHealthByNeighborhoodSnapshot(10), // keep internal
+        'health_by_neighborhood' => $this->kpiHealthByNeighborhoodSnapshot(10),
         'co2'                    => $this->kpiCo2Snapshot(),
         'co2_by_neighborhood'    => $this->kpiCo2ByNeighborhood(12),
         'co2_by_dbh_bins'        => $this->kpiCo2ByDbhBins(),
