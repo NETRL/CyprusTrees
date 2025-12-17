@@ -51,12 +51,12 @@ const CUSTOM_VECTOR_STYLES = [
         styleUrl: `https://api.maptiler.com/maps/019abffb-04c2-7927-8c58-ff64512e9321/style.json?key=${MAPTILER_KEY}`,
         preview: '/storage/images/map-custom.png',
     },
-    {
-        id: 'lightStreets',
-        name: 'Light Streets',
-        styleUrl: `https://api.maptiler.com/maps/019ac206-e7bc-7796-8930-3a253cad08d9/style.json?key=${MAPTILER_KEY}`,
-        preview: '/storage/images/map-default.png',
-    },
+    // {
+    //     id: 'lightStreets',
+    //     name: 'Light Streets',
+    //     styleUrl: `https://api.maptiler.com/maps/019ac206-e7bc-7796-8930-3a253cad08d9/style.json?key=${MAPTILER_KEY}`,
+    //     preview: '/storage/images/map-default.png',
+    // },
     {
         id: 'landcapeDark',
         name: 'Landscape Dark',

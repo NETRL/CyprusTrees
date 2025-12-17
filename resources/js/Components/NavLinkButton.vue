@@ -1,12 +1,10 @@
 <template>
-    <div>
-        <Link :href="href" type="button" as="button" :title="title"
-            :aria-label="title" class="relative inline-flex items-center justify-center p-2 rounded-lg border bg-white text-gray-500 transition-colors
-           hover:bg-brand-100 hover:text-brand-700 border-gray-200
-           dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-brand-800 dark:hover:text-white">
-        <slot></slot>
-        </Link>
-    </div>
+  <Link 
+    :href="href" 
+    class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-3 text-xs font-bold uppercase tracking-wider text-slate-600 shadow-sm transition-all hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-brand-900 dark:hover:bg-brand-950 dark:hover:text-brand-400"
+  >
+    <slot />
+  </Link>
 </template>
 
 

@@ -1,36 +1,51 @@
 <template>
   <div class="relative" ref="dropdownRef">
-    <button class="flex items-center text-gray-700 dark:text-gray-400" @click.prevent="toggleDropdown">
-      <span class="mr-3 overflow-hidden rounded-full h-11 w-11">
-        <img src="https://i.pravatar.cc/300" alt="User" />
-      </span>
-      <span class="block mr-1 font-medium text-theme-sm">{{ $page.props.auth.user.name }} </span>
-      <ChevronDownIcon :class="{ 'rotate-180': dropdownOpen }" />
+    <button
+      class="group flex items-center gap-2 rounded-lg border border-transparent p-1 transition-all hover:border-slate-200 hover:bg-slate-50 dark:hover:border-slate-700 dark:hover:bg-slate-800"
+      @click.prevent="toggleDropdown">
+      <div
+        class="h-9 w-9 overflow-hidden rounded-lg ring-2 ring-white transition-all group-hover:ring-brand-100 dark:ring-slate-900">
+        <img src="https://i.pravatar.cc/100" alt="User" class="h-full w-full object-cover" />
+      </div>
+      <div class="hidden pr-2 text-left lg:block">
+        <p class="text-xs font-bold text-slate-900 dark:text-white leading-tight">
+          {{ $page.props.auth.user?.first_name }} {{ $page.props.auth.user?.last_name }}
+        </p>
+        <!-- <p class="text-[10px] font-medium text-slate-400 uppercase tracking-tight">Admin Account</p> -->
+      </div>
+      <ChevronDownIcon
+        :class="['h-4 w-4 text-slate-400 transition-transform duration-200', { 'rotate-180': dropdownOpen }]" />
     </button>
 
-    <!-- Dropdown Start -->
-    <div v-if="dropdownOpen"
-      class="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark">
-      <div class="flex justify-between">
-        <div>
-          <span class="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            {{ $page.props.auth.user?.first_name }} {{ $page.props.auth.user?.last_name }}
-          </span>
-          <span class="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            {{ $page.props.auth.user.email }}
-          </span>
+    <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95"
+      enter-to-class="transform opacity-100 scale-100">
+      <div v-if="dropdownOpen"
+        class="absolute right-0 mt-3 w-64 origin-top-right rounded-xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-800">
+        <div class="flex items-center justify-between border-b border-slate-100 p-3 pb-4 dark:border-slate-700/50">
+          <div class="flex flex-col">
+            <span class="text-sm font-bold text-slate-900 dark:text-white">
+              {{ $page.props.auth.user?.first_name }} {{ $page.props.auth.user?.last_name }}
+            </span>
+            <span class="text-xs text-slate-500 truncate w-32">
+              {{ $page.props.auth.user.email }}
+            </span>
+          </div>
+          <ThemeToggler />
         </div>
-        <ThemeToggler/>
-      </div>
 
-      <ul class="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
-        <li v-for="item in menuItems" :key="item.href">
-          <UserMenuNavLink :item="item" :active="route().current(item.href)" @click="toggleDropdown" />
-        </li>
-      </ul>
-      <UserMenuNavLink :item="logOutItem" :active="route().current(logOutItem.href)" :method="'post'" />
-    </div>
-    <!-- Dropdown End -->
+        <ul class="space-y-1 py-2">
+          <li v-for="item in menuItems" :key="item.href">
+            <UserMenuNavLink :item="item" :active="route().current(item.href)" @click="toggleDropdown"
+              class="flex items-center rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-brand-600 dark:text-slate-400 dark:hover:bg-slate-700/50" />
+          </li>
+        </ul>
+
+        <div class="mt-1 border-t border-slate-100 pt-1 dark:border-slate-700/50">
+          <UserMenuNavLink :item="logOutItem" :method="'post'"
+            class="flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20" />
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -51,7 +66,7 @@ const menuItems = [
   // { href: '/', icon: InfoCircleIcon, text: 'Support' },
 ]
 
-const logOutItem =  { href: 'logout', icon: LogoutIcon, text: 'Sign out' }
+const logOutItem = { href: 'logout', icon: LogoutIcon, text: 'Sign out' }
 
 
 const toggleDropdown = () => {
@@ -63,7 +78,7 @@ const closeDropdown = () => {
 }
 
 const handleClickOutside = (event) => {
-  if (dropdownRef.value && !dropdownRef.value.contains(event.target) ) {
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
     closeDropdown()
   }
 }

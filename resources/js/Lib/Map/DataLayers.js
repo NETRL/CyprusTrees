@@ -286,7 +286,7 @@ export async function loadNeighborhoodsLayer(mapInstance, { onDataLoaded, onNeig
       source: 'neighborhoods',
       paint: {
         'line-color': '#1d4ed8',
-        'line-width': 0,
+        'line-width': 0.0,
       },
     })
   } else {
