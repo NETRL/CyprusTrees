@@ -41,13 +41,15 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
       paint: {
         'circle-radius': [
           'interpolate', ['linear'], ['zoom'],
-          10, 2,   // at zoom 10
-          14, 2,   // at zoom 14
-          17, 4    // at zoom 17
+          8, 1,   // zoom starts from 0 (full map) to 22(full zoomed)
+          14, 1.25,
+          20, 6,   
         ],
         'circle-color': '#16a34a',
         'circle-stroke-width': 10,
         'circle-stroke-color': 'rgba(0,0,0,0)',
+        'circle-opacity': 1
+
       },
     })
 

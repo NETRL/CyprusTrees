@@ -103,6 +103,7 @@ onMounted(async () => {
                 setInitialFilter: (val) => (selectedFilter.value = val),
             }),
         ])
+
         if (map.value && map.value.getLayer('trees-circle')) {
             visualiseTreeData(selectedFilter.value ?? 'status')
         }
@@ -127,7 +128,6 @@ watch(
 )
 
 watch(hoveredData, data => {
-
     if (!data) {
         toggleTreeCard.value = false
         return

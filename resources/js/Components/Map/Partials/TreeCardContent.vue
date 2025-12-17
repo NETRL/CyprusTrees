@@ -1,53 +1,60 @@
 <template>
     <!-- Scrollable Content -->
     <div
-        class="overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
+        class="overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent w-full">
 
         <!-- Header Section -->
-        <div
-            class="sticky top-0 z-10 bg-gradient-to-br from-emerald-600 to-teal-600 p-5 border-b border-emerald-700/50">
-            <!-- Status Badge -->
-            <div class="flex items-center justify-between mb-3">
+        <div class="sticky top-0 z-10 transition-colors duration-300
+            bg-white dark:bg-gray-900 backdrop-blur-md 
+            border-b border-gray-200 dark:border-gray-800 px-4 lg:py-4">
+            <div class="flex items-center justify-between mb-2">
                 <span :class="[
-                    'px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide',
-                    isSelected ? 'bg-white/20 text-white' : 'bg-white/10 text-white/80'
+                    'px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border',
+                    isSelected
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800'
+                        : 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
                 ]">
                     {{ isSelected ? 'Selected' : 'Hovering' }}
                 </span>
-                <span class="text-xs text-white/70">
+                <span class="text-[10px] font-mono text-gray-400 dark:text-gray-500">
                     ID: {{ activeTree.id }}
                 </span>
             </div>
 
-            <!-- Species Name -->
-            <div class="space-y-1">
-                <h3 class="text-2xl font-bold text-white leading-tight">
+            <div class="mb-4">
+                <h3 class="text-xl font-extrabold text-gray-900 dark:text-white leading-tight">
                     {{ speciesData?.common_name || 'Unknown' }}
                 </h3>
-                <p class="text-sm text-white/80 italic">
+                <p class="text-xs font-medium text-emerald-600 dark:text-emerald-400 italic">
                     {{ speciesData?.latin_name || 'Species not identified' }}
                 </p>
             </div>
 
-            <!-- Quick Stats -->
-            <div class="grid grid-cols-3 gap-2 mt-4">
-                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-2 text-center">
-                    <div class="text-xs text-white/70 mb-0.5">Height</div>
-                    <div class="text-lg font-bold text-white">{{ activeTree.height_m || '—' }}m</div>
-                </div>
-                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-2 text-center">
-                    <div class="text-xs text-white/70 mb-0.5">DBH</div>
-                    <div class="text-lg font-bold text-white">{{ activeTree.dbh_cm || '—' }}cm</div>
-                </div>
-                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-2 text-center">
-                    <div class="text-xs text-white/70 mb-0.5">Canopy</div>
-                    <div class="text-lg font-bold text-white">{{ activeTree.canopy_diameter_m || '—' }}m</div>
-                </div>
-            </div>
         </div>
 
         <!-- Content Sections -->
         <div class="p-5 space-y-4">
+            <div class="grid grid-cols-3 gap-2">
+                <div
+                    class="bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-lg p-2 text-center">
+                    <div class="text-[10px] uppercase tracking-tighter text-gray-500 dark:text-gray-400">Height</div>
+                    <div class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ activeTree.height_m || '—' }}m
+                    </div>
+                </div>
+                <div
+                    class="bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-lg p-2 text-center">
+                    <div class="text-[10px] uppercase tracking-tighter text-gray-500 dark:text-gray-400">DBH</div>
+                    <div class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ activeTree.dbh_cm || '—' }}cm
+                    </div>
+                </div>
+                <div
+                    class="bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-lg p-2 text-center">
+                    <div class="text-[10px] uppercase tracking-tighter text-gray-500 dark:text-gray-400">Canopy</div>
+                    <div class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ activeTree.canopy_diameter_m ||
+                        '—'
+                        }}m</div>
+                </div>
+            </div>
 
             <!-- Location Info -->
             <div class="space-y-2">
