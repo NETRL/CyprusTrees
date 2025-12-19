@@ -25,6 +25,8 @@ import AppHeader from '@/Layouts/AppHeader.vue';
 import { useSidebar } from '@/Composables/useSidebar';
 import Backdrop from '@/Components/Layout/Backdrop.vue';
 import { useCustomToast } from '@/Composables/useCustomToast';
+import { onMounted } from 'vue';
+import { syncTimezoneOnce } from '@/Composables/useTimezone';
 
 
 const darkMode = 'class';
@@ -49,6 +51,10 @@ defineProps({
 const { isExpanded, isHovered } = useSidebar()
 
 useCustomToast();
+
+onMounted(() => {
+    syncTimezoneOnce()
+})
 
 
 

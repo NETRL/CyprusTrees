@@ -10,7 +10,9 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HealthAssessmentController;
 use App\Http\Controllers\MaintenanceEventsController;
 use App\Http\Controllers\MaintenanceTypesController;
+use App\Http\Controllers\MeTimezoneController;
 use App\Http\Controllers\NeigborhoodController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\PlantingEventController;
 use App\Http\Controllers\ProfileController;
@@ -22,6 +24,7 @@ use App\Http\Controllers\UserAddressController;
 use App\Http\Controllers\UserReportsController;
 use App\Models\ReportType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -37,12 +40,24 @@ Route::get('/', function (Request $request) {
 
 
 
+Route::middleware(['auth'])->post('/me/timezone', [MeTimezoneController::class, 'store'])->name('me.timezone.store');
+
 
 
 Route::middleware('auth', '2fa')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['verified'])->name('dashboard');
     Route::get('/dashboard/methodology', [DashboardController::class, 'methodology'])->name('dashboard.methodology');
+
+
+    Route::get('/notifications', [NotificationController::class, 'index'])
+        ->name('notifications.index');
+
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'read'])
+        ->name('notifications.read');
+
+    Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])
+        ->name('notifications.readAll');
 
 
     Route::resource('users', UserController::class)->except(['create', 'edit']);

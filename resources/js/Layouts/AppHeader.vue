@@ -41,7 +41,7 @@
         <div class="flex items-center gap-2 2xsm:gap-3">
           <NavLinkButton v-if="$page.component == 'Map/MapView'" :href="route('dashboard')">Go to Dashboard
           </NavLinkButton>
-          <!-- <NotificationMenu /> -->
+          <NotificationMenu />
         </div>
         <UserMenu />
       </div>
@@ -61,7 +61,7 @@ import { ref } from 'vue'
 import { useSidebar } from '@/Composables/useSidebar'
 // import SearchBar from '@/Components/Layout/Header/SearchBar.vue'
 import HeaderLogo from '@/Components/Layout/Header/HeaderLogo.vue'
-// import NotificationMenu from '@/Components/Layout/Header/NotificationMenu.vue'
+import NotificationMenu from '@/Components/Layout/Header/NotificationMenu.vue'
 import UserMenu from '@/Components/Layout/Header/UserMenu.vue'
 import { useAuth } from '@/Composables/useAuth'
 import NavLink from '@/Components/NavLink.vue'

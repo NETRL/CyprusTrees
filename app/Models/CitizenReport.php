@@ -7,6 +7,7 @@ use App\Models\Traits\BaseModelTrait;
 use App\Models\Traits\Paginatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class CitizenReport extends Model
 {
@@ -14,7 +15,11 @@ class CitizenReport extends Model
     use HasFactory, BaseModelTrait, Paginatable;
 
     protected $primaryKey = 'report_id';
+
     public $timestamps = false;
+
+    protected $appends = ['tree_label', 'description_preview'];
+
 
     protected $fillable = [
         'report_type_id',
@@ -112,5 +117,28 @@ class CitizenReport extends Model
     public static function getReportStatusOptions(): array
     {
         return ReportStatus::options();
+    }
+
+
+
+    public function getTreeLabelAttribute(): string
+    {
+        if (!$this->tree_id) return '-';
+        if (!$this->relationLoaded('tree') || !$this->tree) return (string) $this->tree_id;
+
+        $species = $this->tree->species;
+        $common  = $species?->common_name ?? '';
+        $latin   = $species?->latin_name ?? '';
+        $tags    = $this->tree->tags_label ?? '';
+
+        $label = trim($this->tree_id . ' - ' . $common . ' (' . $latin . ') ' . $tags);
+        return $label !== '' ? $label : (string) $this->tree_id;
+    }
+
+    public function getDescriptionPreviewAttribute(): string
+    {
+        $text = (string)($this->description ?? '');
+        $text = preg_replace('/\s+/u', ' ', trim($text)); // collapse whitespace
+        return $text === '' ? '-' : Str::limit($text, 140); // tune length
     }
 }

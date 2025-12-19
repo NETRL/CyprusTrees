@@ -10,6 +10,7 @@ use App\Models\Photo;
 use App\Models\ReportType;
 use App\Models\Tree;
 use App\Models\User;
+use App\Notifications\CitizenReportStatusChanged;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,7 +34,7 @@ class CitizenReportController extends Controller
         $perPage = $request->integer('per_page', 10);
 
         $query = CitizenReport::query()
-            ->with(['type', 'tree', 'creator', 'photo'])
+            ->with(['type', 'tree.species:id,common_name,latin_name', 'creator', 'photo'])
             ->setUpQuery();        // this applies search + sort based on request params
 
 
@@ -143,10 +144,31 @@ class CitizenReportController extends Controller
             "description"   => 'nullable|string|max:5000',
             "status"        => 'nullable|string|max:20',
             "created_at"    => 'nullable|date',
-            "resolved_at"   => 'nullable|date',
+            // "resolved_at"   => 'nullable|date',
         ]);
 
+        // If you consider "resolved" a status, enforce resolved_at automatically:
+        if (($validated['status'] ?? null) === ReportStatus::RESOLVED->value) {
+            $validated['resolved_at'] = $validated['resolved_at'] ?? now();
+        }
+
         $citizenReport->update($validated);
+
+        if (
+            $citizenReport->wasChanged('status') &&
+            (string) $citizenReport->status === ReportStatus::RESOLVED->value &&
+            (string) $citizenReport->getOriginal('status') !== ReportStatus::RESOLVED->value
+        ) {
+            $creator = $citizenReport->creator ?? User::find($citizenReport->created_by);
+            if ($creator) {
+                $creator->notify(new CitizenReportStatusChanged(
+                    $citizenReport,
+                    (string) $citizenReport->getOriginal('status'),
+                    (string) $citizenReport->status
+                ));
+            }
+        }
+
 
         $request->session()->flash('message', [
             'type'    => 'success',

@@ -6,6 +6,7 @@ use App\Models\MaintenanceEvent;
 use App\Models\MaintenanceType;
 use App\Models\Tree;
 use App\Models\User;
+use App\Notifications\MaintenanceEventAssigned;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +33,7 @@ class MaintenanceEventsController extends Controller
                 'tree',
                 'performer',
             ])
+            ->orderBy('event_id', 'desc')
             ->setUpQuery();
 
         $tableData = $query->paginate($perPage)->withQueryString();
@@ -43,7 +45,7 @@ class MaintenanceEventsController extends Controller
                     ? ($e->tree_id . ' - ' . $e->tree->species?->common_name . ' (' . $e->tree->species?->latin_name . ') ' . ($e->tree->tags_label ?? ''))
                     : (string) $e->tree_id,
 
-                'type_label' => $e->type ? ($e->type_id . ' - ' . $e->type->name) : (string) $e->type_id,
+                'type_label' => $e->type ? ($e->type->name) : (string) $e->type_id,
 
                 'performer_label' => $e->performer
                     ? ($e->performed_by . ' - ' . trim(($e->performer->first_name ?? '') . ' ' . ($e->performer->last_name ?? '')))
@@ -78,7 +80,13 @@ class MaintenanceEventsController extends Controller
             "notes"          => 'nullable|string|max:5000',
         ]);
 
-        MaintenanceEvent::create($validated);
+        $event = MaintenanceEvent::create($validated);
+
+        $performer = $event->performer ?? User::find($event->performed_by);
+
+        if ($performer && $event->performed_at) {
+            $performer->notify(new MaintenanceEventAssigned($event, 'new_event'));
+        }
 
         $request->session()->flash('message', [
             'type'    => 'success',
@@ -101,7 +109,16 @@ class MaintenanceEventsController extends Controller
             "notes"          => 'nullable|string|max:5000',
         ]);
 
+
         $maintenanceEvent->update($validated);
+
+        if ($maintenanceEvent->performed_by && $maintenanceEvent->performed_at) {
+            if ($maintenanceEvent->wasChanged('performed_by')) {
+                $maintenanceEvent->performer->notify(new MaintenanceEventAssigned($maintenanceEvent, 'new_event'));
+            } elseif ($maintenanceEvent->wasChanged('performed_at')) {
+                $maintenanceEvent->performer->notify(new MaintenanceEventAssigned($maintenanceEvent, 'new_time'));
+            }
+        }
 
         $request->session()->flash('message', [
             'type'    => 'success',

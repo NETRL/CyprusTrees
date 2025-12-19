@@ -1,7 +1,8 @@
 <template>
   <div>
     <ReusableDataTable routeResource="citizenReports" :columns="dataColumns" :tableData="tableData"
-      inertiaKey="tableData" pageTitle="Manage My Reports" :showToolbar="false" :showEditButton="false" :showDeleteButton="false">
+      inertiaKey="tableData" pageTitle="Manage My Reports" :showToolbar="false" :showEditButton="false"
+      :showDeleteButton="false">
 
 
       <template #columns="{ isColumnVisible }">
@@ -14,13 +15,15 @@
 
         <Column v-if="isColumnVisible('report_type_id')" field="report_type_id" header="Report Type" sortable>
           <template #body="{ data }">
-            {{ typeLabel(data) }}
+            {{ data.type_label }}
           </template>
         </Column>
 
-        <Column v-if="isColumnVisible('tree_id')" field="tree_id" header="Tree" sortable>
+        <Column v-if="isColumnVisible('tree_id')" field="tree_label" header="Tree" sortable>
           <template #body="{ data }">
-            {{ treeLabel(data) }}
+            <span class="block max-w-152 truncate" v-tooltip.top="data.tree_label">
+              {{ data.tree_label ?? '-' }}
+            </span>
           </template>
         </Column>
 
@@ -39,9 +42,20 @@
         </Column>
 
 
-        <Column v-if="isColumnVisible('description')" field="description" header="Description" sortable>
+        <Column v-if="isColumnVisible('description')" header="Description">
           <template #body="{ data }">
-            {{ data.description ?? '-' }}
+            <div class="flex items-start gap-2 min-w-0">
+              <div class="min-w-0 max-w-184 text-sm text-slate-700 dark:text-slate-200 line-clamp-2"
+                v-tooltip.top="data.description">
+                {{ data.description_preview ?? '-' }}
+              </div>
+
+              <button v-if="data.description && data.description.length > 140"
+                class="shrink-0 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-100"
+                @click.stop="openReportDetails(data)" type="button">
+                More
+              </button>
+            </div>
           </template>
         </Column>
 
@@ -60,7 +74,7 @@
               <!-- Thumbnail -->
               <div @click.stop="openPreview(data.photo)"
                 class="relative w-12 h-12 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 cursor-pointer hover:ring-2 hover:ring-emerald-500 transition-all group">
-                <img :src="data.url || '/placeholder-tree.jpg'" :alt="`Tree ${data.tree_id} photo`"
+                <img :src="data.photo?.url || '/placeholder-tree.jpg'" :alt="`Tree ${data.tree_id} photo`"
                   class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200" />
                 <div
                   class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
@@ -104,7 +118,9 @@
       </template>
 
     </ReusableDataTable>
+      <UserReportPreview v-model:visible="formVisible" :dataRow="selected" />
     <PhotoPreview v-model:visible="previewVisible" :photo="previewPhoto" />
+
   </div>
 </template>
 
@@ -117,6 +133,7 @@ import { useDateFormatter } from "@/Composables/useDateFormatter";
 import NavLinkButton from "@/Components/NavLinkButton.vue";
 import { Eye, ImageIcon, ImageOff, ExternalLink } from 'lucide-vue-next';
 import PhotoPreview from "@/Pages/Photo/Partials/PhotoPreview.vue";
+import UserReportPreview from "@/Pages/User/Report/Partials/UserReportPreview.vue";
 
 
 defineOptions({
@@ -131,35 +148,29 @@ const props = defineProps({
   dataColumns: {
     type: Object,
   },
-  treeData: {
-    type: Array,
-    default: () => [],
-  },
-  typeData: {
-    type: Array,
-    default: () => [],
-  },
-  userData: {
-    type: Array,
-    default: () => [],
-  },
   reportStatus: {
     type: Array,
     default: () => [],
   },
-  reportTypes: {
-    type: Object,
-    default: null,
-  },
-
-
 });
+
+
+console.log(props.tableData);
 
 const { formatDate } = useDateFormatter();
 
 // --- preview state ---
 const previewVisible = ref(false)
 const previewPhoto = ref(null)
+
+const selected = ref(null)
+const formVisible = ref(false)
+
+function openReportDetails(row) {
+  selected.value = row
+  formVisible.value = true
+}
+
 
 async function openPreview(photo) {
   previewPhoto.value = photo
@@ -181,28 +192,5 @@ const statusInfo = (status) => {
     color: statusColors[status] || ''
   }
 }
-const treeLabel = (row) => {
-  const id = row.tree_id;
-  const tree = row.tree;
-  if (!id && !tree) return '-';
-  if (!tree) return id;
-
-  const species = row.tree.species;
-  const parts = [];
-  parts.push(`${id} - ${species.common_name} (${species.latin_name}) ${tree.tags_label}`);
-
-  return parts.join(' ');
-}
-
-const typeLabel = (row) => {
-  const id = row.report_type_id;
-  const type = props.reportTypes.find(item => item.id === id)
-
-  if (!id && !type) return '-';
-
-  if (!type) return id;
-
-  return type.name;
-};
 
 </script>

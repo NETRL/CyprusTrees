@@ -35,9 +35,38 @@ class AppServiceProvider extends ServiceProvider
         //     return $request->user()->hasPermissionTo('logs.view');
         // });
 
-        Inertia::share('userTz', function () {
-            return optional(Auth::user())->timezone
-                ?? session('user_timezone', 'UTC');
+        Inertia::share('notifications', function () {
+            $user = Auth::user();
+            if (!$user) return null;
+
+
+            // Keep payload small for every request
+            $latest = $user->notifications()
+                ->latest()
+                ->take(20)
+                ->get()
+                ->map(fn($n) => [
+                    'id' => $n->id,
+                    'read_at' => $n->read_at,
+                    'created_at' => $n->created_at,
+                    'data' => array_merge($n->data ?? [], [
+                        'type_label' => $this->notificationTypeLabel($n->data['type'] ?? null),
+                    ]),
+                ]);
+
+            return [
+                'unread_count' => $user->unreadNotifications()->count(),
+                'latest' => $latest,
+            ];
         });
+    }
+
+
+    private function notificationTypeLabel(?string $type): string
+    {
+        return match ($type) {
+            'citizen_report.status_changed' => 'Citizen report',
+            default => 'General',
+        };
     }
 }

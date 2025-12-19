@@ -102,4 +102,9 @@ class MaintenanceEvent extends Model
     {
         return $this->belongsTo(User::class, 'performed_by', 'id');
     }
+
+    public function performedAtIn(string $tz)
+    {
+        return $this->performed_at?->clone()->timezone($tz);
+    }
 }

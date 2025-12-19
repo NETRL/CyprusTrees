@@ -8,6 +8,9 @@ layer(base);
 
 @custom-variant dark (&:is(.dark *));
 
+.column-wrapper{
+    @apply  max-w-[300px] overflow-scroll truncate;
+}
 /* Calendar */
 .fc-scrollgrid-sync-table{
      @apply min-w-[calc(100vw-6rem)]! text-xs! md:text-lg;

@@ -200,12 +200,6 @@ const formVisible = ref(false);
 const formAction = ref('');      // 'Create' or 'Edit'
 const formRow = ref(null);       // current row
 
-const openCreateForm = () => {
-  formRow.value = null;
-  formAction.value = 'Create';
-  formVisible.value = true;
-};
-
 const openEditForm = (row) => {
   formRow.value = row;
   formAction.value = 'Edit';

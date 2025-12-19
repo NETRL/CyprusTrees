@@ -162,7 +162,7 @@
                                     <div class="hidden sm:block w-3.5 h-3.5 rounded-full ring-4 ring-slate-50 dark:ring-slate-950 ml-2 z-10"
                                         :class="[eventBulletColors(event)]"></div>
                                     <span class="text-sm font-semibold text-slate-900 dark:text-slate-200 block">
-                                        {{ dayEventDateFormatter(event.start) }}
+                                        {{ formatDate(event.start) }}
                                     </span>
                                 </div>
 
@@ -250,6 +250,7 @@ import {
 import IconButton from './IconButton.vue'
 import { ChevronLeftIcon, ChevronRightIcon } from '@/Icons'
 import { useCalendarUrlState } from '@/Composables/useCalendarUrlState'
+import { useDateFormatter } from '@/Composables/useDateFormatter'
 
 const emit = defineEmits(['day-click'])
 
@@ -824,6 +825,8 @@ function isSameDay(a, b) {
         a.getDate() === b.getDate()
     )
 }
+
+const {formatDate} = useDateFormatter()
 
 function dayEventDateFormatter(val) {
     const d = normalizeToDate(val)

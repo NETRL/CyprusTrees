@@ -15,7 +15,7 @@ export function useDateFormatter() {
   // 2. Or leave null to ALWAYS use browser timezone:
   //      const preferredTimeZone = null
   //
-  const preferredTimeZone = 'Europe/Nicosia'   // <--- set your default here
+  const preferredTimeZone = null  // <--- set your default here
 
 
   // --- Fallback to browser timezone ---

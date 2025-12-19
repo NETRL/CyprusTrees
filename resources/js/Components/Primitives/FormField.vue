@@ -34,7 +34,7 @@
         :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', inputBase]" v-bind="$attrs"
         inputClass="w-full border-transparent! focus:border-brand-300! focus:outline-hidden! focus:ring-1! focus:ring-brand-500/60! rounded-lg! text-sm! text-gray-800! placeholder:text-gray-400! dark:text-white/90! dark:placeholder:text-white/30! dark:focus:border-brand-800!" />
     <Textarea v-else-if="component === 'Textarea'" :id="name"
-        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle]" v-bind="$attrs" />
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle, 'h-25!']" v-bind="$attrs" />
     <FileUpload v-else-if="component === 'File'" :id="name"
         :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle]" style="width:130px;"
         v-bind="$attrs" />
@@ -43,7 +43,7 @@
         locale="en-GB" v-bind="$attrs"
         inputClass="w-full border-y-transparent! border-l-transparent! border-r-gray-700! focus:border-brand-300! focus:outline-hidden! focus:ring-1! focus:ring-brand-500/60! text-sm!text-gray-800! placeholder:text-gray-400! dark:text-white/90! dark:placeholder:text-white/30! dark:focus:border-brand-800!" />
     <InputSwitch v-else-if="component === 'InputSwitch'" :id="name"
-        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle]" v-bind="$attrs" />
+        :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '', defaultStyle, ]" v-bind="$attrs" />
     <Checkbox v-else-if="component === 'Checkbox'" :id="name"
         :class="[shouldDisplayErrors ? 'invalid-focus-outline' : '',]" v-bind="$attrs" />
     <CustomSlider v-else-if="component === 'CustomSlider'" :id="name" v-bind="$attrs" />

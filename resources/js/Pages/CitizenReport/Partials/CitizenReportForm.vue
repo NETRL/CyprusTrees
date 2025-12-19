@@ -43,10 +43,10 @@
                 <FormField component="Calendar" v-model="formData.created_at" :displayErrors="displayErrors"
                     label="Created At" name="created_at" />
             </div>
-            <div class="col-span-6">
+            <!-- <div class="col-span-6 ">
                 <FormField component="Calendar" v-model="formData.resolved_at" :displayErrors="displayErrors"
-                    label="Created At" name="resolved_at" />
-            </div>
+                    label="Resolved At" name="resolved_at" />
+            </div> -->
         </form>
 
         <template #footer>
@@ -156,17 +156,17 @@ const formData = reactive({
     description: '',
     status: null,
     created_at: null,
-    resolved_at: null,
+    // resolved_at: null,
 })
 
-watch(() => formData.status,
-    (v) => {
-        if(formData.status === 'resolved'){
-            formData.resolved_at = new Date();
-        }else{
-            formData.resolved_at = null;
-        }
-    })
+// watch(() => formData.status,
+//     (v) => {
+//         if(formData.status === 'resolved'){
+//             formData.resolved_at = new Date();
+//         }else{
+//             formData.resolved_at = null;
+//         }
+//     })
 
 const displayErrors = ref(false)
 
@@ -189,7 +189,7 @@ const initForm = () => {
     formData.description = row?.description ?? ''
     formData.status = row?.status ?? null
     formData.created_at = parseDate(row?.created_at)
-    formData.resolved_at = parseDate(row?.resolved_at)
+    // formData.resolved_at = parseDate(row?.resolved_at)
 }
 
 const submit = () => {
