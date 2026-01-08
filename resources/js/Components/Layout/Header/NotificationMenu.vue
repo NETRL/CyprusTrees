@@ -11,26 +11,34 @@
     </button>
 
     <!-- Dropdown Start -->
-    <div v-if="dropdownOpen"
-      class="absolute right-60 mt-[17px] flex h-auto w-[350px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark sm:w-[361px] lg:right-0">
+    <div v-if="dropdownOpen" class="
+    fixed md:absolute z-50
+    inset-x-3 top-[72px] md:inset-x-auto md:top-auto md:mt-[17px]
+    md:left-auto md:right-0 md:translate-x-0
+    w-auto md:w-[361px]
+    flex flex-col
+    max-h-[calc(100vh-88px)] md:max-h-[70vh]
+    rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg
+    dark:border-gray-800 dark:bg-gray-dark
+  ">
       <div class="flex items-center justify-between pb-3 mb-3 border-b border-gray-100 dark:border-gray-800">
         <h5 class="text-lg font-semibold text-gray-800 dark:text-white/90">Notification</h5>
 
-        <button @click="closeDropdown" class="text-gray-500 dark:text-gray-400">
+        <button @click="closeDropdown" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
           <CloseIcon />
         </button>
       </div>
 
-      <ul class="flex flex-col h-auto overflow-y-auto custom-scrollbar">
+      <ul class="flex-1 overflow-y-auto custom-scrollbar min-h-0">
         <li v-for="n in notifications" :key="n.id" @click.prevent="handleItemClick(n)">
-          <a class="flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
+          <a class="flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5 cursor-pointer transition-colors"
             href="#">
             <div class="block w-full">
-              <span class=" mb-1.5 block text-theme-sm text-gray-500 dark:text-gray-400">
+              <span class="mb-1.5 block text-theme-sm text-gray-500 dark:text-gray-400">
                 <span class="font-medium text-gray-800 dark:text-white/90">
                   {{ n.data?.title ?? 'Notification' }}
                 </span>
-                <span class="block">
+                <span class="block mt-1">
                   {{ n.data?.message ?? '' }}
                 </span>
               </span>
@@ -48,7 +56,7 @@
       </ul>
 
       <Link to="#"
-        class="mt-3 flex justify-center rounded-lg border border-gray-300 bg-white p-3 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200"
+        class="mt-3 flex justify-center rounded-lg border border-gray-300 bg-white p-3 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200 transition-colors"
         @click="handleViewAllClick">
         View All Notification
       </Link>
