@@ -1,32 +1,37 @@
 <template>
     <MapSidebar :treeData="treeData" :neighborhoodData="neighborhoodData" :selectedData="selectedData"
         :hiddenCategories="hiddenCategories" :currentMode="selectedFilter" @toggleCategory="onToggleCategory" />
+
     <div ref="mapContainer" class="map-container w-full h-full"></div>
 
-    <TreeCard :hovered="hoveredData" :selected="selectedData" @update:selected="selectedData = $event" />
+    <button v-if="shouldShowButton" type="button" 
+        class="absolute right-4 bottom-7 z-30 grid h-11 w-11 place-items-center rounded-xl bg-white/90 shadow ring-1 ring-slate-200 backdrop-blur dark:bg-slate-900/90 dark:ring-slate-700 transition-colors"
+        :disabled="position.isActive && !position.hasFix" @click="onFloatingButtonClick" aria-label="Locate / Recenter"
+        title="Locate / Recenter">
+        <component :is="iconComponent" class="h-5 w-5" :class="iconClass" />
+    </button>
 
-    <!-- Loading overlay -->
+    <TreeCard :hovered="hoveredData" :selected="selectedData" @update:selected="selectedData = $event" />
     <MapLoadingOverlay :isLoading="isLoading" />
 </template>
 
 <script setup>
-import { onMounted, ref, onBeforeUnmount, watch, registerRuntimeCompiler } from 'vue'
+import { onMounted, ref, onBeforeUnmount, watch, computed, nextTick } from 'vue'
 import MapSidebar from '@/Components/Map/Partials/MapSidebar.vue'
 import MapLoadingOverlay from '@/Components/Map/Partials/MapLoadingOverlay.vue'
+import TreeCard from '@/Components/Map/Partials/TreeCard.vue'
 
 import { initMap } from '@/Lib/Map/InitMap'
 import { setupBaseLayers } from '@/Lib/Map/SetupBaseLayers'
 import { loadTreesLayer, loadNeighborhoodsLayer } from '@/Lib/Map/DataLayers'
 import { useMapFilter } from '@/Composables/useMapFilter'
 import { useMapColors } from '@/Composables/useMapColors'
-import TreeCard from '@/Components/Map/Partials/TreeCard.vue'
 
+import { useRealTimePosition } from '@/Lib/Map/useRealTimePosition'
+import { LocateFixed, Crosshair, Loader2 } from 'lucide-vue-next'
 
 const props = defineProps({
-    initialTreeId: {
-        type: Number,
-        default: null,
-    },
+    initialTreeId: { type: Number, default: null },
 })
 
 const mapContainer = ref(null)
@@ -51,12 +56,6 @@ const CUSTOM_VECTOR_STYLES = [
         styleUrl: `https://api.maptiler.com/maps/019abffb-04c2-7927-8c58-ff64512e9321/style.json?key=${MAPTILER_KEY}`,
         preview: '/storage/images/map-custom.png',
     },
-    // {
-    //     id: 'lightStreets',
-    //     name: 'Light Streets',
-    //     styleUrl: `https://api.maptiler.com/maps/019ac206-e7bc-7796-8930-3a253cad08d9/style.json?key=${MAPTILER_KEY}`,
-    //     preview: '/storage/images/map-default.png',
-    // },
     {
         id: 'landcapeDark',
         name: 'Landscape Dark',
@@ -66,7 +65,6 @@ const CUSTOM_VECTOR_STYLES = [
 ]
 
 const { selectedFilter } = useMapFilter()
-
 const { STATUS_COLORS, WATER_USE_COLORS, SHADE_COLORS, ORIGIN_COLORS, POLLEN_RISK_COLORS } = useMapColors()
 
 const CATEGORY_KEYS = {
@@ -74,8 +72,107 @@ const CATEGORY_KEYS = {
     origin: ORIGIN_COLORS.filter((_, i) => i % 2 === 0),
     water_use: WATER_USE_COLORS.filter((_, i) => i % 2 === 0),
     shade: SHADE_COLORS.filter((_, i) => i % 2 === 0),
-};
+}
 
+// -------- REAL TIME POSITION ----------
+const position = useRealTimePosition(map, {
+    recenterOnFirstFix: true,
+})
+
+// Hide recenter button when we're already centered
+const isCentered = ref(false)
+
+const shouldShowButton = computed(() => {
+    // show when inactive (so user can start)
+    if (!position.isActive.value) return true
+
+    // while waiting for first fix: show (but disabled)
+    if (!position.hasFix.value) return true
+
+    // active + has fix: only show if NOT centered
+    return !isCentered.value
+})
+
+const iconComponent = computed(() => {
+    if (!position.isActive.value) return LocateFixed
+    if (!position.hasFix.value) return Loader2
+    return Crosshair
+})
+
+const iconClass = computed(() => {
+    if (position.isActive.value && !position.hasFix.value) return 'animate-spin'
+    return ''
+})
+
+function computeCentered() {
+    if (!map.value || !position.lastLngLat.value) return false
+
+    const c = map.value.getCenter()
+    const [uLng, uLat] = position.lastLngLat.value
+
+    const thresholdM = 35
+    return distanceMeters([c.lng, c.lat], [uLng, uLat]) <= thresholdM
+}
+
+function onMapMoveEnd() {
+    // when user pans/zooms, reevaluate whether we’re centered
+    isCentered.value = computeCentered()
+}
+
+const onFloatingButtonClick = async () => {
+    // First click -> request permissions + start tracking
+    if (!position.isActive.value) {
+        try {
+            await position.start()
+            // If your composable does NOT auto-recenter on first fix, leave recenterOnFirstFix false and do it here.
+            // Since recenterOnFirstFix is true, we just wait for the first fix.
+        } catch (e) {
+            console.warn(e)
+        }
+        return
+    }
+
+    // While active but no fix yet, ignore
+    if (!position.hasFix.value) return
+
+    // Recenter
+    position.recenterOnce()
+
+    // After animation ends, 'moveend' will run and update isCentered
+    // But to be extra safe (some cases no moveend fires if already centered),
+    // schedule a recompute after the next tick + small delay.
+    await nextTick()
+    window.setTimeout(() => {
+        isCentered.value = computeCentered()
+    }, 250)
+}
+
+// IMPORTANT: update centered when we receive the first GPS fix or when user moves
+watch(
+    () => position.lastLngLat.value,
+    () => {
+        // if the map exists, compute centered as soon as we have a fix
+        if (!map.value) return
+        isCentered.value = computeCentered()
+    }
+)
+
+function distanceMeters([lng1, lat1], [lng2, lat2]) {
+    const R = 6378137
+    const toRad = (d) => (d * Math.PI) / 180
+    const dLat = toRad(lat2 - lat1)
+    const dLng = toRad(lng2 - lng1)
+
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+        Math.sin(dLng / 2) * Math.sin(dLng / 2)
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    return R * c
+}
+
+// -------- MAP INIT ----------
 onMounted(async () => {
     try {
         const { map: m } = await initMap(mapContainer.value, {
@@ -85,6 +182,11 @@ onMounted(async () => {
         })
 
         map.value = m
+
+        // track when user pans/zooms away so we can re-show recenter
+        map.value.on('moveend', onMapMoveEnd)
+        map.value.on('zoomend', onMapMoveEnd)
+        map.value.on('rotateend', onMapMoveEnd)
 
         setupBaseLayers(m, {
             maptilerKey: MAPTILER_KEY,
@@ -107,17 +209,21 @@ onMounted(async () => {
         if (map.value && map.value.getLayer('trees-circle')) {
             visualiseTreeData(selectedFilter.value ?? 'status')
         }
+
         if (props.initialTreeId) {
-            treesApi.selectTreeById(props.initialTreeId);
+            treesApi.selectTreeById(props.initialTreeId)
         }
+
+        // ensure centered state is correct on load (in case location already known)
+        isCentered.value = computeCentered()
     } catch (e) {
         console.error(e)
-        // could set a dedicated error state here
     } finally {
         isLoading.value = false
     }
 })
 
+// -------- WATCHERS ----------
 watch(
     selectedFilter,
     (mode) => {
@@ -127,7 +233,7 @@ watch(
     { immediate: true }
 )
 
-watch(hoveredData, data => {
+watch(hoveredData, (data) => {
     if (!data) {
         toggleTreeCard.value = false
         return
@@ -135,7 +241,7 @@ watch(hoveredData, data => {
     toggleTreeCard.value = true
 })
 
-
+// -------- VISUALIZATION / FILTERING ----------
 const visualiseTreeData = (mode) => {
     if (!map.value || !map.value.getLayer('trees-circle')) return
 
@@ -180,7 +286,7 @@ const hiddenCategories = ref({
     water_use: new Set(),
     shade: new Set(),
     pollen_risk: new Set(),
-});
+})
 
 const modeToPropName = {
     status: 'status',
@@ -188,99 +294,68 @@ const modeToPropName = {
     pollen_risk: 'calculated_pollen_risk',
     water_use: 'species_drought_tolerance',
     shade: 'species_canopy_class',
-};
+}
 
-// toggle handler from sidebar
 const onToggleCategory = ({ mode, key }) => {
-    if (!hiddenCategories.value[mode]) {
-        hiddenCategories.value[mode] = new Set();
-    }
+    if (!hiddenCategories.value[mode]) hiddenCategories.value[mode] = new Set()
+    const currentSet = hiddenCategories.value[mode]
 
-    const currentSet = hiddenCategories.value[mode];
-
-    // "all" 
     if (key === 'all') {
-        const allKeys = CATEGORY_KEYS[mode] || [];
-        const anyHidden = currentSet.size > 0;
+        const allKeys = CATEGORY_KEYS[mode] || []
+        const anyHidden = currentSet.size > 0
+        const next = new Set()
+        if (!anyHidden) allKeys.forEach((k) => next.add(k))
 
-        const next = new Set();
-
-        if (anyHidden) {
-            // some keys are hidden. Clicking "all" should SHOW everything
-            // so 'next' stays empty (no hidden keys)
-        } else {
-            // none hidden. Clicking "all" should HIDE everything
-            allKeys.forEach(k => next.add(k));
-        }
-
-        hiddenCategories.value = {
-            ...hiddenCategories.value,
-            [mode]: next,
-        };
-
-        applyVisibility(mode);
-        return;
+        hiddenCategories.value = { ...hiddenCategories.value, [mode]: next }
+        applyVisibility(mode)
+        return
     }
 
-    // normal toggle for a specific category
-    const next = new Set(currentSet);
+    const next = new Set(currentSet)
+    next.has(key) ? next.delete(key) : next.add(key)
 
-    if (next.has(key)) {
-        next.delete(key);
-    } else {
-        next.add(key);
-    }
-
-    hiddenCategories.value = {
-        ...hiddenCategories.value,
-        [mode]: next,
-    };
-
-    applyVisibility(mode);
-};
-
+    hiddenCategories.value = { ...hiddenCategories.value, [mode]: next }
+    applyVisibility(mode)
+}
 
 const applyVisibility = (mode = selectedFilter.value) => {
-    if (!map.value || !map.value.getLayer('trees-circle')) return;
+    if (!map.value || !map.value.getLayer('trees-circle')) return
 
-    const propName = modeToPropName[mode];
+    const propName = modeToPropName[mode]
     if (!propName) {
-        // reset any filter
-        map.value.setFilter('trees-circle', null);
-        return;
+        map.value.setFilter('trees-circle', null)
+        return
     }
 
-    const hidden = Array.from(hiddenCategories.value[mode] || []);
-
-    // If nothing is hidden, remove the filter: everything is visible + clickable
+    const hidden = Array.from(hiddenCategories.value[mode] || [])
     if (!hidden.length) {
-        map.value.setFilter('trees-circle', null);
-        return;
+        map.value.setFilter('trees-circle', null)
+        return
     }
 
-    // Keep ONLY features whose propName is NOT in `hidden`
-    const filter = ['!', ['in', ['get', propName], ['literal', hidden]]];
-
-    map.value.setFilter('trees-circle', filter);
-};
-
+    const filter = ['!', ['in', ['get', propName], ['literal', hidden]]]
+    map.value.setFilter('trees-circle', filter)
+}
 
 watch(
     selectedFilter,
     (mode) => {
-        if (!map.value || !map.value.getLayer('trees-circle')) return;
-        visualiseTreeData(mode);
-        applyVisibility(mode);
+        if (!map.value || !map.value.getLayer('trees-circle')) return
+        visualiseTreeData(mode)
+        applyVisibility(mode)
     },
     { immediate: true }
-);
+)
 
-
-
+// -------- CLEANUP ----------
 onBeforeUnmount(() => {
     if (map.value) {
+        map.value.off('moveend', onMapMoveEnd)
+        map.value.off('zoomend', onMapMoveEnd)
+        map.value.off('rotateend', onMapMoveEnd)
         map.value.remove()
         map.value = null
     }
+    position.stop?.()
 })
 </script>
