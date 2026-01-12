@@ -22,7 +22,11 @@ use App\Http\Controllers\TagController;
 use App\Http\Controllers\TreeController;
 use App\Http\Controllers\UserAddressController;
 use App\Http\Controllers\UserReportsController;
+use App\Models\Neighborhood;
 use App\Models\ReportType;
+use App\Models\Species;
+use App\Models\Tag;
+use App\Models\Tree;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +38,14 @@ Route::get('/', function (Request $request) {
 
     return Inertia::render('Map/MapView', [
         'reportTypes' => ReportType::all(),
+        'speciesData' => Species::orderBy('common_name')
+            ->get(['id', 'latin_name', 'common_name']),
+        'neighborhoodData' => Neighborhood::orderBy('name')->get(['id', 'name', 'city']),
+        'tagData' => Tag::all(),
+        'treeSex' => Tree::getTreeSexOptions(),
+        'healthStatus' => Tree::getHealthStatusOptions(),
+        'treeStatus' => Tree::getTreeStatusOptions(),
+        'ownerType' => Tree::getOwnerTypeOptions(),
         'initialTreeId' => $initialTreeId,
     ]);
 })->name('/');

@@ -11,7 +11,7 @@
 
         <main class="flex-1 relative overflow-hidden">
             <MapFilterProvider>
-                <MapLibreView :initialTreeId="initialTreeId"/>
+                <MapLibreView :initialTreeId="initialTreeId" />
             </MapFilterProvider>
         </main>
     </div>
@@ -30,7 +30,35 @@ const props = defineProps({
         type: Array,
         default: () => []
     },
-    initialTreeId : {
+    speciesData: {
+        type: Array,
+        default: () => []
+    },
+    neighborhoodData: {
+        type: Array,
+        default: () => []
+    },
+    tagData: {
+        type: Array,
+        default: () => []
+    },
+    treeSex: {
+        type: Array,
+        default: () => []
+    },
+    healthStatus: {
+        type: Array,
+        default: () => []
+    },
+    treeStatus: {
+        type: Array,
+        default: () => []
+    },
+    ownerType: {
+        type: Array,
+        default: () => []
+    },
+    initialTreeId: {
         type: Number,
         default: null,
     }
@@ -39,6 +67,14 @@ const props = defineProps({
 useCustomToast();
 
 provide('reportTypes', props.reportTypes)
+provide('speciesData', props.speciesData)
+provide('neighborhoodData', props.neighborhoodData)
+provide('tagData', props.tagData)
+provide('treeSex', props.treeSex)
+provide('healthStatus', props.healthStatus)
+provide('treeStatus', props.treeStatus)
+provide('ownerType', props.ownerType)
+
 
 
 </script>

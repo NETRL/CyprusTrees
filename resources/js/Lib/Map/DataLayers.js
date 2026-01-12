@@ -14,13 +14,14 @@ export async function fetchTreeDetails(treeId, { onDataLoaded } = {}) {
 }
 
 
-
-export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected, onTreeHovered, setInitialFilter }) {
+export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected, onTreeHovered, setInitialFilter, isInteractionEnabled }) {
   const res = await fetch('/api/trees')
   if (!res.ok) {
     throw new Error(`Failed to load trees: ${res.status}`)
   }
   const data = await res.json()
+
+  const interactionsAllowed = () => (isInteractionEnabled ? !!isInteractionEnabled() : true)
 
   onDataLoaded?.(data)
 
@@ -43,7 +44,7 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
           'interpolate', ['linear'], ['zoom'],
           8, 1,   // zoom starts from 0 (full map) to 22(full zoomed)
           14, 1.25,
-          20, 6,   
+          20, 6,
         ],
         'circle-color': '#16a34a',
         'circle-stroke-width': 10,
@@ -90,16 +91,19 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
     const baseSelectedRadius = 10;
 
     mapInstance.on('click', 'trees-circle', (e) => {
+      if (!interactionsAllowed()) return
       const feature = e.features?.[0];
       handleTreeClick(feature)
     });
 
 
     mapInstance.on('mouseenter', 'trees-circle', () => {
+      if (!interactionsAllowed()) return
       mapInstance.getCanvas().style.cursor = 'crosshair'
     })
 
     mapInstance.on('mousemove', 'trees-circle', (e) => {
+      if (!interactionsAllowed()) return
       if (selectedId) return;
       const feature = e.features?.[0];
       if (!feature) return;
@@ -132,6 +136,7 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
     });
 
     mapInstance.on('mouseleave', 'trees-circle', (e) => {
+      if (!interactionsAllowed()) return
       // hoveredId = null;
       // mapInstance.setFilter('trees-circle-hover', ['==', ['get', 'id'], -1]);
       mapInstance.getCanvas().style.cursor = '';
@@ -140,6 +145,7 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
 
 
     mapInstance.on('click', (e) => {
+      if (!interactionsAllowed()) return
       // Skip clicks that hit a tree feature – those are handled above
       const features = mapInstance.queryRenderedFeatures(e.point, {
         layers: ['trees-circle'],
@@ -150,6 +156,7 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
       }
     });
     mapInstance.on('dragstart', () => {
+      if (!interactionsAllowed()) return
       if (selectedId) return
       clearSelection(mapInstance)
     });
@@ -247,12 +254,11 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
 
     return {
       selectTreeById,
+      clearSelection,
     };
 
   }
 }
-
-
 
 
 export async function loadNeighborhoodsLayer(mapInstance, { onDataLoaded, onNeighborhoodSelected }) {
@@ -292,4 +298,5 @@ export async function loadNeighborhoodsLayer(mapInstance, { onDataLoaded, onNeig
   } else {
     mapInstance.getSource('neighborhoods').setData(data)
   }
+
 }

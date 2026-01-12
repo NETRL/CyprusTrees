@@ -1,6 +1,6 @@
 <template>
     <Dialog :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :modal="true" :style="{ width: '450px' }"
-        :visible="visible" header="Species Details" @update:visible="emit('update:visible', $event)"
+        :visible="visible" header="Tree Details" @update:visible="emit('update:visible', $event)"
         class="dark:bg-gray-900! select-none">
         <form class="grid grid-cols-12 w-full gap-3" @submit.prevent="submit">
             <!-- Species -->
@@ -48,7 +48,7 @@
 
             <!-- Status fields -->
             <div class="col-span-4">
-                <FormField v-model="formData.status" :displayErrors="displayErrors" label="Status" name="status" 
+                <FormField component="Dropdown" v-model="formData.status" :displayErrors="displayErrors" label="Status" name="status" 
                 :options="treeStatusOptions"  optionLabel="label" optionValue="value"  placeholder="Select tree status" />
             </div>
             <div class="col-span-4">

@@ -4,19 +4,20 @@
 
     <div ref="mapContainer" class="map-container w-full h-full"></div>
 
-    <button v-if="shouldShowButton" type="button" 
+    <button v-if="shouldShowButton" type="button"
         class="absolute right-4 bottom-7 z-30 grid h-11 w-11 place-items-center rounded-xl bg-white/90 shadow ring-1 ring-slate-200 backdrop-blur dark:bg-slate-900/90 dark:ring-slate-700 transition-colors"
         :disabled="position.isActive && !position.hasFix" @click="onFloatingButtonClick" aria-label="Locate / Recenter"
         title="Locate / Recenter">
         <component :is="iconComponent" class="h-5 w-5" :class="iconClass" />
     </button>
 
-    <TreeCard :hovered="hoveredData" :selected="selectedData" @update:selected="selectedData = $event" />
+    <TreeCard :hovered="hoveredData" :selected="selectedData" :markerLatLng="markerLatLng"
+        @update:selected="selectedData = $event" @cancelCreate="onCancelCreate" />
     <MapLoadingOverlay :isLoading="isLoading" />
 </template>
 
 <script setup>
-import { onMounted, ref, onBeforeUnmount, watch, computed, nextTick } from 'vue'
+import { onMounted, ref, onBeforeUnmount, watch, computed, nextTick, onUnmounted, inject } from 'vue'
 import MapSidebar from '@/Components/Map/Partials/MapSidebar.vue'
 import MapLoadingOverlay from '@/Components/Map/Partials/MapLoadingOverlay.vue'
 import TreeCard from '@/Components/Map/Partials/TreeCard.vue'
@@ -29,6 +30,7 @@ import { useMapColors } from '@/Composables/useMapColors'
 
 import { useRealTimePosition } from '@/Lib/Map/useRealTimePosition'
 import { LocateFixed, Crosshair, Loader2 } from 'lucide-vue-next'
+import { storeNewTree } from '@/Lib/Map/LongClickFunctions'
 
 const props = defineProps({
     initialTreeId: { type: Number, default: null },
@@ -44,9 +46,13 @@ const neighborhoodData = ref([])
 const selectedData = ref(null)
 const hoveredData = ref(null)
 const toggleTreeCard = ref(null)
+const markerLatLng = ref(null)
+let longPressCtl = null
 
 const center = [33.37, 35.17]
 const zoom = 12
+
+let dataLayerApi = null
 
 const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY
 const CUSTOM_VECTOR_STYLES = [
@@ -73,6 +79,93 @@ const CATEGORY_KEYS = {
     water_use: WATER_USE_COLORS.filter((_, i) => i % 2 === 0),
     shade: SHADE_COLORS.filter((_, i) => i % 2 === 0),
 }
+
+// -------- MAP INIT ----------
+onMounted(async () => {
+    try {
+        const { map: m } = await initMap(mapContainer.value, {
+            center,
+            zoom,
+            styleUrl: CUSTOM_VECTOR_STYLES[0].styleUrl,
+        })
+
+        map.value = m
+
+        // track when user pans/zooms away so we can re-show recenter
+        map.value.on('moveend', onMapMoveEnd)
+        map.value.on('zoomend', onMapMoveEnd)
+        map.value.on('rotateend', onMapMoveEnd)
+
+        longPressCtl = storeNewTree(map.value, {
+            onLatLng: (latLng) => {
+                markerLatLng.value = latLng
+            },
+        })
+
+        setupBaseLayers(m, {
+            maptilerKey: MAPTILER_KEY,
+            vectorStyles: CUSTOM_VECTOR_STYLES,
+        })
+
+        const [_, treesApi] = await Promise.all([
+            loadNeighborhoodsLayer(m, {
+                onDataLoaded: (data) => (neighborhoodData.value = data),
+                onNeighborhoodSelected: (props) => (selectedData.value = props),
+            }),
+            loadTreesLayer(m, {
+                onDataLoaded: (data) => (treeData.value = data),
+                onTreeSelected: (props) => (selectedData.value = props),
+                onTreeHovered: (props) => (hoveredData.value = props),
+                setInitialFilter: (val) => (selectedFilter.value = val),
+                isInteractionEnabled: () => markerLatLng.value == null,
+            }),
+        ])
+
+        dataLayerApi = treesApi
+
+        if (map.value && map.value.getLayer('trees-circle')) {
+            visualiseTreeData(selectedFilter.value ?? 'status')
+        }
+
+        if (props.initialTreeId) {
+            treesApi.selectTreeById(props.initialTreeId)
+        }
+
+        // ensure centered state is correct on load (in case location already known)
+        isCentered.value = computeCentered()
+    } catch (e) {
+        console.error(e)
+    } finally {
+        isLoading.value = false
+    }
+})
+
+// -------- WATCHERS ----------
+watch(
+    selectedFilter,
+    (mode) => {
+        if (!map.value || !map.value.getLayer('trees-circle')) return
+        visualiseTreeData(mode)
+    },
+    { immediate: true }
+)
+
+watch(hoveredData, (data) => {
+    if (!data) {
+        toggleTreeCard.value = false
+        return
+    }
+    toggleTreeCard.value = true
+})
+
+watch(markerLatLng, (v) => {
+    if (v != null) {
+        dataLayerApi?.clearSelection?.()
+        hoveredData.value = null
+        selectedData.value = null
+        map.value?.getCanvas() && (map.value.getCanvas().style.cursor = '')
+    }
+})
 
 // -------- REAL TIME POSITION ----------
 const position = useRealTimePosition(map, {
@@ -147,7 +240,7 @@ const onFloatingButtonClick = async () => {
     }, 250)
 }
 
-// IMPORTANT: update centered when we receive the first GPS fix or when user moves
+// Update centered when we receive the first GPS fix or when user moves
 watch(
     () => position.lastLngLat.value,
     () => {
@@ -171,75 +264,6 @@ function distanceMeters([lng1, lat1], [lng2, lat2]) {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
     return R * c
 }
-
-// -------- MAP INIT ----------
-onMounted(async () => {
-    try {
-        const { map: m } = await initMap(mapContainer.value, {
-            center,
-            zoom,
-            styleUrl: CUSTOM_VECTOR_STYLES[0].styleUrl,
-        })
-
-        map.value = m
-
-        // track when user pans/zooms away so we can re-show recenter
-        map.value.on('moveend', onMapMoveEnd)
-        map.value.on('zoomend', onMapMoveEnd)
-        map.value.on('rotateend', onMapMoveEnd)
-
-        setupBaseLayers(m, {
-            maptilerKey: MAPTILER_KEY,
-            vectorStyles: CUSTOM_VECTOR_STYLES,
-        })
-
-        const [_, treesApi] = await Promise.all([
-            loadNeighborhoodsLayer(m, {
-                onDataLoaded: (data) => (neighborhoodData.value = data),
-                onNeighborhoodSelected: (props) => (selectedData.value = props),
-            }),
-            loadTreesLayer(m, {
-                onDataLoaded: (data) => (treeData.value = data),
-                onTreeSelected: (props) => (selectedData.value = props),
-                onTreeHovered: (props) => (hoveredData.value = props),
-                setInitialFilter: (val) => (selectedFilter.value = val),
-            }),
-        ])
-
-        if (map.value && map.value.getLayer('trees-circle')) {
-            visualiseTreeData(selectedFilter.value ?? 'status')
-        }
-
-        if (props.initialTreeId) {
-            treesApi.selectTreeById(props.initialTreeId)
-        }
-
-        // ensure centered state is correct on load (in case location already known)
-        isCentered.value = computeCentered()
-    } catch (e) {
-        console.error(e)
-    } finally {
-        isLoading.value = false
-    }
-})
-
-// -------- WATCHERS ----------
-watch(
-    selectedFilter,
-    (mode) => {
-        if (!map.value || !map.value.getLayer('trees-circle')) return
-        visualiseTreeData(mode)
-    },
-    { immediate: true }
-)
-
-watch(hoveredData, (data) => {
-    if (!data) {
-        toggleTreeCard.value = false
-        return
-    }
-    toggleTreeCard.value = true
-})
 
 // -------- VISUALIZATION / FILTERING ----------
 const visualiseTreeData = (mode) => {
@@ -347,6 +371,16 @@ watch(
     { immediate: true }
 )
 
+function onCancelCreate() {
+    markerLatLng.value = null
+    longPressCtl?.hide()    // or remove()
+}
+
+function onCreateSuccess() {
+    markerLatLng.value = null
+    longPressCtl?.remove()
+}
+
 // -------- CLEANUP ----------
 onBeforeUnmount(() => {
     if (map.value) {
@@ -357,5 +391,8 @@ onBeforeUnmount(() => {
         map.value = null
     }
     position.stop?.()
+    longPressCtl?.cleanup()
+    longPressCtl?.remove()
+    dataLayerApi = null
 })
 </script>
