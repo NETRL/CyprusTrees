@@ -30,7 +30,8 @@ class NeigborhoodController extends Controller
 
         $query = Neighborhood::query()
             ->withCount('trees')   // needed to show `trees_count`
-            ->setUpQuery();        // this applies search + sort based on request params
+            ->orderBy('id', 'desc')
+            ->setUpQuery();
 
         return Inertia::render('Neighborhood/Index', [
             'tableData' => $query->paginate($perPage)->withQueryString(),
@@ -150,7 +151,7 @@ class NeigborhoodController extends Controller
 
         $validated = $request->validate([
             'neighborhood_id'   => ['required', 'exists:neighborhoods,id'],
-            'geojson_file'      => ['required', 'file', 'mimetypes:application/json,text/plain,application/geo+json'],
+            'geojson_file'      => ['required', 'file', 'mimes:json,geojson'],
         ]);
 
 

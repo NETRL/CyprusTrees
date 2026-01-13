@@ -29,7 +29,7 @@
     </ReusableDataTable>
 
     <!-- hidden file input used for all rows -->
-    <input ref="fileInput" type="file" class="hidden" accept=".json,application/geo+json" @change="onFileSelected" />
+    <input ref="fileInput" type="file" class="hidden" accept=".json,.geojson" @change="onFileSelected" />
 
     <NeighborhoodForm v-model:visible="formVisible" routeResource="neighborhoods" :action="formAction"
       :dataRow="formRow" @updated="reloadTable" @created="reloadTable" />
