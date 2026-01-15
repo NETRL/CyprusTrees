@@ -76,7 +76,7 @@
             <!-- Ownership / source -->
             <div class="col-span-6">
                 <FormField component="Dropdown" v-model="formData.owner_type" :displayErrors="displayErrors" label="Owner Type"
-                    name="owner_type" :options="ownerTypeOptions"  optionValue="value"  placeholder="Select owner type" />
+                    name="owner_type" :options="ownerTypeOptions"  optionLabel="label" optionValue="value"  placeholder="Select owner type" />
             </div>
             <div class="col-span-6">
                 <FormField v-model="formData.source" :displayErrors="displayErrors" label="Source" name="source" />

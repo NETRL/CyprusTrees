@@ -14,27 +14,72 @@
     <TreeCard :hovered="hoveredData" :selected="selectedData" :markerLatLng="markerLatLng"
         @update:selected="selectedData = $event" @cancelCreate="onCancelCreate" />
     <MapLoadingOverlay :isLoading="isLoading" />
+
+    <Modal v-if="showAuthPrompt" @close="showAuthPrompt = false">
+        <template #body>
+            <div
+                class="no-scrollbar relative w-auto h-auto overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+                <!-- close btn -->
+                <button @click="showAuthPrompt = false"
+                    class="transition-color absolute right-5 top-5 z-999 flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:bg-gray-700 dark:bg-white/[0.05] dark:text-gray-400 dark:hover:bg-white/[0.07] dark:hover:text-gray-300">
+                    <svg class="fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd"
+                            d="M6.04289 16.5418C5.65237 16.9323 5.65237 17.5655 6.04289 17.956C6.43342 18.3465 7.06658 18.3465 7.45711 17.956L11.9987 13.4144L16.5408 17.9565C16.9313 18.347 17.5645 18.347 17.955 17.9565C18.3455 17.566 18.3455 16.9328 17.955 16.5423L13.4129 12.0002L17.955 7.45808C18.3455 7.06756 18.3455 6.43439 17.955 6.04387C17.5645 5.65335 16.9313 5.65335 16.5408 6.04387L11.9987 10.586L7.45711 6.04439C7.06658 5.65386 6.43342 5.65386 6.04289 6.04439C5.65237 6.43491 5.65237 7.06808 6.04289 7.4586L10.5845 12.0002L6.04289 16.5418Z"
+                            fill="" />
+                    </svg>
+                </button>
+                <div class="px-2 pr-14">
+                    <h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+                        Login is Required
+                    </h4>
+                    <p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
+                        To access this feature you need to be logged in!
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-3 px-2 mt-6 lg:justify-end">
+                    <button @click="showAuthPrompt = false" type="button"
+                        class="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 sm:w-auto">
+                        Close
+                    </button>
+                    <Link :href="route('login')"
+                        class="flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto">
+                    Click to Login
+                    </Link>
+                </div>
+            </div>
+        </template>
+    </Modal>
 </template>
 
 <script setup>
-import { onMounted, ref, onBeforeUnmount, watch, computed, nextTick, onUnmounted, inject } from 'vue'
+import { onMounted, ref, onBeforeUnmount, watch, computed, nextTick, onUnmounted, inject, provide } from 'vue'
 import MapSidebar from '@/Components/Map/Partials/MapSidebar.vue'
 import MapLoadingOverlay from '@/Components/Map/Partials/MapLoadingOverlay.vue'
 import TreeCard from '@/Components/Map/Partials/TreeCard.vue'
 
 import { initMap } from '@/Lib/Map/InitMap'
 import { setupBaseLayers } from '@/Lib/Map/SetupBaseLayers'
-import { loadTreesLayer, loadNeighborhoodsLayer } from '@/Lib/Map/DataLayers'
+import { loadTreesLayer, loadNeighborhoodsLayer, fetchTreeDetails } from '@/Lib/Map/DataLayers'
 import { useMapFilter } from '@/Composables/useMapFilter'
 import { useMapColors } from '@/Composables/useMapColors'
 
 import { useRealTimePosition } from '@/Lib/Map/useRealTimePosition'
-import { LocateFixed, Crosshair, Loader2 } from 'lucide-vue-next'
+import { LocateFixed, Crosshair, Loader2, Users } from 'lucide-vue-next'
 import { storeNewTree } from '@/Lib/Map/LongClickFunctions'
+import Modal from '@/Components/Modal.vue'
+import { usePermissions } from '@/Composables/usePermissions'
+import mitt from 'mitt'
 
 const props = defineProps({
     initialTreeId: { type: Number, default: null },
 })
+const { can } = usePermissions()
+provide('can', can)
+
+const mapBus = mitt()
+provide('mapBus', mapBus)
 
 const mapContainer = ref(null)
 const map = ref(null)
@@ -48,6 +93,7 @@ const hoveredData = ref(null)
 const toggleTreeCard = ref(null)
 const markerLatLng = ref(null)
 let longPressCtl = null
+const showAuthPrompt = ref(false)
 
 const center = [33.37, 35.17]
 const zoom = 12
@@ -80,6 +126,8 @@ const CATEGORY_KEYS = {
     shade: SHADE_COLORS.filter((_, i) => i % 2 === 0),
 }
 
+mapBus.on('tree:saved', onTreeSaved)
+
 // -------- MAP INIT ----------
 onMounted(async () => {
     try {
@@ -100,6 +148,7 @@ onMounted(async () => {
             onLatLng: (latLng) => {
                 markerLatLng.value = latLng
             },
+            requiresAuth: (v) => (showAuthPrompt.value = v),
         })
 
         setupBaseLayers(m, {
@@ -139,6 +188,10 @@ onMounted(async () => {
         isLoading.value = false
     }
 })
+
+const closeModal = () => {
+    showAuthPrompt.value = false
+}
 
 // -------- WATCHERS ----------
 watch(
@@ -381,6 +434,78 @@ function onCreateSuccess() {
     longPressCtl?.remove()
 }
 
+async function onTreeSaved(payload) {
+    const props = await fetchTreeDetails(payload.id) // returns properties object
+
+    const existed = treeExistsInCollection(treeData.value, payload.id)
+
+    // upsert into FeatureCollection
+    const next = upsertTreeFeature(treeData.value, props)
+    treeData.value = next
+
+    // push into map source 
+    dataLayerApi?.setTreesData?.(next)
+
+    // if this was a brand new feature, auto-select it
+    if (!existed) {
+        // ensure map has applied the new source data before querying/selecting
+        requestAnimationFrame(() => {
+            dataLayerApi?.clearSelection?.()
+            dataLayerApi?.selectTreeById?.(payload.id)
+        })
+    }
+
+    // keep selection synced
+    if (selectedData.value?.id === props.id) {
+        selectedData.value = props
+    }
+}
+
+function treeExistsInCollection(fc, id) {
+    const numericId = Number(id)
+    return !!fc?.features?.some(f => Number(f?.properties?.id ?? f?.id) === numericId)
+}
+
+
+function toPointFeature(treeProps) {
+    const id = Number(treeProps.id)
+    const lon = Number(treeProps.lon)
+    const lat = Number(treeProps.lat)
+
+    if (!Number.isFinite(id) || !Number.isFinite(lon) || !Number.isFinite(lat)) {
+        throw new Error(`Invalid tree payload for feature: id=${treeProps.id} lon=${treeProps.lon} lat=${treeProps.lat}`)
+    }
+
+    return {
+        type: 'Feature',
+        id, // good for promoteId/feature-state
+        geometry: { type: 'Point', coordinates: [lon, lat] },
+        properties: treeProps,
+    }
+}
+
+function upsertTreeFeature(featureCollection, treeProps) {
+    const fc = featureCollection?.type === 'FeatureCollection'
+        ? featureCollection
+        : { type: 'FeatureCollection', features: [] }
+
+    const next = {
+        type: 'FeatureCollection',
+        features: [...(fc.features ?? [])],
+    }
+
+    const nextFeature = toPointFeature(treeProps)
+    const id = nextFeature.id
+
+    const idx = next.features.findIndex(f => Number(f?.properties?.id ?? f?.id) === id)
+
+    if (idx >= 0) next.features[idx] = nextFeature
+    else next.features.push(nextFeature)
+
+    return next
+}
+
+
 // -------- CLEANUP ----------
 onBeforeUnmount(() => {
     if (map.value) {
@@ -394,5 +519,6 @@ onBeforeUnmount(() => {
     longPressCtl?.cleanup()
     longPressCtl?.remove()
     dataLayerApi = null
+    mapBus.off('tree.saved', onTreeSaved)
 })
 </script>

@@ -17,6 +17,8 @@ class TreesTableSeeder extends Seeder
 {
     public function run(): void
     {
+        $NUMBER_OF_TREES = 10;
+
         $species = Species::pluck('id', 'common_name');
         $neighborhoods = Neighborhood::whereNotNull('geom')->get();
 
@@ -30,7 +32,7 @@ class TreesTableSeeder extends Seeder
         // ENUM pools
         $sources = ['citizen_report', 'field_survey', 'baseline_import'];
 
-        for ($i = 0; $i < 500; $i++) {
+        for ($i = 0; $i < $NUMBER_OF_TREES; $i++) {
 
             $neighborhood = $neighborhoods->random();
 

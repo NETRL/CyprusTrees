@@ -40,6 +40,8 @@ return new class extends Migration
 
             // map index
             $table->index(['lat', 'lon'], 'idx_trees_latlon');
+
+            // $table->softDeletes();
         });
 
         DB::statement("

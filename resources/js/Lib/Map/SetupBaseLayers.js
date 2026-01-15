@@ -4,13 +4,15 @@ export async function setupBaseLayers(map, { maptilerKey, vectorStyles = [] }) {
 
 
   const layersConfig = [
-    // {
-    //   source: 'osmStandard
-    //   id: 'osmStandardLayer',
-    //   name: 'Standard',
-    //   type: 'raster',
-    //   preview: '/storage/images/map-default.png',
-    // },
+    {
+      source: 'osmStandard',
+      id: 'osmStandardLayer',
+      name: 'Standard',
+      type: 'raster',
+      preview: '/storage/images/map-default.png',
+      tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
+      tileSize: 256,
+    },
     {
       source: 'maptilerDark',
       id: 'maptilerDarkLayer',

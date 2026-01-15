@@ -52,7 +52,7 @@
                     <div class="text-[10px] uppercase tracking-tighter text-gray-500 dark:text-gray-400">Canopy</div>
                     <div class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ activeTree.canopy_diameter_m ||
                         '—'
-                        }}m</div>
+                    }}m</div>
                 </div>
             </div>
 
@@ -311,28 +311,38 @@
                 </div>
             </div>
             <!-- Report Issue Button -->
-            <div v-if="isSelected" class="pt-2 pb-1">
-                <div v-if="userHasActiveReports"
-                    class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-3">
-                    <div class="flex items-center gap-2 text-sm text-yellow-800 dark:text-yellow-300">
-                        <Info class="w-4 h-4" />
-                        You have a pending report for this tree. Thank you for your contribution!
+            <div v-if="isSelected" :class="[
+                'pt-2 grid gap-2',
+                (can('trees.edit') ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1')
+            ]">
+                <!-- Report Issue -->
+                <div>
+                    <div v-if="userHasActiveReports"
+                        class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-2">
+                        <div class="flex items-center gap-2 text-sm text-yellow-800 dark:text-yellow-300">
+                            <Info class="w-4 h-4" />
+                            You have a pending report for this tree. Thank you for your contribution!
+                        </div>
                     </div>
+
+                    <button @click="toggleReportModal"
+                        class="w-full bg-linear-to-r text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-[0.98]"
+                        :class="userHasActiveReports
+                            ? 'from-yellow-600 to-yellow-600 hover:from-yellow-700 hover:to-yellow-700'
+                            : 'from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700'">
+                        <Flag class="w-4 h-4" />
+                        <span>{{ userHasActiveReports ? 'Report another Issue' : 'Report an Issue' }}</span>
+                    </button>
                 </div>
-                <button @click="toggleReportModal" :class="[
-                    'w-full bg-gradient-to-r text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-[0.98]',
-                    {
-                        ' from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700': !userHasActiveReports,
-                        ' from-yellow-600 to-yellow-600 hover:from-yellow-700 hover:to-yellow-700': userHasActiveReports
-                    }
 
-                ]">
-                    <Flag class="w-4 h-4" />
-                    <span v-if="userHasActiveReports"> Report another Issue</span>
-                    <span v-else> Report an Issue</span>
-
+                <!-- Edit Tree -->
+                <button @click="emit('editClick')" v-if="can('trees.edit')"
+                    class="w-full bg-linear-to-r from-green-600 to-emerald-600 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-[0.98]">
+                    <Edit class="w-4 h-4" />
+                    Edit Tree Info
                 </button>
             </div>
+
         </div>
         <TreeReportCard @closeModal="toggleReportModal" @submitted="handleSubmitted" :showModal="showModal"
             :tree="selected" />
@@ -342,14 +352,14 @@
 </template>
 
 <script setup>
-import { MapPin, Activity, Heart, Leaf, AlertTriangle, Info, Calendar, FileText, Flag, CheckCircle, Clock, User, History, ChevronDown, MessageSquare, Check, AlertCircle } from 'lucide-vue-next';
+import { MapPin, Activity, Heart, Leaf, AlertTriangle, Info, Calendar, FileText, Flag, Edit, CheckCircle, Clock, User, History, ChevronDown, MessageSquare, Check, AlertCircle } from 'lucide-vue-next';
 import { computed, inject, ref, watch } from 'vue';
 import TreeReportCard from '@/Components/Map/Partials/TreeReportCard.vue';
 import { safeJsonParse } from '@/Composables/safeJsonParser';
 import { usePage } from '@inertiajs/vue3';
 import { fetchTreeDetails } from '@/Lib/Map/DataLayers';
 
-const emit = defineEmits(['update:selected'])
+const emit = defineEmits(['update:selected', 'editClick'])
 
 const formatRelativeTime = (date) => {
     const now = new Date();
@@ -364,6 +374,8 @@ const formatRelativeTime = (date) => {
 };
 
 const page = usePage();
+
+const can = inject('can')
 
 const props = defineProps({
     hovered: {

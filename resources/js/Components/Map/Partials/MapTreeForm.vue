@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full max-w-[450px] rounded-xl bg-white dark:bg-gray-900 shadow-lg select-none">
+    <div class="w-full max-w-[450px] rounded-xl bg-white dark:bg-gray-900 shadow-lg select-none overflow-y-auto">
         <!-- Header -->
         <div class="flex items-center justify-between px-4 py-3 border-b dark:border-gray-700">
             <h2 class="text-lg font-semibold">Tree Details</h2>
@@ -18,7 +18,6 @@
                 <div class="col-span-6">
                     <FormField v-model="formData.lon" :displayErrors="displayErrors" label="Longitude" name="lon" />
                 </div>
-
 
                 <!-- Species -->
                 <div class="col-span-12">
@@ -58,9 +57,9 @@
 
                 <!-- Status -->
                 <div class="col-span-4">
-                    <FormField component="Dropdown" v-model="formData.status" :displayErrors="displayErrors" label="Status" name="status"
-                        :options="treeStatusOptions" optionLabel="label" optionValue="value"
-                        placeholder="Select tree status" />
+                    <FormField component="Dropdown" v-model="formData.status" :displayErrors="displayErrors"
+                        label="Status" name="status" :options="treeStatusOptions" optionLabel="label"
+                        optionValue="value" placeholder="Select tree status" />
                 </div>
                 <div class="col-span-4">
                     <FormField component="Dropdown" v-model="formData.health_status" :displayErrors="displayErrors"
@@ -88,13 +87,10 @@
                 </div>
 
                 <!-- Ownership -->
-                <div class="col-span-6">
+                <div class="col-span-12">
                     <FormField component="Dropdown" v-model="formData.owner_type" :displayErrors="displayErrors"
-                        label="Owner Type" name="owner_type" :options="ownerTypeOptions" optionValue="value"
-                        placeholder="Select owner type" />
-                </div>
-                <div class="col-span-6">
-                    <FormField v-model="formData.source" :displayErrors="displayErrors" label="Source" name="source" />
+                        label="Owner Type" name="owner_type" :options="ownerTypeOptions" optionLabel="label"
+                        optionValue="value" placeholder="Select owner type" />
                 </div>
             </form>
         </div>
@@ -116,9 +112,10 @@
 
 <script setup>
 import { reactive, ref, computed, watch, nextTick, inject } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { router, usePage } from '@inertiajs/vue3'
 import FormField from '@/Components/Primitives/FormField.vue'
 import { useDateParser } from '@/Composables/useDateParser'
+import { safeJsonParse } from '@/Composables/safeJsonParser'
 
 // props & emits
 const props = defineProps({
@@ -144,7 +141,9 @@ const props = defineProps({
     }
 })
 
+const page = usePage()
 
+const mapBus = inject('mapBus', null)
 
 const speciesData = inject('speciesData')
 const neighborhoodData = inject('neighborhoodData')
@@ -154,15 +153,16 @@ const healthStatus = inject('healthStatus')
 const treeStatus = inject('treeStatus')
 const ownerType = inject('ownerType')
 
-console.log(speciesData)
-console.log(neighborhoodData)
-console.log(treeSex)
-console.log(healthStatus)
-console.log(treeStatus)
-console.log(ownerType)
-
 
 const emit = defineEmits(['update:visible'])
+
+const role = page.props?.auth?.user?.roles[0].name
+let source = null
+if (role === "staff" || role === 'admin') {
+    source = 'field_survey'
+} else if (role === "citizen") {
+    source = 'citizen_report'
+}
 
 // state
 const formData = reactive({
@@ -182,17 +182,22 @@ const formData = reactive({
     canopy_diameter_m: null,
     last_inspected_at: null,
     owner_type: '',
-    source: '',
+    source: source,
 })
 
-watch(() => props.markerLatLng, v => {
-    formData.lat = v.lat
-    formData.lon = v.lng
-})
+watch(
+    () => props.markerLatLng,
+    (v) => {
+        if (!v) return
+        formData.lat = v.lat
+        formData.lon = v.lng
+    },
+    { immediate: true }
+)
 
 const displayErrors = ref(false)
 
-const healthStatusOptions = computed(() => healthStatus)
+const healthStatusOptions = computed(() => healthStatus?.value ?? healthStatus ?? [])
 const treeStatusOptions = computed(() => treeStatus)
 const treeSexOptions = computed(() => treeSex)
 const ownerTypeOptions = computed(() => ownerType)
@@ -227,7 +232,7 @@ const resetForm = () => {
     formData.canopy_diameter_m = null
     formData.last_inspected_at = new Date(),
         formData.owner_type = ''
-    formData.source = ''
+    formData.source = source
 }
 
 const speciesOptions = computed(() =>
@@ -250,63 +255,73 @@ const tagOptions = computed(() =>
     }))
 )
 
-const initForm = () => {
-    const row = props.dataRow
+function initForm() {
     displayErrors.value = false
 
-    if (!row) {
-        resetForm()
+    // EDIT
+    if (props.dataRow) {
+        const row = props.dataRow
+        const tags = safeJsonParse(row.tags)
+
+        formData.id = row.id ?? null
+        formData.species_id = row.species_id ?? null
+        formData.tag_ids = tags ? tags.map(t => t.id) : []
+        formData.neighborhood_id = row.neighborhood_id ?? null
+        formData.lat = row.lat ?? null
+        formData.lon = row.lon ?? null
+        formData.address = row.address ?? ''
+        formData.planted_at = parseDate(row.planted_at)
+        formData.status = row.status ?? ''
+        formData.health_status = row.health_status ?? ''
+        formData.sex = row.sex ?? ''
+        formData.height_m = row.height_m ?? null
+        formData.dbh_cm = row.dbh_cm ?? null
+        formData.canopy_diameter_m = row.canopy_diameter_m ?? null
+        formData.last_inspected_at = parseDate(row.last_inspected_at)
+        formData.owner_type = row.owner_type ?? ''
+        formData.source = row.source ?? source
         return
     }
 
-    formData.id = row.id ?? null
-    formData.species_id = row.species_id ?? null
-    formData.tag_ids = row.tags
-        ? row.tags.map(t => t.id)
-        : []
-    formData.neighborhood_id = row.neighborhood_id ?? null
-    formData.lat = row.lat ?? null
-    formData.lon = row.lon ?? null
-    formData.address = row.address ?? ''
-    formData.planted_at = parseDate(row.planted_at)
-    formData.status = row.status ?? ''
-    formData.health_status = row.health_status ?? ''
-    formData.sex = row.sex ?? ''
-    formData.height_m = row.height_m ?? null
-    formData.dbh_cm = row.dbh_cm ?? null
-    formData.canopy_diameter_m = row.canopy_diameter_m ?? null
-    formData.last_inspected_at = parseDate(row.last_inspected_at)
-    formData.owner_type = row.owner_type ?? ''
-    formData.source = row.source ?? ''
+    // CREATE
+    resetForm()
+    if (props.markerLatLng) {
+        formData.lat = props.markerLatLng.lat
+        formData.lon = props.markerLatLng.lng
+    }
 }
 
 // Watch for visibility changes
-watch(() => props.visible, (newVal) => {
-    if (newVal) {
-        nextTick(() => {
-            initForm()
-        })
-    }
-})
+watch(
+    () => props.visible,
+    (newVal) => {
+        if (newVal) nextTick(initForm)
+    },
+    { immediate: true }
+)
 
 const submit = () => {
     if (props.action === 'Create') {
         router.post(route(props.routeResource + '.store'), { ...formData }, {
             preserveScroll: true,
-            onSuccess: () => {
+            onSuccess: (page) => {
                 closeForm()
+                const event = page?.props?.flash?.event
+                if (event?.type === 'tree.saved') {
+                    mapBus?.emit('tree:saved', { id: event.payload.id  })
+                }
             },
-            onFinish: () => {
-                displayErrors.value = true
-            },
+            onError: () => { displayErrors.value = true },
         })
+
     } else if (props.action === 'Edit') {
         router.patch(route(props.routeResource + '.update', formData.id), { ...formData }, {
             preserveScroll: true,
             onSuccess: () => {
                 closeForm()
+                mapBus?.emit('tree:saved', { id: formData.id })
             },
-            onFinish: () => {
+            onError: () => {
                 displayErrors.value = true
             },
         })

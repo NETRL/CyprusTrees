@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use App\Helpers\TreeHelper;
+use App\Http\Controllers\Controller;
 use App\Models\Tree;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,7 +13,7 @@ class TreesGeoController extends Controller
 {
     public function index(): JsonResponse
     {
-        $rows = Tree::with(['species', 'neighborhood:id,name,city,district', 'citizenReports'])
+        $rows = Tree::with(['species', 'tags:id,name', 'neighborhood:id,name,city,district', 'citizenReports'])
             ->select([
                 '*',
                 DB::raw('ST_AsGeoJSON(geom) as geom_point'),
@@ -47,7 +48,7 @@ class TreesGeoController extends Controller
 
     public function show(int $treeId): JsonResponse
     {
-        $tree = Tree::with(['species', 'neighborhood:id,name,city,district', 'citizenReports'])
+        $tree = Tree::with(['species', 'neighborhood:id,name,city,district', 'tags:id,name', 'citizenReports'])
             ->select([
                 '*',
                 DB::raw('ST_AsGeoJSON(geom) as geom_point'),
@@ -57,7 +58,6 @@ class TreesGeoController extends Controller
             ->firstOrFail();
 
         $properties = $this->mapTreeToProperties($tree);
-
         return response()->json($properties);
     }
 
@@ -65,6 +65,7 @@ class TreesGeoController extends Controller
 
     private function mapTreeToProperties(Tree $row): array
     {
+
         return [
             'id'                     => $row->id,
             'species_id'             => $row->species_id,
@@ -74,6 +75,7 @@ class TreesGeoController extends Controller
             'address'                => $row->address,
             'planted_at'             => $row->planted_at,
             'status'                 => $row->status,
+            'tags'                   => $row->tags,
             'health_status'          => $row->health_status,
             'sex'                    => $row->sex,
             'height_m'               => $row->height_m,

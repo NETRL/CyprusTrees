@@ -42,7 +42,13 @@ class MaintenanceEventsController extends Controller
             return [
                 ...$e->toArray(),
                 'tree_label' => $e->tree
-                    ? ($e->tree_id . ' - ' . $e->tree->species?->common_name . ' (' . $e->tree->species?->latin_name . ') ' . ($e->tree->tags_label ?? ''))
+                    ? trim(
+                        $e->tree_id .
+                            ' - ' .
+                            ($e->tree->species?->common_name ?? 'Unknown species') .
+                            ($e->tree->species?->latin_name ? ' (' . $e->tree->species->latin_name . ')' : '') .
+                            ($e->tree->tags_label ? ' · ' . $e->tree->tags_label : '')
+                    )
                     : (string) $e->tree_id,
 
                 'type_label' => $e->type ? ($e->type->name) : (string) $e->type_id,

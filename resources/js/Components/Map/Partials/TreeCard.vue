@@ -8,17 +8,19 @@
             'opacity-0 translate-x-4 pointer-events-none': !shouldShowPanel,
         },
     ]">
-        <TreeForm v-if="isCreating" v-model:visible="formVisible" routeResource="trees" action="Create" :markerLatLng="markerLatLng" />
+        <MapTreeForm v-if="isCreating || isEditing" v-model:visible="formVisible" routeResource="trees"
+            :action="formAction" :markerLatLng="markerLatLng" :dataRow="props.selected" />
         <TreeCardContent v-else :hovered="props.hovered" :selected="props.selected" :isHovered="isHovered"
-            :isSelected="isSelected" />
+            :isSelected="isSelected" @editClick="onEditClick" />
     </aside>
 
     <!-- Mobile Bottom Sheet -->
     <BottomSheet v-model:state="treeSheetState" :showFab="false" :showBackdrop="false" :heightRatio="0.75">
         <div class="flex flex-col h-full px-5 pt-4 pb-6 w-full sm:items-center">
-            <TreeForm v-if="isCreating" v-model:visible="formVisible" routeResource="trees" action="Create" :markerLatLng="markerLatLng" />
+            <MapTreeForm v-if="isCreating || isEditing" v-model:visible="formVisible" routeResource="trees"
+                action="Create" :markerLatLng="markerLatLng" :dataRow="props.selected" />
             <TreeCardContent v-else :hovered="props.hovered" :selected="props.selected" :isHovered="isHovered"
-                :isSelected="isSelected" />
+                :isSelected="isSelected" @editClick="onEditClick" />
         </div>
     </BottomSheet>
 </template>
@@ -27,7 +29,7 @@
 import { computed, ref, watch } from 'vue'
 import TreeCardContent from '@/Components/Map/Partials/TreeCardContent.vue'
 import BottomSheet from '@/Components/Map/Partials/BottomSheet.vue'
-import TreeForm from '@/Components/Map/Partials/TreeForm.vue'
+import MapTreeForm from '@/Components/Map/Partials/MapTreeForm.vue'
 
 const emit = defineEmits(['cancelCreate'])
 
@@ -48,41 +50,37 @@ const props = defineProps({
 
 const formVisible = ref(false)
 
-watch(formVisible, visible => {
-    console.log(visible)
-    if(visible === false){
-        emit('cancelCreate')
-    }
-})
-
 const isHovered = computed(() => props.hovered !== null)
 const isSelected = computed(() => props.selected !== null)
 const isCreating = computed(() => props.markerLatLng !== null)
+const isEditing = ref(false)
+const formAction = ref('');      // 'Create' or 'Edit'
+
 
 // single source of truth for visibility
-const shouldShowPanel = computed(() => isHovered.value || isSelected.value || isCreating.value)
+const shouldShowPanel = computed(() => isHovered.value || isSelected.value || isCreating.value || isEditing.value)
 
 // local state only for this sheet
 const treeSheetState = ref('closed')
+
+watch(formVisible, v => {
+    if (v === false) {
+        emit('cancelCreate')
+        isEditing.value = false
+    }
+})
 
 // when we enter/exit create mode, toggle the form
 watch(
     () => props.markerLatLng,
     (value) => {
-        if (value) {
-            formVisible.value = true
-            treeSheetState.value = 'mid'
-        } else {
-            formVisible.value = false
-            // if nothing else is active, close the sheet
-            if (!isHovered.value && !isSelected.value) {
-                treeSheetState.value = 'closed'
-            }
-        }
+        formVisible.value = !!value
+        formAction.value = 'Create'
     }
 )
 
-// open sheet when we have hovered/selected/creating, otherwise close
+
+// open sheet when state exists, otherwise close
 watch(
     shouldShowPanel,
     (open) => {
@@ -90,4 +88,12 @@ watch(
     },
     { immediate: true }
 )
+
+const onEditClick = () => {
+    emit('cancelCreate')
+    isEditing.value = true
+    formVisible.value = true
+    formAction.value = 'Edit'
+
+}
 </script>

@@ -11,6 +11,7 @@ use App\Models\Neighborhood;
 use App\Models\Species;
 use App\Models\Tag;
 use App\Models\Tree;
+use App\Models\UserTree;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -37,6 +38,7 @@ class TreeController extends Controller
         $query = Tree::query()
             ->with(['species', 'tags', 'neighborhood'])
             ->withCount('photos')
+            ->orderBy('id', 'desc')
             ->setUpQuery();
 
 
@@ -90,12 +92,23 @@ class TreeController extends Controller
             $tree->tags()->sync($tagIds);
         }
 
+        UserTree::create([
+            'user_id' => auth()->user()->id,
+            'tree_id' => $tree->id,
+        ]);
+
+
         $request->session()->flash('message', [
             'type'    => 'success',
             'message' => __('Tree has been created.'),
         ]);
 
-        return redirect()->route('trees.index');
+        return redirect()->back()->with('flash_event', [
+            'type' => 'tree.saved',
+            'payload' => [
+                'id' => $tree->id,
+            ],
+        ]);
     }
 
 
@@ -119,7 +132,7 @@ class TreeController extends Controller
             'message' => __('Tree has been updated.'),
         ]);
 
-        return redirect()->route('trees.index');
+        return redirect()->back();
     }
 
 

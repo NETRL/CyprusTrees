@@ -1,13 +1,12 @@
-
 <template>
-    <div class="flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
+    <div
+        class="flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
         <!-- Header -->
         <div class="sticky shrink-0 pb-5 border-b border-gray-200 dark:border-gray-800">
             <div class="flex items-center gap-2 mb-1">
                 <span class="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
                     Nicosia Trees
                 </span>
-                
             </div>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Explore urban forestry data
@@ -25,8 +24,7 @@
             </div>
 
             <!-- Legend Content -->
-            <div
-                class="flex-1 ">
+            <div class="flex-1 ">
 
                 <!-- Status Filter -->
                 <template v-if="selectedFilter === 'status'">
@@ -42,8 +40,8 @@
                             </p>
                         </div>
                         <div class="space-y-0.5">
-                            <LegendItem v-for="item in statusLegend" :key="item.key" :color="item.color"
-                                :label="item.label" :count="item.count" :icon="item.icon"
+                            <LegendItem v-for="item in statusLegend.filter(i => i.count > 0)" :key="item.key"
+                                :color="item.color" :label="item.label" :count="item.count" :icon="item.icon"
                                 @toggle="() => emit('toggleCategory', { mode: selectedFilter, key: item.key })" />
                         </div>
                     </div>

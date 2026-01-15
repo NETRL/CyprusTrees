@@ -1,5 +1,3 @@
-import { safeJsonParse } from '@/Composables/safeJsonParser'
-import maplibregl from 'maplibre-gl'
 
 export async function fetchTreeDetails(treeId, { onDataLoaded } = {}) {
   const res = await fetch(`/api/trees/${treeId}`)
@@ -14,25 +12,56 @@ export async function fetchTreeDetails(treeId, { onDataLoaded } = {}) {
 }
 
 
+// async function ensureTreeIcon(map) {
+//   if (map.hasImage('tree-marker')) return
+
+//   const res = await fetch('/icons/tree-marker.svg')
+//   const svgText = await res.text()
+
+//   const svg = new Blob([svgText], { type: 'image/svg+xml' })
+//   const url = URL.createObjectURL(svg)
+
+//   const img = new Image()
+//   img.onload = () => {
+//     map.addImage('tree-marker', img, { sdf: true })
+//     URL.revokeObjectURL(url)
+//   }
+//   img.src = url
+// }
+
+
+
 export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected, onTreeHovered, setInitialFilter, isInteractionEnabled }) {
   const res = await fetch('/api/trees')
   if (!res.ok) {
     throw new Error(`Failed to load trees: ${res.status}`)
   }
   const data = await res.json()
+  let currentData = data
+
+  // ensureTreeIcon(mapInstance)
 
   const interactionsAllowed = () => (isInteractionEnabled ? !!isInteractionEnabled() : true)
 
   onDataLoaded?.(data)
 
+  function setTreesData(newData) {
+    currentData = newData
+    mapInstance.getSource('trees')?.setData(newData)
+  }
+
   if (mapInstance.getSource('trees')) {
-    mapInstance.getSource('trees').setData(data)
+    setTreesData(data)
   } else {
     mapInstance.addSource('trees', {
       type: 'geojson',
       data,
       promoteId: 'id'
     })
+
+    const DOT_ZOOM_8 = 1.5
+    const DOT_ZOOM_14 = 1.5
+    const DOT_ZOOM_20 = 6
 
 
     mapInstance.addLayer({
@@ -42,9 +71,9 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
       paint: {
         'circle-radius': [
           'interpolate', ['linear'], ['zoom'],
-          8, 1,   // zoom starts from 0 (full map) to 22(full zoomed)
-          14, 1.25,
-          20, 6,
+          8, DOT_ZOOM_8,   // zoom starts from 0 (full map) to 22(full zoomed)
+          14, DOT_ZOOM_14,
+          20, DOT_ZOOM_20,
         ],
         'circle-color': '#16a34a',
         'circle-stroke-width': 10,
@@ -226,9 +255,7 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
       // treeId might be a string; normalize to number
       const numericId = Number(treeId);
 
-      const feature = data.features?.find(
-        f => f.properties?.id === numericId
-      );
+      const feature = currentData.features?.find(f => Number(f.properties?.id ?? f.id) === numericId)
 
       if (!feature) {
         console.warn('No tree feature found for id', treeId);
@@ -255,48 +282,119 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
     return {
       selectTreeById,
       clearSelection,
+      setTreesData,
     };
 
   }
 }
 
 
-export async function loadNeighborhoodsLayer(mapInstance, { onDataLoaded, onNeighborhoodSelected }) {
-  const res = await fetch('/api/neighborhoods')
-  if (!res.ok) {
-    throw new Error(`Failed to load neighborhoods: ${res.status}`)
-  }
-  const data = await res.json()
 
+export async function loadNeighborhoodsLayer(mapInstance, { onDataLoaded, onNeighborhoodSelected } = {}) {
+  const res = await fetch('/api/neighborhoods')
+  if (!res.ok) throw new Error(`Failed to load neighborhoods: ${res.status}`)
+
+  const data = await res.json()
   onDataLoaded?.(data)
 
-  if (!mapInstance.getSource('neighborhoods')) {
-    mapInstance.addSource('neighborhoods', {
-      type: 'geojson',
-      data,
-    })
-
-    mapInstance.addLayer({
-      id: 'neighborhoods-fill',
-      type: 'fill',
-      source: 'neighborhoods',
-      paint: {
-        'fill-color': '#1d4ed8',
-        'fill-opacity': 0.25, //0.25
-      },
-    })
-
-    mapInstance.addLayer({
-      id: 'neighborhoods-outline',
-      type: 'line',
-      source: 'neighborhoods',
-      paint: {
-        'line-color': '#1d4ed8',
-        'line-width': 0.5, //0.5
-      },
-    })
-  } else {
-    mapInstance.getSource('neighborhoods').setData(data)
+  // Ensure every feature has a stable top-level `id` (required for feature-state).
+  if (data?.type === 'FeatureCollection' && Array.isArray(data.features)) {
+    for (let i = 0; i < data.features.length; i++) {
+      const f = data.features[i]
+      if (f && f.id == null) {
+        // Try common property keys first
+        f.id =
+          f?.properties?.id ??
+          f?.properties?.neighborhood_id ??
+          f?.properties?.gid ??
+          `${i}` // last-resort fallback (stable only if feature order is stable)
+      }
+    }
   }
 
+  const SOURCE_ID = 'neighborhoods'
+  const FILL_ID = 'neighborhoods-fill'
+  const OUTLINE_ID = 'neighborhoods-outline'
+
+  const HOVER_OPACITY = 0.0
+  const BASE_OPACITY = 0.0
+  const HOVER_LINE = 2.5
+  const BASE_LINE = 0.5
+
+  // Keep hover state on the map instance so repeated calls don't add duplicates.
+  if (!mapInstance.__neighborhoodHoverState) {
+    mapInstance.__neighborhoodHoverState = { hoveredId: null }
+  }
+
+  if (!mapInstance.getSource(SOURCE_ID)) {
+    mapInstance.addSource(SOURCE_ID, { type: 'geojson', data })
+
+    mapInstance.addLayer({
+      id: FILL_ID,
+      type: 'fill',
+      source: SOURCE_ID,
+      paint: {
+        'fill-color': '#1d4ed8',
+        'fill-opacity': [
+          'case',
+          ['boolean', ['feature-state', 'hover'], false],
+          HOVER_OPACITY,
+          BASE_OPACITY,
+        ],
+      },
+    })
+
+    mapInstance.addLayer({
+      id: OUTLINE_ID,
+      type: 'line',
+      source: SOURCE_ID,
+      paint: {
+        'line-color': '#1d4ed8',
+        'line-width': [
+          'case',
+          ['boolean', ['feature-state', 'hover'], false],
+          HOVER_LINE,
+          BASE_LINE,
+        ],
+      },
+    })
+
+    // ---------- Hover handlers ----------
+    mapInstance.on('mousemove', FILL_ID, (e) => {
+      mapInstance.getCanvas().style.cursor = 'pointer'
+      if (!e.features?.length) return
+
+      const id = e.features[0].id
+      if (id == null) return
+
+      const state = mapInstance.__neighborhoodHoverState
+      if (state.hoveredId !== null && state.hoveredId !== id) {
+        mapInstance.setFeatureState({ source: SOURCE_ID, id: state.hoveredId }, { hover: false })
+      }
+
+      state.hoveredId = id
+      mapInstance.setFeatureState({ source: SOURCE_ID, id }, { hover: true })
+    })
+
+    mapInstance.on('mouseleave', FILL_ID, () => {
+      mapInstance.getCanvas().style.cursor = ''
+      const state = mapInstance.__neighborhoodHoverState
+
+      if (state.hoveredId !== null) {
+        mapInstance.setFeatureState({ source: SOURCE_ID, id: state.hoveredId }, { hover: false })
+      }
+      state.hoveredId = null
+    })
+
+    // ---------- Click / selection ----------
+    if (onNeighborhoodSelected) {
+      mapInstance.on('click', FILL_ID, (e) => {
+        if (!e.features?.length) return
+        const feature = e.features[0]
+        onNeighborhoodSelected(feature)
+      })
+    }
+  } else {
+    mapInstance.getSource(SOURCE_ID).setData(data)
+  }
 }

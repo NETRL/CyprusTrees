@@ -5,23 +5,24 @@
         <form class="grid grid-cols-12 w-full gap-3" @submit.prevent="submit">
             <!-- Tree -->
             <div class="col-span-12">
-                <FormField component="Dropdown" filter v-model="formData.tree_id" :displayErrors="displayErrors" label="Name" name="tree_id" 
-                :options="treeOptions"  optionLabel="label" optionValue="value"/>
+                <FormField component="Dropdown" filter v-model="formData.tree_id" :displayErrors="displayErrors"
+                    label="Tree" name="tree_id" :options="treeOptions" optionLabel="label" optionValue="value" />
             </div>
             <!-- Type -->
             <div class="col-span-12">
-                <FormField component="Dropdown" filter v-model="formData.type_id" :displayErrors="displayErrors" label="Type" name="type_id" 
-                 :options="typeOptions"  optionLabel="label" optionValue="value"/>
+                <FormField component="Dropdown" filter v-model="formData.type_id" :displayErrors="displayErrors"
+                    label="Type" name="type_id" :options="typeOptions" optionLabel="label" optionValue="value" />
             </div>
             <!-- Performed By -->
             <div class="col-span-6">
-                <FormField component="Dropdown" filter v-model="formData.performed_by" :displayErrors="displayErrors" label="Performed By"
-                    name="performed_by"  :options="userOptions"  optionLabel="label" optionValue="value"/>
+                <FormField component="Dropdown" filter v-model="formData.performed_by" :displayErrors="displayErrors"
+                    label="Performed By" name="performed_by" :options="userOptions" optionLabel="label"
+                    optionValue="value" />
             </div>
             <!-- Performed At -->
             <div class="col-span-6">
-                <FormField component="Calendar" v-model="formData.performed_at" :displayErrors="displayErrors" label="Performed At"
-                    name="performed_at" />
+                <FormField component="Calendar" v-model="formData.performed_at" :displayErrors="displayErrors"
+                    label="Performed At" name="performed_at" />
             </div>
             <!-- Quantity -->
             <div class="col-span-12">
@@ -71,15 +72,15 @@ const props = defineProps({
     },
     trees: {
         type: Array,
-         default: () => [],
+        default: () => [],
     },
     types: {
         type: Array,
-         default: () => [],
+        default: () => [],
     },
     users: {
         type: Array,
-         default: () => [],
+        default: () => [],
     },
 })
 
@@ -88,16 +89,18 @@ const emit = defineEmits(['update:visible'])
 const { parseDate } = useDateParser();
 
 const treeOptions = computed(() =>
-    props.trees.map(index => ({
-        value: index.id,
-        label:
-            index.address
-                ? `#${index.id} – ${index.address}`
-                : index.species?.common_name
-                    ? `#${index.id} – ${index.species.common_name} (${index.lat}, ${index.lon})`
-                    : `#${index.id} – (${index.lat}, ${index.lon})`,
-    }))
+  (props.trees ?? []).map((t) => {
+    const common = t.species?.common_name ?? 'Unknown species'
+    const latin = t.species?.latin_name ? ` (${t.species.latin_name})` : ''
+    const tags = t.tags_label ? ` · ${t.tags_label}` : ''
+
+    return {
+      value: t.id,
+      label: `${t.id} - ${common}${latin}${tags}`.trim(),
+    }
+  })
 )
+
 
 const typeOptions = computed(() =>
     (props.types ?? []).map(index => {

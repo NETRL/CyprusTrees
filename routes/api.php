@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\NeighborhoodGeoController;
-use App\Http\Controllers\TreesGeoController;
+use App\Http\Controllers\Api\TreesGeoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 

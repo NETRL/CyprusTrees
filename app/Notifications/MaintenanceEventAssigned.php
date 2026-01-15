@@ -33,7 +33,8 @@ class MaintenanceEventAssigned extends Notification
     public function toDatabase($notifiable): array
     {
 
-        $tz = auth()->user()->timezone;
+        // $tz = auth()->user()->timezone;
+        $tz = "Europe/Athens";
 
         $when = $this->event->performedAtIn($tz)?->format('Y-m-d H:i');
         // $when = optional($this->event->performed_at)->timezone($timezone)->format('Y-m-d H:i');
