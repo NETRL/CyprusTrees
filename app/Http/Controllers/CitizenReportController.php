@@ -6,6 +6,7 @@ use App\Enums\ReportStatus;
 use App\Enums\TreeStatus;
 use App\Jobs\ProcessPhotoUpload;
 use App\Models\CitizenReport;
+use App\Models\MaintenanceType;
 use App\Models\Photo;
 use App\Models\ReportType;
 use App\Models\Tree;
@@ -59,6 +60,7 @@ class CitizenReportController extends Controller
             'tableData' => $tableData,
             'dataColumns' => CitizenReport::getDataColumns(),
             'typeData' => ReportType::select(['id', 'name'])->get(),
+            'mntTypeData' => MaintenanceType::select(['type_id', 'name'])->get(),
             'treeData' => Tree::with('species:id,latin_name,common_name')
                 ->select('id', 'species_id', 'lat', 'lon', 'address')
                 ->get(),

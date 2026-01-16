@@ -27,9 +27,10 @@
 
         <Column v-if="isColumnVisible('tree_id')" field="tree_id" header="Tree" sortable>
           <template #body="{ data }">
-            <Link :href="route('/', {tree_id: data.tree_id})" class="flex justify-start items-center spece-x-2 hover:cursor-pointer hover:text-brand-600">
-              {{ data.tree_label }}
-              <ExternalLink class="w-3.5 h-3.5 mx-1" />
+            <Link :href="route('/', { tree_id: data.tree_id })"
+              class="flex justify-start items-center spece-x-2 hover:cursor-pointer hover:text-brand-600">
+            {{ data.tree_label }}
+            <ExternalLink class="w-3.5 h-3.5 mx-1" />
             </Link>
           </template>
         </Column>
@@ -69,18 +70,18 @@
             <div v-if="data.photo_id" class="flex items-center gap-2">
               <!-- Thumbnail -->
               <div @click.stop="openPreview(data.photo)"
-              class="relative w-12 h-12 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 cursor-pointer hover:ring-2 hover:ring-emerald-500 transition-all group">
-              <img :src="data.photo.url || '/placeholder-tree.jpg'" :alt="`Tree ${data.tree_id} photo`"
-              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200" />
-              <div
-              class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-              <Eye class="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-          </div>
+                class="relative w-12 h-12 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 cursor-pointer hover:ring-2 hover:ring-green-500 transition-all group">
+                <img :src="data.photo.url || '/placeholder-tree.jpg'" :alt="`Tree ${data.tree_id} photo`"
+                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200" />
+                <div
+                  class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                  <Eye class="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </div>
 
               <!-- Photo Link -->
               <NavLinkButton :href="route('photos.index', { tree_id: data.tree_id, search: data.photo_id })"
-                class="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-1">
+                class="text-xs font-medium text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 flex items-center gap-1">
                 <ExternalLink class="w-3.5 h-3.5 mr-1" />
                 #{{ data.photo_id }}
               </NavLinkButton>
@@ -111,6 +112,20 @@
           </template>
         </Column>
 
+        <Column>
+          <template #body="{ data }">
+            <button @click="openMntForm(data)" :disabled="data.status === 'resolved'" :class="[
+              'inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900',
+              data.status === 'resolved'
+                ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed border border-gray-200 dark:border-gray-700'
+                : 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/40 border border-green-200 dark:border-green-800 hover:shadow-sm focus:ring-green-500'
+            ]" :title="data.status === 'resolved' ? 'Report already resolved' : 'Promote this report to maintenance'">
+              <ArrowUpCircle class="w-4 h-4" />
+              <span>{{ data.status === 'resolved' ? 'Resolved' : 'Promote' }}</span>
+            </button>
+          </template>
+        </Column>
+
       </template>
 
     </ReusableDataTable>
@@ -118,7 +133,11 @@
     <CitizenReportForm v-model:visible="formVisible" routeResource="citizenReports" :action="formAction"
       :dataRow="formRow" @updated="reloadTable" @created="reloadTable" :trees="treeData" :types="typeData"
       :users="userData" :reportStatus="reportStatus" />
+
     <PhotoPreview v-model:visible="previewVisible" :photo="previewPhoto" />
+
+    <PromoteMntEventForm v-model:visible="mntFormVisible" routeResource="maintenanceEvents" :dataRow="formRow"
+      @updated="reloadTable" @created="reloadTable" :trees="treeData" :types="mntTypeData" :users="userData" />
   </div>
 </template>
 
@@ -130,8 +149,9 @@ import { ref } from "vue";
 import CitizenReportForm from "@/Pages/CitizenReport/Partials/CitizenReportForm.vue";
 import { useDateFormatter } from "@/Composables/useDateFormatter";
 import NavLinkButton from "@/Components/NavLinkButton.vue";
-import { Eye, ImageIcon, ImageOff, ExternalLink } from 'lucide-vue-next';
+import { Eye, ImageIcon, ImageOff, ExternalLink, ArrowUpCircle } from 'lucide-vue-next';
 import PhotoPreview from "@/Pages/Photo/Partials/PhotoPreview.vue";
+import PromoteMntEventForm from "./Partials/PromoteMntEventForm.vue";
 
 
 defineOptions({
@@ -151,6 +171,10 @@ const props = defineProps({
     default: () => [],
   },
   typeData: {
+    type: Array,
+    default: () => [],
+  },
+  mntTypeData: {
     type: Array,
     default: () => [],
   },
@@ -195,6 +219,13 @@ const statusInfo = (status) => {
   }
 }
 
+// --- Maintenance Form State ---
+const mntFormVisible = ref(false);
+const openMntForm = (row) => {
+  formRow.value = row;
+  mntFormVisible.value = true;
+};
+
 // --- form state ---
 const formVisible = ref(false);
 const formAction = ref('');      // 'Create' or 'Edit'
@@ -206,7 +237,7 @@ const openEditForm = (row) => {
   formVisible.value = true;
 };
 
-// optional: reload table when form finishes
+// reload table when form finishes
 const reloadTable = () => {
   router.reload({ only: ['tableData'] });
 };
