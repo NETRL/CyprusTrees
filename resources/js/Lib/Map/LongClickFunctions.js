@@ -1,7 +1,7 @@
 import { useAuth } from '@/Composables/useAuth'
 import maplibregl from 'maplibre-gl'
 
-export function storeNewTree(mapInstance, { onLatLng, requiresAuth, delay = 500, moveTolerancePx = 8 } = {}) {
+export function storeNewTree(mapInstance, { onLatLng, requiresAuth, onPinClick, delay = 500, moveTolerancePx = 8 } = {}) {
   let longPressTimeout = null
   let pinMarker = null
 
@@ -17,6 +17,15 @@ export function storeNewTree(mapInstance, { onLatLng, requiresAuth, delay = 500,
       .setLngLat([0, 0])
       .addTo(map)
     pinMarker.getElement().style.display = 'none'
+
+    const el = pinMarker.getElement()
+    el.style.display = 'none'
+
+    el.addEventListener('click', (e) => {
+      e.stopPropagation() // to stop map click handlers
+      onPinClick?.(true)
+    })
+
     return pinMarker
   }
 
@@ -63,10 +72,10 @@ export function storeNewTree(mapInstance, { onLatLng, requiresAuth, delay = 500,
       // Some builds have isDragging(); if present, use it
       if (mapInstance.isDragging && mapInstance.isDragging()) return
 
-      if(isAuthenticated.value){
+      if (isAuthenticated.value) {
         showPinAt(mapInstance, startLngLat)
         onLatLng?.(startLngLat)
-      }else{
+      } else {
         requiresAuth?.(true)
       }
 
@@ -131,5 +140,6 @@ export function storeNewTree(mapInstance, { onLatLng, requiresAuth, delay = 500,
     requiresAuth: (value = true) => requiresAuth?.(value),
     hide: hidePin,
     remove: removePin,
+    triggerPinClick: (value = true) => onPinClick?.(value),
   }
 }

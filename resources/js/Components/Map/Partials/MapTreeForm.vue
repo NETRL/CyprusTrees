@@ -1,7 +1,7 @@
 <template>
-    <div class="w-full max-w-[450px] rounded-xl bg-white dark:bg-gray-900 shadow-lg select-none overflow-y-auto">
+    <div class="w-full max-w-[450px] rounded-xl bg-white dark:bg-gray-900 select-none overflow-y-auto my-2">
         <!-- Header -->
-        <div class="flex items-center justify-between px-4 py-3 border-b dark:border-gray-700">
+        <div class="sticky flex items-center justify-between px-4 py-3 border-b dark:border-gray-700">
             <h2 class="text-lg font-semibold">Tree Details</h2>
             <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" @click="closeForm">
                 ✕

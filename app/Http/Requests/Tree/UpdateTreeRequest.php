@@ -24,7 +24,7 @@ class UpdateTreeRequest extends FormRequest
             'lat'               => ['nullable', 'numeric', 'between:-90,90'],
             'lon'               => ['nullable', 'numeric', 'between:-180,180'],
             'address'           => ['nullable', 'string', 'max:255'],
-            'planted_at'        => ['nullable', 'date', 'before_or_equal:today'],
+            'planted_at'        => ['nullable', 'date', 'before_or_equal:now'],
             'last_inspected_at' => ['nullable', 'date', 'before_or_equal:now'],
             'status'            => ['nullable', 'string', 'max:20'],
             'health_status'     => ['nullable', 'string', 'max:20'],

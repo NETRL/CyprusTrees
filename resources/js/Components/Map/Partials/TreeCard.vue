@@ -46,6 +46,10 @@ const props = defineProps({
         type: Object,
         default: null
     },
+    pinClickFlag: {
+        type: Number,
+        default: 0
+    },
 })
 
 const formVisible = ref(false)
@@ -76,6 +80,20 @@ watch(
     (value) => {
         formVisible.value = !!value
         formAction.value = 'Create'
+
+        if (value) {
+            treeSheetState.value = 'mid'
+        }
+    }
+)
+
+watch(
+    () => props.pinClickFlag,
+    () => {
+        // only reopen if we’re in create mode (pin exists) and sheet is closed
+        if (props.markerLatLng && treeSheetState.value === 'closed') {
+            treeSheetState.value = 'mid'
+        }
     }
 )
 
@@ -94,6 +112,5 @@ const onEditClick = () => {
     isEditing.value = true
     formVisible.value = true
     formAction.value = 'Edit'
-
 }
 </script>

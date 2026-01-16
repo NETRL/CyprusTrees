@@ -12,7 +12,7 @@
     </button>
 
     <TreeCard :hovered="hoveredData" :selected="selectedData" :markerLatLng="markerLatLng"
-        @update:selected="selectedData = $event" @cancelCreate="onCancelCreate" />
+        @update:selected="selectedData = $event" @cancelCreate="onCancelCreate" :pinClickFlag="pinClickFlag" />
     <MapLoadingOverlay :isLoading="isLoading" />
 
     <Modal v-if="showAuthPrompt" @close="showAuthPrompt = false">
@@ -94,6 +94,7 @@ const toggleTreeCard = ref(null)
 const markerLatLng = ref(null)
 let longPressCtl = null
 const showAuthPrompt = ref(false)
+const pinClickFlag = ref(0)
 
 const center = [33.37, 35.17]
 const zoom = 12
@@ -149,6 +150,7 @@ onMounted(async () => {
                 markerLatLng.value = latLng
             },
             requiresAuth: (v) => (showAuthPrompt.value = v),
+            onPinClick: (v) => {pinClickFlag.value++;}
         })
 
         setupBaseLayers(m, {
@@ -425,6 +427,7 @@ watch(
 )
 
 function onCancelCreate() {
+    dataLayerApi?.clearSelection?.()
     markerLatLng.value = null
     longPressCtl?.hide()    // or remove()
 }
@@ -522,3 +525,4 @@ onBeforeUnmount(() => {
     mapBus.off('tree.saved', onTreeSaved)
 })
 </script>
+

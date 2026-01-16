@@ -29,7 +29,7 @@ class StoreTreeRequest extends FormRequest
             'address'           => ['nullable', 'string', 'max:255'],
 
             // Dates
-            'planted_at'        => ['nullable', 'date', 'before_or_equal:today'],
+            'planted_at'        => ['nullable', 'date', 'before_or_equal:now'],
             'last_inspected_at' => ['nullable', 'date', 'before_or_equal:now'],
 
             // Descriptive attributes
