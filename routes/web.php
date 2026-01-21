@@ -50,6 +50,24 @@ Route::get('/', function (Request $request) {
     ]);
 })->name('/');
 
+Route::get('/map2', function (Request $request) {
+
+    $initialTreeId = $request->filled('tree_id') ? (int) $request->input('tree_id') : null;
+
+    return Inertia::render('Map/MapView', [
+        'reportTypes' => ReportType::all(),
+        'speciesData' => Species::orderBy('common_name')
+            ->get(['id', 'latin_name', 'common_name']),
+        'neighborhoodData' => Neighborhood::orderBy('name')->get(['id', 'name', 'city']),
+        'tagData' => Tag::all(),
+        'treeSex' => Tree::getTreeSexOptions(),
+        'healthStatus' => Tree::getHealthStatusOptions(),
+        'treeStatus' => Tree::getTreeStatusOptions(),
+        'ownerType' => Tree::getOwnerTypeOptions(),
+        'initialTreeId' => $initialTreeId,
+    ]);
+})->name('/map2');
+
 
 
 Route::middleware(['auth'])->post('/me/timezone', [MeTimezoneController::class, 'store'])->name('me.timezone.store');

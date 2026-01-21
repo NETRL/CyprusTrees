@@ -150,7 +150,7 @@ onMounted(async () => {
                 markerLatLng.value = latLng
             },
             requiresAuth: (v) => (showAuthPrompt.value = v),
-            onPinClick: (v) => {pinClickFlag.value++;}
+            onPinClick: (v) => { pinClickFlag.value++; }
         })
 
         setupBaseLayers(m, {
@@ -324,6 +324,11 @@ function distanceMeters([lng1, lat1], [lng2, lat2]) {
 const visualiseTreeData = (mode) => {
     if (!map.value || !map.value.getLayer('trees-circle')) return
 
+    let layerId = 'circle-color'
+    if (window.location.pathname.startsWith('/map2')) {
+        layerId = 'icon-color'
+    }
+
     let propertyKey
     let colorExpression
     const DEFAULT_COLOR = '#16a34a'
@@ -350,12 +355,12 @@ const visualiseTreeData = (mode) => {
             colorExpression = ['match', propertyKey, ...SHADE_COLORS]
             break
         default:
-            map.value.setPaintProperty('trees-circle', 'circle-color', DEFAULT_COLOR)
+            map.value.setPaintProperty('trees-circle', layerId, DEFAULT_COLOR)
             return
     }
 
     if (colorExpression) {
-        map.value.setPaintProperty('trees-circle', 'circle-color', colorExpression)
+        map.value.setPaintProperty('trees-circle', layerId, colorExpression)
     }
 }
 
@@ -403,17 +408,21 @@ const applyVisibility = (mode = selectedFilter.value) => {
     const propName = modeToPropName[mode]
     if (!propName) {
         map.value.setFilter('trees-circle', null)
+        map.value.setFilter('trees-pin-bg', null)
         return
     }
 
     const hidden = Array.from(hiddenCategories.value[mode] || [])
     if (!hidden.length) {
         map.value.setFilter('trees-circle', null)
+        map.value.setFilter('trees-pin-bg', null)
         return
     }
 
     const filter = ['!', ['in', ['get', propName], ['literal', hidden]]]
     map.value.setFilter('trees-circle', filter)
+    map.value.setFilter('trees-pin-bg', filter)
+
 }
 
 watch(
@@ -525,4 +534,3 @@ onBeforeUnmount(() => {
     mapBus.off('tree.saved', onTreeSaved)
 })
 </script>
-

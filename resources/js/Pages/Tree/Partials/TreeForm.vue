@@ -48,16 +48,19 @@
 
             <!-- Status fields -->
             <div class="col-span-4">
-                <FormField component="Dropdown" v-model="formData.status" :displayErrors="displayErrors" label="Status" name="status" 
-                :options="treeStatusOptions"  optionLabel="label" optionValue="value"  placeholder="Select tree status" />
+                <FormField component="Dropdown" v-model="formData.status" :displayErrors="displayErrors" label="Status"
+                    name="status" :options="treeStatusOptions" optionLabel="label" optionValue="value"
+                    placeholder="Select tree status" />
             </div>
             <div class="col-span-4">
-                <FormField component="Dropdown" v-model="formData.health_status" :displayErrors="displayErrors" label="Health Status"
-                    name="health_status" :options="healthStatusOptions" optionLabel="label" optionValue="value"  placeholder="Select health status" />
+                <FormField component="Dropdown" v-model="formData.health_status" :displayErrors="displayErrors"
+                    label="Health Status" name="health_status" :options="healthStatusOptions" optionLabel="label"
+                    optionValue="value" placeholder="Select health status" />
             </div>
             <div class="col-span-4">
                 <FormField component="Dropdown" v-model="formData.sex" :displayErrors="displayErrors" label="Sex"
-                    name="sex" :options="treeSexOptions" optionLabel="label" optionValue="value" placeholder="Select sex" />
+                    name="sex" :options="treeSexOptions" optionLabel="label" optionValue="value"
+                    placeholder="Select sex" />
             </div>
 
             <!-- Measurements -->
@@ -75,8 +78,9 @@
 
             <!-- Ownership / source -->
             <div class="col-span-6">
-                <FormField component="Dropdown" v-model="formData.owner_type" :displayErrors="displayErrors" label="Owner Type"
-                    name="owner_type" :options="ownerTypeOptions"  optionLabel="label" optionValue="value"  placeholder="Select owner type" />
+                <FormField component="Dropdown" v-model="formData.owner_type" :displayErrors="displayErrors"
+                    label="Owner Type" name="owner_type" :options="ownerTypeOptions" optionLabel="label"
+                    optionValue="value" placeholder="Select owner type" />
             </div>
             <div class="col-span-6">
                 <FormField v-model="formData.source" :displayErrors="displayErrors" label="Source" name="source" />
@@ -157,14 +161,14 @@ const formData = reactive({
     lon: null,
     address: '',
     planted_at: null,
-    status: '',
-    health_status: '',
-    sex: '',
+    status: null,
+    health_status: null,
+    sex: null,
     height_m: null,
     dbh_cm: null,
     canopy_diameter_m: null,
     last_inspected_at: null,
-    owner_type: '',
+    owner_type: null,
     source: '',
 })
 
@@ -172,7 +176,7 @@ const displayErrors = ref(false)
 
 const healthStatusOptions = computed(() => props.healthStatus)
 const treeStatusOptions = computed(() => props.treeStatus)
-const treeSexOptions =  computed(() => props.treeSex)
+const treeSexOptions = computed(() => props.treeSex)
 const ownerTypeOptions = computed(() => props.ownerType)
 
 
@@ -196,15 +200,15 @@ const resetForm = () => {
     formData.lat = null
     formData.lon = null
     formData.address = ''
-    formData.planted_at = new Date(),
-        formData.status = ''
-    formData.health_status = ''
-    formData.sex = ''
+    formData.planted_at = new Date()
+    formData.status = null
+    formData.health_status = null
+    formData.sex = null
     formData.height_m = null
     formData.dbh_cm = null
     formData.canopy_diameter_m = null
-    formData.last_inspected_at = new Date(),
-        formData.owner_type = ''
+    formData.last_inspected_at = new Date()
+    formData.owner_type = null
     formData.source = ''
 }
 
@@ -247,14 +251,14 @@ const initForm = () => {
     formData.lon = row.lon ?? null
     formData.address = row.address ?? ''
     formData.planted_at = parseDate(row.planted_at)
-    formData.status = row.status ?? ''
-    formData.health_status = row.health_status ?? ''
-    formData.sex = row.sex ?? ''
+    formData.status = row.status ?? null
+    formData.health_status = row.health_status ?? null
+    formData.sex = row.sex ?? null
     formData.height_m = row.height_m ?? null
     formData.dbh_cm = row.dbh_cm ?? null
     formData.canopy_diameter_m = row.canopy_diameter_m ?? null
     formData.last_inspected_at = parseDate(row.last_inspected_at)
-    formData.owner_type = row.owner_type ?? ''
+    formData.owner_type = row.owner_type ?? null
     formData.source = row.source ?? ''
 }
 

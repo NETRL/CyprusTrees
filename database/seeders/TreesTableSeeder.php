@@ -17,7 +17,8 @@ class TreesTableSeeder extends Seeder
 {
     public function run(): void
     {
-        $NUMBER_OF_TREES = 10;
+        
+    $NUMBER_OF_TREES = 500;
 
         $species = Species::pluck('id', 'common_name');
         $neighborhoods = Neighborhood::whereNotNull('geom')->get();

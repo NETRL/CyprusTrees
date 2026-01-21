@@ -10,6 +10,7 @@
     ]">
         <MapTreeForm v-if="isCreating || isEditing" v-model:visible="formVisible" routeResource="trees"
             :action="formAction" :markerLatLng="markerLatLng" :dataRow="props.selected" />
+
         <TreeCardContent v-else :hovered="props.hovered" :selected="props.selected" :isHovered="isHovered"
             :isSelected="isSelected" @editClick="onEditClick" />
     </aside>
@@ -18,7 +19,8 @@
     <BottomSheet v-model:state="treeSheetState" :showFab="false" :showBackdrop="false" :heightRatio="0.75">
         <div class="flex flex-col h-full px-5 pt-4 pb-6 w-full sm:items-center">
             <MapTreeForm v-if="isCreating || isEditing" v-model:visible="formVisible" routeResource="trees"
-                action="Create" :markerLatLng="markerLatLng" :dataRow="props.selected" />
+                :action="formAction" :markerLatLng="markerLatLng" :dataRow="props.selected" />
+
             <TreeCardContent v-else :hovered="props.hovered" :selected="props.selected" :isHovered="isHovered"
                 :isSelected="isSelected" @editClick="onEditClick" />
         </div>
@@ -108,7 +110,8 @@ watch(
 )
 
 const onEditClick = () => {
-    emit('cancelCreate')
+    if (!props.selected) return
+    if (props.markerLatLng) emit('cancelCreate')
     isEditing.value = true
     formVisible.value = true
     formAction.value = 'Edit'

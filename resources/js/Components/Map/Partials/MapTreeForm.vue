@@ -117,7 +117,7 @@ import FormField from '@/Components/Primitives/FormField.vue'
 import { useDateParser } from '@/Composables/useDateParser'
 import { safeJsonParse } from '@/Composables/safeJsonParser'
 
-// props & emits
+// props 
 const props = defineProps({
     visible: {
         type: Boolean,
@@ -174,26 +174,17 @@ const formData = reactive({
     lon: null,
     address: '',
     planted_at: null,
-    status: '',
-    health_status: '',
-    sex: '',
+    status: null,
+    health_status: null,
+    sex: null,
     height_m: null,
     dbh_cm: null,
     canopy_diameter_m: null,
     last_inspected_at: null,
-    owner_type: '',
+    owner_type: null,
     source: source,
 })
 
-watch(
-    () => props.markerLatLng,
-    (v) => {
-        if (!v) return
-        formData.lat = v.lat
-        formData.lon = v.lng
-    },
-    { immediate: true }
-)
 
 const displayErrors = ref(false)
 
@@ -223,17 +214,28 @@ const resetForm = () => {
     formData.lat = null
     formData.lon = null
     formData.address = ''
-    formData.planted_at = new Date(),
-        formData.status = ''
-    formData.health_status = ''
-    formData.sex = ''
+    formData.planted_at = null
+    formData.status = null
+    formData.health_status = null
+    formData.sex = null
     formData.height_m = null
     formData.dbh_cm = null
     formData.canopy_diameter_m = null
-    formData.last_inspected_at = new Date(),
-        formData.owner_type = ''
+    formData.last_inspected_at = null
+    formData.owner_type = null
     formData.source = source
 }
+
+watch(
+    () => props.markerLatLng,
+    (v) => {
+        if (!v) return
+        resetForm()
+        formData.lat = v.lat
+        formData.lon = v.lng
+    },
+    { immediate: true }
+)
 
 const speciesOptions = computed(() =>
     speciesData.map(index => ({
@@ -257,7 +259,6 @@ const tagOptions = computed(() =>
 
 function initForm() {
     displayErrors.value = false
-
     // EDIT
     if (props.dataRow) {
         const row = props.dataRow
@@ -271,14 +272,14 @@ function initForm() {
         formData.lon = row.lon ?? null
         formData.address = row.address ?? ''
         formData.planted_at = parseDate(row.planted_at)
-        formData.status = row.status ?? ''
-        formData.health_status = row.health_status ?? ''
-        formData.sex = row.sex ?? ''
+        formData.status = row.status ?? null
+        formData.health_status = row.health_status ?? null
+        formData.sex = row.sex ?? null
         formData.height_m = row.height_m ?? null
         formData.dbh_cm = row.dbh_cm ?? null
         formData.canopy_diameter_m = row.canopy_diameter_m ?? null
         formData.last_inspected_at = parseDate(row.last_inspected_at)
-        formData.owner_type = row.owner_type ?? ''
+        formData.owner_type = row.owner_type ?? null
         formData.source = row.source ?? source
         return
     }
@@ -293,11 +294,12 @@ function initForm() {
 
 // Watch for visibility changes
 watch(
-    () => props.visible,
-    (newVal) => {
-        if (newVal) nextTick(initForm)
+    () => [props.visible, props.action, props.dataRow],
+    ([visible, action, row]) => {
+        if (!visible) return
+        if (action === 'Edit' && row) nextTick(initForm)
     },
-    { immediate: true }
+    { immediate: true, deep: false }
 )
 
 const submit = () => {
@@ -308,7 +310,7 @@ const submit = () => {
                 closeForm()
                 const event = page?.props?.flash?.event
                 if (event?.type === 'tree.saved') {
-                    mapBus?.emit('tree:saved', { id: event.payload.id  })
+                    mapBus?.emit('tree:saved', { id: event.payload.id })
                 }
             },
             onError: () => { displayErrors.value = true },
