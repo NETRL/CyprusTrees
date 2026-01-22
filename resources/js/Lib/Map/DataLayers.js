@@ -176,7 +176,7 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
     // })
 
 
-   
+
 
 
     // Hover ring (no pulse, just a halo while hovering)
@@ -208,7 +208,7 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
       filter: ['==', ['get', 'id'], -1],
     });
 
-     if (window.location.pathname.startsWith('/map2')) {
+    if (window.location.pathname.startsWith('/map2')) {
       const ICON_SIZE_CONFIG = [
         'interpolate', ['linear'], ['zoom'],
         8, 0.6,   // Very small at low zoom
@@ -263,6 +263,9 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
 
     mapInstance.on('click', 'trees-circle', (e) => {
       if (!interactionsAllowed()) return
+
+      e.originalEvent?.stopPropagation()
+      e.originalEvent?.stopImmediatePropagation()
       const feature = e.features?.[0];
       handleTreeClick(feature)
     });
@@ -432,9 +435,11 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
 
 
 
-export async function loadNeighborhoodsLayer(mapInstance, { onDataLoaded, onNeighborhoodSelected } = {}) {
+export async function loadNeighborhoodsLayer(mapInstance, { onDataLoaded, onNeighborhoodSelected, isInteractionEnabled } = {}) {
   const res = await fetch('/api/neighborhoods')
   if (!res.ok) throw new Error(`Failed to load neighborhoods: ${res.status}`)
+
+  const interactionsAllowed = () => (isInteractionEnabled ? !!isInteractionEnabled() : true)
 
   const data = await res.json()
   onDataLoaded?.(data)
@@ -529,14 +534,51 @@ export async function loadNeighborhoodsLayer(mapInstance, { onDataLoaded, onNeig
     })
 
     // ---------- Click / selection ----------
+
+    let selectedId = null
     if (onNeighborhoodSelected) {
+      mapInstance.on('click', (e) => {
+        if (!interactionsAllowed()) return
+        const features = mapInstance.queryRenderedFeatures(e.point, {
+          layers: [FILL_ID],
+        });
+        if (features.length === 0 && selectedId) {
+          selectedId = null
+          onNeighborhoodSelected(null)
+        }
+      })
+
       mapInstance.on('click', FILL_ID, (e) => {
+        if (!interactionsAllowed()) return
+        if (clickHitsTree(e)) return
+
+        e.originalEvent?.stopPropagation()
+        e.originalEvent?.stopImmediatePropagation()
+
         if (!e.features?.length) return
         const feature = e.features[0]
-        onNeighborhoodSelected(feature)
+        selectedId = feature.id
+        onNeighborhoodSelected(feature.id)
       })
     }
   } else {
     mapInstance.getSource(SOURCE_ID).setData(data)
   }
+
+  // helper
+  function clickHitsTree(e) {
+    const hits = mapInstance.queryRenderedFeatures(e.point, {
+      layers: ['trees-circle', 'trees-pin-bg'].filter(id => mapInstance.getLayer(id)),
+    })
+    return hits.length > 0
+  }
+}
+
+export async function loadNeighborhoodStats(id) {
+  const res = await fetch(`/api/neighborhoods/${id}/stats`);
+  if (!res.ok) throw new Error(`Failed to load neighborhood ${id} stats: ${res.status}`)
+
+  const data = await res.json()
+  console.log(data)
+  return data
 }

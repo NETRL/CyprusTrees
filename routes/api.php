@@ -15,5 +15,7 @@ Route::get('/test', function () {
 });
 
 Route::get('/neighborhoods', [NeighborhoodGeoController::class, 'index']);
+Route::get('/neighborhoods/{id}/stats', [NeighborhoodGeoController::class, 'showStats']);
+
 Route::get('/trees', [TreesGeoController::class, 'index']);
 Route::get('/trees/{treeId}', [TreesGeoController::class, 'show']);

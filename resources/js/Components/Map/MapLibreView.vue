@@ -12,6 +12,7 @@
     </button>
 
     <TreeCard :hovered="hoveredData" :selected="selectedData" :markerLatLng="markerLatLng"
+        :selectedNeighborhood="selectedNeighborhood" :neighborhoodStats="neighborhoodStats"
         @update:selected="selectedData = $event" @cancelCreate="onCancelCreate" :pinClickFlag="pinClickFlag" />
     <MapLoadingOverlay :isLoading="isLoading" />
 
@@ -61,7 +62,7 @@ import TreeCard from '@/Components/Map/Partials/TreeCard.vue'
 
 import { initMap } from '@/Lib/Map/InitMap'
 import { setupBaseLayers } from '@/Lib/Map/SetupBaseLayers'
-import { loadTreesLayer, loadNeighborhoodsLayer, fetchTreeDetails } from '@/Lib/Map/DataLayers'
+import { loadTreesLayer, loadNeighborhoodsLayer, fetchTreeDetails, loadNeighborhoodStats } from '@/Lib/Map/DataLayers'
 import { useMapFilter } from '@/Composables/useMapFilter'
 import { useMapColors } from '@/Composables/useMapColors'
 
@@ -89,6 +90,9 @@ const isLoading = ref(true)
 const treeData = ref([])
 const neighborhoodData = ref([])
 const selectedData = ref(null)
+const selectedNeighborhoodId = ref(null)
+const selectedNeighborhood = ref(null)
+const neighborhoodStats = ref({});
 const hoveredData = ref(null)
 const toggleTreeCard = ref(null)
 const markerLatLng = ref(null)
@@ -161,7 +165,8 @@ onMounted(async () => {
         const [_, treesApi] = await Promise.all([
             loadNeighborhoodsLayer(m, {
                 onDataLoaded: (data) => (neighborhoodData.value = data),
-                onNeighborhoodSelected: (props) => (selectedData.value = props),
+                onNeighborhoodSelected: (props) => { selectedNeighborhoodId.value = props; },
+                isInteractionEnabled: () => markerLatLng.value == null,
             }),
             loadTreesLayer(m, {
                 onDataLoaded: (data) => (treeData.value = data),
@@ -189,6 +194,42 @@ onMounted(async () => {
     } finally {
         isLoading.value = false
     }
+})
+
+let statsReq = 0
+watch(
+    selectedNeighborhoodId,
+    async (v) => {
+        const reqId = ++statsReq
+        if (!v) {
+            selectedNeighborhood.value = null
+            neighborhoodStats.value = null
+            return
+        }
+
+        const fc = neighborhoodData.value
+        if (!fc?.features?.length) return
+
+        const feature = fc.features.find(f => Number(f.id) === Number(v))
+        if (!feature) return
+
+        selectedNeighborhood.value = feature.properties
+
+        try {
+            neighborhoodStats.value = null // το show loading state
+            const stats = await loadNeighborhoodStats(v)
+            if (reqId !== statsReq) return // stale response
+            neighborhoodStats.value = stats
+        } catch (err) {
+            console.error(err)
+            neighborhoodStats.value = null
+        }
+    },
+    { immediate: true }
+)
+
+watch(selectedData, v => {
+    console.log('selectedData', v)
 })
 
 const closeModal = () => {
@@ -408,20 +449,26 @@ const applyVisibility = (mode = selectedFilter.value) => {
     const propName = modeToPropName[mode]
     if (!propName) {
         map.value.setFilter('trees-circle', null)
-        map.value.setFilter('trees-pin-bg', null)
+        if (window.location.pathname.startsWith('/map2')) {
+            map.value.setFilter('trees-pin-bg', null)
+        }
         return
     }
 
     const hidden = Array.from(hiddenCategories.value[mode] || [])
     if (!hidden.length) {
         map.value.setFilter('trees-circle', null)
-        map.value.setFilter('trees-pin-bg', null)
+        if (window.location.pathname.startsWith('/map2')) {
+            map.value.setFilter('trees-pin-bg', null)
+        }
         return
     }
 
     const filter = ['!', ['in', ['get', propName], ['literal', hidden]]]
     map.value.setFilter('trees-circle', filter)
-    map.value.setFilter('trees-pin-bg', filter)
+    if (window.location.pathname.startsWith('/map2')) {
+        map.value.setFilter('trees-pin-bg', filter)
+    }
 
 }
 

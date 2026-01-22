@@ -10,9 +10,9 @@
     ]">
         <MapTreeForm v-if="isCreating || isEditing" v-model:visible="formVisible" routeResource="trees"
             :action="formAction" :markerLatLng="markerLatLng" :dataRow="props.selected" />
-
-        <TreeCardContent v-else :hovered="props.hovered" :selected="props.selected" :isHovered="isHovered"
-            :isSelected="isSelected" @editClick="onEditClick" />
+        <NeighborhoodCardContent v-if="isNeighborhood" :activeNeighborhood="selectedNeighborhood" :stats="neighborhoodStats || {}" />
+        <TreeCardContent v-if="isSelected || isHovered" :hovered="props.hovered" :selected="props.selected"
+            :isHovered="isHovered" :isSelected="isSelected" @editClick="onEditClick" />
     </aside>
 
     <!-- Mobile Bottom Sheet -->
@@ -20,9 +20,9 @@
         <div class="flex flex-col h-full px-5 pt-4 pb-6 w-full sm:items-center">
             <MapTreeForm v-if="isCreating || isEditing" v-model:visible="formVisible" routeResource="trees"
                 :action="formAction" :markerLatLng="markerLatLng" :dataRow="props.selected" />
-
-            <TreeCardContent v-else :hovered="props.hovered" :selected="props.selected" :isHovered="isHovered"
-                :isSelected="isSelected" @editClick="onEditClick" />
+            <NeighborhoodCardContent v-if="isNeighborhood" :activeNeighborhood="selectedNeighborhood" :stats="neighborhoodStats || {}" />
+            <TreeCardContent v-if="isSelected || isHovered" :hovered="props.hovered" :selected="props.selected"
+                :isHovered="isHovered" :isSelected="isSelected" @editClick="onEditClick" />
         </div>
     </BottomSheet>
 </template>
@@ -32,6 +32,7 @@ import { computed, ref, watch } from 'vue'
 import TreeCardContent from '@/Components/Map/Partials/TreeCardContent.vue'
 import BottomSheet from '@/Components/Map/Partials/BottomSheet.vue'
 import MapTreeForm from '@/Components/Map/Partials/MapTreeForm.vue'
+import NeighborhoodCardContent from '@/Components/Map/Partials/NeighborhoodCardContent.vue'
 
 const emit = defineEmits(['cancelCreate'])
 
@@ -52,19 +53,27 @@ const props = defineProps({
         type: Number,
         default: 0
     },
+    selectedNeighborhood: {
+        type: Object,
+        default: null
+    },
+    neighborhoodStats: {
+        type: Object,
+        default: null
+    },
 })
 
 const formVisible = ref(false)
 
-const isHovered = computed(() => props.hovered !== null)
+const isHovered = computed(() => props.hovered !== null  && props.selectedNeighborhood === null)
 const isSelected = computed(() => props.selected !== null)
 const isCreating = computed(() => props.markerLatLng !== null)
 const isEditing = ref(false)
 const formAction = ref('');      // 'Create' or 'Edit'
-
+const isNeighborhood = computed(() => props.selectedNeighborhood !== null && props.selected === null)
 
 // single source of truth for visibility
-const shouldShowPanel = computed(() => isHovered.value || isSelected.value || isCreating.value || isEditing.value)
+const shouldShowPanel = computed(() => isHovered.value || isSelected.value || isCreating.value || isEditing.value || isNeighborhood.value)
 
 // local state only for this sheet
 const treeSheetState = ref('closed')
@@ -98,7 +107,6 @@ watch(
         }
     }
 )
-
 
 // open sheet when state exists, otherwise close
 watch(
