@@ -22,16 +22,26 @@ export async function setupBaseLayers(map, { maptilerKey, vectorStyles = [] }) {
       tiles: [`https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}@2x.png?key=${maptilerKey}`],
       tileSize: 256,
     },
-    // {
-    //   source: 'cartoDark',
-    //   id: 'cartoDarkLayer',
-    //   name: 'Carto',
-    //   type: 'raster',
-    //   preview: '/storage/images/map-carto.png',
-    //   tiles: ['https://s.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'],
-    //   tileSize: 256,
+    {
+      source: 'cartoLight',
+      id: 'cartoLightLayer',
+      name: 'Carto',
+      type: 'raster',
+      preview: '/storage/images/map-default.png',
+      tiles: ['https://s.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'],
+      tileSize: 256,
 
-    // },
+    },
+    {
+      source: 'satellite2',
+      id: 'satellite2',
+      name: 'Satellite View2',
+      type: 'raster',
+      preview: '/storage/images/map-default.png',
+      tiles: [`https://api.maptiler.com/maps/hybrid/256/{z}/{x}/{y}.jpg?key=${maptilerKey}`],
+      tileSize: 256,
+
+    },
   ]
 
   layersConfig.forEach(layer => {
@@ -67,9 +77,14 @@ export async function setupBaseLayers(map, { maptilerKey, vectorStyles = [] }) {
     }
   }
 
+  let defaultMap = "darkGreen"
+  if( window.location.pathname.startsWith('/map2')){
+    defaultMap = "osmStandardLayer"
+  } 
+
   const baseMapControl = new BaseMapControl({
     // defaultLayerId: layersConfig[0].id,
-    defaultLayerId: 'darkGreen',
+    defaultLayerId: defaultMap,
     layers: layersConfig,
     map,
   })

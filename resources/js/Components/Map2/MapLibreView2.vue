@@ -62,7 +62,7 @@ import TreeCard from '@/Components/Map/Partials/TreeCard.vue'
 
 import { initMap } from '@/Lib/Map/InitMap'
 import { setupBaseLayers } from '@/Lib/Map/SetupBaseLayers'
-import { loadTreesLayer, loadNeighborhoodsLayer, fetchTreeDetails, loadNeighborhoodStats } from '@/Lib/Map/DataLayers'
+import { loadTreesLayer, loadNeighborhoodsLayer, fetchTreeDetails, loadNeighborhoodStats } from '@/Lib/Map/DataLayers2'
 import { useMapFilter } from '@/Composables/useMapFilter'
 import { useMapColors } from '@/Composables/useMapColors'
 
@@ -117,6 +117,12 @@ const CUSTOM_VECTOR_STYLES = [
         id: 'landcapeDark',
         name: 'Landscape Dark',
         styleUrl: `https://api.maptiler.com/maps/019ac206-7965-7795-8035-d9b24b5c8815/style.json?key=${MAPTILER_KEY}`,
+        preview: '/storage/images/map-custom.png',
+    },
+    {
+        id: 'satellite',
+        name: 'Satellite View',
+        styleUrl: `https://api.maptiler.com/maps/hybrid/style.json?key=${MAPTILER_KEY}`,
         preview: '/storage/images/map-custom.png',
     },
 ]
@@ -366,6 +372,9 @@ const visualiseTreeData = (mode) => {
     if (!map.value || !map.value.getLayer('trees-circle')) return
 
     let layerId = 'circle-color'
+    // if (window.location.pathname.startsWith('/map2')) {
+    //     layerId = 'icon-color'
+    // }
 
     let propertyKey
     let colorExpression
@@ -446,17 +455,27 @@ const applyVisibility = (mode = selectedFilter.value) => {
     const propName = modeToPropName[mode]
     if (!propName) {
         map.value.setFilter('trees-circle', null)
+        // if (window.location.pathname.startsWith('/map2')) {
+        //     map.value.setFilter('trees-pin-bg', null)
+        // }
         return
     }
 
     const hidden = Array.from(hiddenCategories.value[mode] || [])
     if (!hidden.length) {
         map.value.setFilter('trees-circle', null)
+        // if (window.location.pathname.startsWith('/map2')) {
+        //     map.value.setFilter('trees-pin-bg', null)
+        // }
         return
     }
 
     const filter = ['!', ['in', ['get', propName], ['literal', hidden]]]
     map.value.setFilter('trees-circle', filter)
+    // if (window.location.pathname.startsWith('/map2')) {
+    //     map.value.setFilter('trees-pin-bg', filter)
+    // }
+
 }
 
 watch(

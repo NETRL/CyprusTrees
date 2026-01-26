@@ -11,91 +11,6 @@ export async function fetchTreeDetails(treeId, { onDataLoaded } = {}) {
   return data
 }
 
-
-// async function ensureTreeIcon(map) {
-//   if (map.hasImage('pin-bg')) return;
-
-//   // Load Background (Static Black Pin)
-//   const bgRes = await fetch(`/icons/pin-bg.svg?v=${Date.now()}`);
-//   const bgImg = await createImageBitmap(await bgRes.blob());
-//   map.addImage('pin-bg', bgImg);
-
-//   // Load Foliage (The mask for coloring)
-//   const foliageRes = await fetch(`/icons/tree-foliage.svg?v=${Date.now()}`);
-//   const foliageImg = await createImageBitmap(await foliageRes.blob());
-//   map.addImage('tree-foliage', foliageImg, { sdf: true });
-// }
-
-async function ensureTreeIcon(map) {
-  if (map.hasImage('tree-marker')) return;
-
-  const res = await fetch(`/icons/tree-marker.svg?v=${Date.now()}`)
-  if (!res.ok) throw new Error('Failed to load tree-marker.svg')
-
-  const svgText = await res.text()
-  const svg = new Blob([svgText], { type: 'image/svg+xml' })
-  const url = URL.createObjectURL(svg)
-
-  await new Promise((resolve, reject) => {
-    const img = new Image()
-    img.onload = () => {
-      // IMPORTANT: sdf:true enables icon-color tinting
-      map.addImage('tree-marker', img, { sdf: true })
-      URL.revokeObjectURL(url)
-      resolve()
-    }
-    img.onerror = reject
-    img.src = url
-  })
-}
-
-async function ensurePinIcon(map) {
-  if (map.hasImage('pin-bg')) return;
-
-  const res = await fetch(`/icons/pin-bg.svg?v=${Date.now()}`)
-  if (!res.ok) throw new Error('Failed to load pin-bg.svg')
-
-  const svgText = await res.text()
-  const svg = new Blob([svgText], { type: 'image/svg+xml' })
-  const url = URL.createObjectURL(svg)
-
-  await new Promise((resolve, reject) => {
-    const img = new Image()
-    img.onload = () => {
-      // IMPORTANT: sdf:true enables icon-color tinting
-      map.addImage('pin-bg', img, { sdf: true })
-      URL.revokeObjectURL(url)
-      resolve()
-    }
-    img.onerror = reject
-    img.src = url
-  })
-}
-
-async function ensureFoliageIcon(map) {
-  if (map.hasImage('tree-foliage')) return;
-
-  const res = await fetch(`/icons/tree-foliage.svg?v=${Date.now()}`)
-  if (!res.ok) throw new Error('Failed to load tree-foliage.svg')
-
-  const svgText = await res.text()
-  const svg = new Blob([svgText], { type: 'image/svg+xml' })
-  const url = URL.createObjectURL(svg)
-
-  await new Promise((resolve, reject) => {
-    const img = new Image()
-    img.onload = () => {
-      // IMPORTANT: sdf:true enables icon-color tinting
-      map.addImage('tree-foliage', img, { sdf: true })
-      URL.revokeObjectURL(url)
-      resolve()
-    }
-    img.onerror = reject
-    img.src = url
-  })
-}
-
-
 export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected, onTreeHovered, setInitialFilter, isInteractionEnabled }) {
   const res = await fetch('/api/trees')
   if (!res.ok) {
@@ -103,10 +18,6 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
   }
   const data = await res.json()
   let currentData = data
-
-  await ensureTreeIcon(mapInstance)
-  await ensurePinIcon(mapInstance)
-  await ensureFoliageIcon(mapInstance)
 
   const interactionsAllowed = () => (isInteractionEnabled ? !!isInteractionEnabled() : true)
 
@@ -130,54 +41,24 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
     const DOT_ZOOM_14 = 1.7
     const DOT_ZOOM_20 = 6
 
-    if (!window.location.pathname.startsWith('/map2')) {
+    mapInstance.addLayer({
+      id: 'trees-circle',
+      type: 'circle',
+      source: 'trees',
+      paint: {
+        'circle-radius': [
+          'interpolate', ['linear'], ['zoom'],
+          8, DOT_ZOOM_8,   // zoom starts from 0 (full map) to 22(full zoomed)
+          14, DOT_ZOOM_14,
+          20, DOT_ZOOM_20,
+        ],
+        'circle-color': '#16a34a',
+        'circle-stroke-width': 10,
+        'circle-stroke-color': 'rgba(0,0,0,0)',
+        'circle-opacity': 1
 
-      mapInstance.addLayer({
-        id: 'trees-circle',
-        type: 'circle',
-        source: 'trees',
-        paint: {
-          'circle-radius': [
-            'interpolate', ['linear'], ['zoom'],
-            8, DOT_ZOOM_8,   // zoom starts from 0 (full map) to 22(full zoomed)
-            14, DOT_ZOOM_14,
-            20, DOT_ZOOM_20,
-          ],
-          'circle-color': '#16a34a',
-          'circle-stroke-width': 10,
-          'circle-stroke-color': 'rgba(0,0,0,0)',
-          'circle-opacity': 1
-
-        },
-      })
-    }
-
-
-    // mapInstance.addLayer({
-    //   id: 'trees-circle',          // ID stays the same
-    //   type: 'symbol',              // type changes
-    //   source: 'trees',
-    //   layout: {
-    //     'icon-image': 'tree-marker',
-    //     'icon-allow-overlap': true,
-    //     'icon-ignore-placement': true,
-    //     'icon-anchor': 'bottom',
-    //     'icon-size': [
-    //       'interpolate', ['linear'], ['zoom'],
-    //       8, 0.35,
-    //       14, 0.5,
-    //       20, 1.0,
-    //     ],
-    //   },
-    //   paint: {
-    //     'icon-color': '#16a34a',
-    //     'icon-opacity': 1,
-    //   },
-    // })
-
-
-
-
+      },
+    })
 
     // Hover ring (no pulse, just a halo while hovering)
     mapInstance.addLayer({
@@ -208,52 +89,6 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
       filter: ['==', ['get', 'id'], -1],
     });
 
-    if (window.location.pathname.startsWith('/map2')) {
-      const ICON_SIZE_CONFIG = [
-        'interpolate', ['linear'], ['zoom'],
-        8, 0.6,   // Very small at low zoom
-        14, 0.4,   // Medium size at city level
-        20, 0.7    // Larger when zoomed in close
-      ];
-
-
-      const ICON_OFFSET = [0, 8];
-
-      // Layer 1: The Black Pin
-      mapInstance.addLayer({
-        id: 'trees-pin-bg',
-        type: 'symbol',
-        source: 'trees',
-        layout: {
-          'icon-image': 'pin-bg',
-          'icon-anchor': 'bottom',
-          'icon-allow-overlap': true,
-          'icon-offset': ICON_OFFSET,
-          'icon-size': ICON_SIZE_CONFIG,
-        },
-        paint: {
-          'icon-color': '#101828'
-        }
-      });
-
-      // Layer 2: The Colored Foliage
-      mapInstance.addLayer({
-        id: 'trees-circle',
-        type: 'symbol',
-        source: 'trees',
-        layout: {
-          'icon-image': 'tree-foliage',
-          'icon-anchor': 'bottom',
-          'icon-allow-overlap': true,
-          'icon-offset': ICON_OFFSET,
-          'icon-size': ICON_SIZE_CONFIG,
-        },
-        paint: {
-          'icon-color': '#16a34a'
-        }
-      });
-
-    }
 
     let hoveredId = null;
     let selectedId = null;
