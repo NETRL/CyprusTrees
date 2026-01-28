@@ -13,9 +13,10 @@
     </Toolbar>
 
     <DataTable class="m-4 rounded-xl border border-gray-200 dark:border-gray-800 truncate" ref="dt"
-      v-model:expandedRows="expandedRows" :filters="filters" :value="tableData.data" :lazy="true" :paginator="true" 
-      :rows="perPage" :totalRecords="tableData.total" :first="(tableData.current_page - 1) * tableData.per_page" 
-      :rowsPerPageOptions="[5, 10, 25, 50, 100]" responsiveLayout="scroll" :loading="isLoading" @page="onPage" @sort="onSort">
+      v-model:expandedRows="expandedRows" :filters="filters" :value="tableData.data" :lazy="true" :paginator="true"
+      :rows="perPage" :totalRecords="tableData.total" :first="(tableData.current_page - 1) * tableData.per_page"
+      :rowsPerPageOptions="[5, 10, 25, 50, 100]" responsiveLayout="scroll" :loading="isLoading" @page="onPage"
+      @sort="onSort">
       <template #header>
         <div class="table-header flex flex-column md:flex-row md:justiify-content-between">
           <div>
@@ -37,7 +38,7 @@
 
       <Column :expander="true" headerStyle="width:3rem" />
 
-      <Column field="planting_id" header="Id" sortable />
+      <Column field="planting_id" header="Event ID" sortable />
 
       <Column class="max-w-[400px] overflow-hidden" field="campaign_label" header="Campaign" sortable>
         <template #body="{ data }">
@@ -118,9 +119,9 @@
             </Link> -->
           </div>
 
-          <DataTable :value="data.planted_trees" class="rounded-lg border border-gray-200 dark:border-gray-800"
+          <DataTable :value="data.planted_trees" :key="data.planting_id" class="rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-900 "
             responsiveLayout="scroll">
-            <Column field="id" header="Item Id" sortable />
+            <Column field="id" header="Planting Id" sortable />
             <Column field="tree_id" header="Tree Id" sortable />
 
             <Column field="tree_label" header="Tree">
@@ -133,7 +134,7 @@
               </template>
             </Column>
 
-            <Column field="planter_label" header="Planted By" sortable />
+            <Column field="planted_by_label" header="Planted By" sortable />
 
             <Column field="planted_at" header="Planted At" sortable>
               <template #body="{ data: row }">{{ formatDate(row.planted_at) }}</template>
@@ -141,6 +142,14 @@
 
             <Column field="planting_method" header="Method" />
             <Column field="notes" header="Notes" />
+            <Column :exportable="false" header="Actions">
+              <template #body="{ data: row }">
+                <Button class="p-button-rounded mr-2 max-sm:text-sm! my-1" severity="primary" icon="pi pi-pencil"
+                  @click="openItemEditForm(row)" />
+                <Button class="p-button-rounded max-sm:text-sm!" severity="danger" icon="pi pi-trash"
+                  @click="deleteItemResource(row.id)" />
+              </template>
+            </Column>
           </DataTable>
         </div>
       </template>
@@ -149,6 +158,9 @@
     <PlantingEventForm v-model:visible="formVisible" routeResource="plantingEvents" :action="formAction"
       :campaigns="campaignData" :neighborhoods="neighborhoodData" :users="userData" :statusOptions="statusOptions"
       :dataRow="formRow" @created="reloadTable" @updated="reloadTable" />
+
+    <PlantingEventTreeForm v-model:visible="itemFormVisible" routeResource="plantingEventTrees" :action="itemFormAction"
+      :users="userData":dataRow="itemFormRow" @updated="reloadTable" />
   </div>
 
   <Popover ref="op">
@@ -164,6 +176,7 @@ import { Link, router } from "@inertiajs/vue3";
 import { reactive, ref, watch } from "vue";
 import { ExternalLink } from "lucide-vue-next";
 import PlantingEventForm from "@/Pages/PlantingEvent/Partials/PlantingEventForm.vue";
+import PlantingEventTreeForm from "@/Pages/PlantingEvent/Partials/PlantingEventTreeForm.vue";
 import { useDateFormatter } from "@/Composables/useDateFormatter";
 import { FilterMatchMode } from '@primevue/core/api';
 import { debounce } from "lodash";
@@ -204,6 +217,9 @@ const expandedRows = ref([]);
 const formVisible = ref(false);
 const formAction = ref("");
 const formRow = ref(null);
+const itemFormVisible = ref(false);
+const itemFormAction = ref("");
+const itemFormRow = ref(null);
 
 const exportCSV = () => dt.value?.exportCSV?.();
 
@@ -262,7 +278,7 @@ const buildQueryParams = (overrides = {}) => ({
   ...overrides,
 })
 
-
+// --- Planting Event CRUD ---
 const openCreateForm = () => {
   formRow.value = null;
   formAction.value = "Create";
@@ -280,6 +296,21 @@ const reloadTable = () => router.reload({ only: ["tableData"] });
 const deleteResource = (id) => {
   // adapt to your confirmation mechanism if you have it globally
   router.delete(route("plantingEvents.destroy", id), {
+    preserveScroll: true,
+    onSuccess: () => reloadTable(),
+  });
+};
+
+// --- Item CRUD ---
+const openItemEditForm = (row) => {
+  itemFormRow.value = row;
+  itemFormAction.value = "Edit";
+  itemFormVisible.value = true;
+};
+
+const deleteItemResource = (id) => {
+  // adapt to your confirmation mechanism if you have it globally
+  router.delete(route("plantingEventTrees.destroy", id), {
     preserveScroll: true,
     onSuccess: () => reloadTable(),
   });

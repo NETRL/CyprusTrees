@@ -15,6 +15,7 @@ use App\Http\Controllers\NeigborhoodController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\PlantingEventController;
+use App\Http\Controllers\PlantingEventTreeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportTypeController;
 use App\Http\Controllers\SpeciesController;
@@ -147,6 +148,15 @@ Route::middleware('auth', '2fa')->group(function () {
 
     Route::resource('plantingEvents', PlantingEventController::class)->except(['create', 'edit']);
     Route::post('/plantingEvents/mass-destroy', [PlantingEventController::class, 'massDestroy'])->name('plantingEvents.massDestroy');
+
+    Route::prefix('planting-events/{plantingEvent}')
+        ->group(function () {
+            Route::post('/trees', [PlantingEventTreeController::class, 'store'])->name('plantingEventTrees.store');
+        });
+    Route::patch('/planting-event-trees/{plantingEventTree}', [PlantingEventTreeController::class, 'update'])->name('plantingEventTrees.update');
+    Route::delete('/planting-event-trees/{plantingEventTree}', [PlantingEventTreeController::class, 'destroy'])->name('plantingEventTrees.destroy');
+
+
 
     Route::resource('maintenanceEvents', MaintenanceEventsController::class)->except(['create', 'edit']);
     Route::post('/maintenanceEvents/mass-destroy', [MaintenanceEventsController::class, 'massDestroy'])->name('maintenanceEvents.massDestroy');

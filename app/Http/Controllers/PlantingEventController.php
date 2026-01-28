@@ -39,6 +39,7 @@ class PlantingEventController extends Controller
                         },
                         'planter:id,first_name,last_name',
                     ]);
+                    $q->orderBy('id', 'asc');
                 },
             ])
             ->withCount(['eventTrees'])
@@ -85,8 +86,8 @@ class PlantingEventController extends Controller
                         )
                         : (string) $pet->tree_id;
 
-                    $planterLabel = $pet->planter
-                        ? trim(($pet->planter->first_name ?? '') . ' ' . ($pet->planter->last_name ?? ''))
+                    $plantedByLabel = $pet->plantedBy
+                        ? trim(($pet->plantedBy->first_name ?? '') . ' ' . ($pet->plantedBy->last_name ?? ''))
                         : '-';
 
                     return [
@@ -94,7 +95,7 @@ class PlantingEventController extends Controller
                         'tree_id'         => $pet->tree_id,
                         'tree_label'      => $treeLabel,
                         'planted_by'      => $pet->planted_by,
-                        'planter_label'   => $planterLabel,
+                        'planted_by_label'   => $plantedByLabel,
                         'planted_at'      => $pet->planted_at,
                         'planting_method' => $pet->planting_method,
                         'notes'           => $pet->notes,
