@@ -175,7 +175,7 @@ onMounted(async () => {
                 isInteractionEnabled: () => markerLatLng.value == null,
             }),
             loadTreesLayer(m, {
-                onDataLoaded: (data) => (treeData.value = data),
+                onDataLoaded: (data) => { treeData.value = data; allTreeData.value = data },
                 onTreeSelected: (props) => (selectedData.value = props),
                 onTreeHovered: (props) => (hoveredData.value = props),
                 setInitialFilter: (val) => (selectedFilter.value = val),
@@ -449,39 +449,48 @@ const onToggleCategory = ({ mode, key }) => {
     applyVisibility(mode)
 }
 
-const applyVisibility = (mode = selectedFilter.value) => {
-    if (!map.value || !map.value.getLayer('trees-circle')) return
+const NOT_CLUSTER = ['!', ['has', 'point_count']]
+const allTreeData = ref(null)      // master FeatureCollection 
+const visibleTreeData = ref(null)  // what we feed to the source (optional)
+
+function buildFilteredTrees(mode) {
+    const fc = allTreeData.value
+    if (!fc?.features) return fc
 
     const propName = modeToPropName[mode]
-    if (!propName) {
-        map.value.setFilter('trees-circle', null)
-        // if (window.location.pathname.startsWith('/map2')) {
-        //     map.value.setFilter('trees-pin-bg', null)
-        // }
-        return
-    }
-
     const hidden = Array.from(hiddenCategories.value[mode] || [])
-    if (!hidden.length) {
-        map.value.setFilter('trees-circle', null)
-        // if (window.location.pathname.startsWith('/map2')) {
-        //     map.value.setFilter('trees-pin-bg', null)
-        // }
-        return
+
+    // no mode/prop or nothing hidden => show all
+    if (!propName || hidden.length === 0) return fc
+
+    const hiddenSet = new Set(hidden)
+
+    return {
+        type: 'FeatureCollection',
+        features: fc.features.filter(f => {
+            const v = f?.properties?.[propName]
+            return !hiddenSet.has(v)
+        }),
     }
-
-    const filter = ['!', ['in', ['get', propName], ['literal', hidden]]]
-    map.value.setFilter('trees-circle', filter)
-    // if (window.location.pathname.startsWith('/map2')) {
-    //     map.value.setFilter('trees-pin-bg', filter)
-    // }
-
 }
+
+
+const applyVisibility = (mode = selectedFilter.value) => {
+    if (!map.value) return
+    if (!allTreeData.value) return
+
+    const filtered = buildFilteredTrees(mode)
+    visibleTreeData.value = filtered
+
+    // IMPORTANT: this makes clusters + counts recompute
+    dataLayerApi?.setTreesData?.(filtered)
+}
+
 
 watch(
     selectedFilter,
     (mode) => {
-        if (!map.value || !map.value.getLayer('trees-circle')) return
+        if (!map.value) return
         visualiseTreeData(mode)
         applyVisibility(mode)
     },

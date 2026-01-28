@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PlantingEventStatus;
 use App\Models\Campaign;
+use App\Models\Neighborhood;
 use App\Models\PlantingEvent;
-use App\Models\Tree;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,6 @@ class PlantingEventController extends Controller
 {
     public function __construct()
     {
-        // automatically applies policy to all resource methods
         $this->authorizeResource(PlantingEvent::class, 'plantingEvent');
     }
 
@@ -27,56 +27,126 @@ class PlantingEventController extends Controller
         $perPage = $request->integer('per_page', 10);
 
         $query = PlantingEvent::query()
-            ->with(['tree', 'planter', 'campaign'])
-            ->setUpQuery();        // this applies search + sort based on request params
+            ->with([
+                'campaign:id,name,sponsor',
+                'neighborhood:id,name',
+                'assignedTo:id,first_name,last_name',
+                'createdBy:id,first_name,last_name',
+                'eventTrees' => function ($q) {
+                    $q->with([
+                        'tree' => function ($t) {
+                            $t->with('species:id,latin_name,common_name');
+                        },
+                        'planter:id,first_name,last_name',
+                    ]);
+                },
+            ])
+            ->withCount(['eventTrees'])
+            ->orderBy('planting_id', 'desc')
+            ->setUpQuery();
 
-        $tableData = $query->paginate($perPage)->withQueryString();
+
+        $tableData = $query
+            ->paginate($perPage)
+            ->withQueryString();
 
         $tableData->getCollection()->transform(function ($e) {
             return [
                 ...$e->toArray(),
-                'tree_label' => $e->tree
-                    ? ($e->tree_id . ' - ' . $e->tree->species?->common_name . ' (' . $e->tree->species?->latin_name . ') ' . ($e->tree->tags_label ?? ''))
-                    : (string) $e->tree_id,
 
-                'campaign_label' => $e->campaign ? ($e->campaign_id . ' - ' . $e->campaign->name . '(' .$e->campaign->sponsor .')') : '-',
+                'location' => $e->getLocationAttribute(),
 
-                'planter_label' => $e->planter
-                    ? ($e->planted_by . ' - ' . trim(($e->planter->first_name ?? '') . ' ' . ($e->planter->last_name ?? '')))
+                'campaign_label' => $e->campaign
+                    ? ($e->campaign_id . ' - ' . $e->campaign->name . ($e->campaign->sponsor ? ' (' . $e->campaign->sponsor . ')' : ''))
                     : '-',
+
+                'neighborhood_label' => $e->neighborhood
+                    ? ($e->neighborhood_id . ' - ' . $e->neighborhood->name)
+                    : '-',
+
+                'assigned_to_label' => $e->assignedTo
+                    ? trim(($e->assignedTo->first_name ?? '') . ' ' . ($e->assignedTo->last_name ?? ''))
+                    : '-',
+
+                'created_by_label' => $e->creator
+                    ? trim(($e->creator->first_name ?? '') . ' ' . ($e->creator->last_name ?? ''))
+                    : '-',
+
+                'trees_count' => (int) ($e->event_trees_count ?? 0),
+                // children for expansion
+                'planted_trees' => ($e->eventTrees ?? collect())->map(function ($pet) {
+                    $tree = $pet->tree;
+
+                    $treeLabel = $tree
+                        ? ($tree->getKey() . ' - ' .
+                            ($tree->species?->common_name ?? '-') .
+                            ' (' . ($tree->species?->latin_name ?? '-') . ') ' .
+                            ($tree->tags_label ?? '')
+                        )
+                        : (string) $pet->tree_id;
+
+                    $planterLabel = $pet->planter
+                        ? trim(($pet->planter->first_name ?? '') . ' ' . ($pet->planter->last_name ?? ''))
+                        : '-';
+
+                    return [
+                        'id'              => $pet->id,
+                        'tree_id'         => $pet->tree_id,
+                        'tree_label'      => $treeLabel,
+                        'planted_by'      => $pet->planted_by,
+                        'planter_label'   => $planterLabel,
+                        'planted_at'      => $pet->planted_at,
+                        'planting_method' => $pet->planting_method,
+                        'notes'           => $pet->notes,
+                        'tree_lat'        => $tree?->lat,
+                        'tree_lon'        => $tree?->lon,
+                    ];
+                })->values(),
             ];
         });
 
 
-
         return Inertia::render('PlantingEvent/Index', [
-            'tableData' => $tableData,
-            'dataColumns' => PlantingEvent::getDataColumns(),
-            'treeData'    => Tree::with('species:id,latin_name,common_name')
-                ->select('id', 'species_id', 'lat', 'lon', 'address')
-                ->get(),
+            'tableData'    => $tableData,
+            'dataColumns'  => PlantingEvent::getDataColumns(),
+
             'campaignData' => Campaign::query()
                 ->select('id', 'name', 'sponsor', 'start_date', 'end_date')
                 ->get(),
+
+            'neighborhoodData' => Neighborhood::query()
+                ->select('id', 'name')
+                ->get(),
+
             'userData' => User::with('roles:id,name')
                 ->select(['id', 'first_name', 'last_name'])
                 ->get(),
+
+            'statusOptions' => collect(PlantingEventStatus::cases())->map(fn($s) => [
+                'value' => $s->value,
+                'label' => $s->label(),
+            ]),
         ]);
     }
-
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            "tree_id" => 'required|integer|exists:trees,id',
-            "campaign_id" => 'nullable|integer|exists:campaigns,id',
-            "planted_by" => 'nullable|integer|exists:users,id',
-            "planted_at" => 'nullable|date',
-            "method" => 'nullable|string|max:60',
-            "notes" => 'nullable|string|max:5000',
+            'campaign_id'       => 'nullable|integer|exists:campaigns,id',
+            'neighborhood_id'   => 'nullable|integer|exists:neighborhoods,id',
+            'assigned_to'       => 'nullable|integer|exists:users,id',
+            'started_at'        => 'nullable|date',
+            'completed_at'      => 'nullable|date|after_or_equal:started_at',
+            'lat'               => 'nullable|numeric|between:-90,90',
+            'lon'               => 'nullable|numeric|between:-180,180',
+            'target_tree_count' => 'nullable|integer|min:0|max:100000',
+            'status'            => 'required|string|in:' . implode(',', array_map(fn($c) => $c->value, PlantingEventStatus::cases())),
+            'notes'             => 'nullable|string|max:5000',
         ]);
 
-        PlantingEvent::create($validated);
+        $validated['created_by'] = $request->user()->id;
+
+        PlantingEvent::query()->create($validated);
 
         $request->session()->flash('message', [
             'type'    => 'success',
@@ -86,42 +156,40 @@ class PlantingEventController extends Controller
         return redirect()->route('plantingEvents.index');
     }
 
-
     public function update(Request $request, PlantingEvent $plantingEvent): RedirectResponse
     {
         $validated = $request->validate([
-            "tree_id" => 'required|integer|exists:trees,id',
-            "campaign_id" => 'nullable|integer|exists:campaigns,id',
-            "planted_by" => 'nullable|integer|exists:users,id',
-            "planted_at" => 'nullable|date',
-            "method" => 'nullable|string|max:60',
-            "notes" => 'nullable|string|max:5000',
+            'campaign_id'       => 'nullable|integer|exists:campaigns,id',
+            'neighborhood_id'   => 'nullable|integer|exists:neighborhoods,id',
+            'assigned_to'       => 'nullable|integer|exists:users,id',
+            'started_at'        => 'nullable|date',
+            'completed_at'      => 'nullable|date|after_or_equal:started_at',
+            'lat'               => 'nullable|numeric|between:-90,90',
+            'lon'               => 'nullable|numeric|between:-180,180',
+            'target_tree_count' => 'nullable|integer|min:0|max:100000',
+            'status'            => 'required|string|in:' . implode(',', array_map(fn($c) => $c->value, PlantingEventStatus::cases())),
+            'notes'             => 'nullable|string|max:5000',
         ]);
 
         $plantingEvent->update($validated);
 
         $request->session()->flash('message', [
             'type'    => 'success',
-            'message' => __('PlantingEvent has been updated.'),
+            'message' => __('Planting Event has been updated.'),
         ]);
 
         return redirect()->route('plantingEvents.index');
     }
 
-
     public function destroy(Request $request, PlantingEvent $plantingEvent): RedirectResponse
     {
-
-        // 1. Authorize 
         $this->authorize('delete', $plantingEvent);
 
-        // 2. Delete
         $plantingEvent->delete();
 
-        // 3. Flash
         $request->session()->flash('message', [
             'type' => 'success',
-            'message' => __('PlantingEvent has been deleted.')
+            'message' => __('Planting Event has been deleted.'),
         ]);
 
         return redirect()->route('plantingEvents.index');
@@ -129,10 +197,9 @@ class PlantingEventController extends Controller
 
     public function massDestroy(Request $request): RedirectResponse
     {
-        // Extract the IDs from the incoming payload
         $ids = collect($request->input('plantingEvents'))
-            ->pluck('id')
-            ->filter()        // remove nulls just in case
+            ->pluck('planting_id')
+            ->filter()
             ->all();
 
         if (empty($ids)) {
@@ -145,23 +212,16 @@ class PlantingEventController extends Controller
         }
 
         DB::transaction(function () use ($ids) {
-            // Load the models we’re going to operate on
-            $itemList = PlantingEvent::whereIn('id', $ids)->get();
+            $items = PlantingEvent::query()->whereIn('planting_id', $ids)->get();
 
-            // Optional sanity check: if some IDs were not found
-            // decide what to do (ignore, error, etc.)
-            // if (count($itemList) !== count($ids)) {
-            //     throw new \RuntimeException('Some selected plantingEvents do not exist.');
-            // }
-
-            foreach ($itemList as $item) {
+            foreach ($items as $item) {
                 $this->authorize('delete', $item);
                 $item->delete();
             }
         });
 
         $request->session()->flash('message', [
-            'type'    => 'success', // error, success, info
+            'type'    => 'success',
             'message' => __('Planting Events have been deleted.'),
         ]);
 

@@ -35,6 +35,13 @@ use Inertia\Inertia;
 Route::get('/', function (Request $request) {
 
     $initialTreeId = $request->filled('tree_id') ? (int) $request->input('tree_id') : null;
+    $requestedLat = $request->filled('lat') ? (float) $request->input('lat') : null;
+    $requestedLon = $request->filled('lon') ? (float) $request->input('lon') : null;
+
+    $initialLocation = [
+        'lat' => $requestedLat,
+        'lon' => $requestedLon,
+    ];
 
     return Inertia::render('Map/MapView', [
         'reportTypes' => ReportType::all(),
@@ -47,12 +54,21 @@ Route::get('/', function (Request $request) {
         'treeStatus' => Tree::getTreeStatusOptions(),
         'ownerType' => Tree::getOwnerTypeOptions(),
         'initialTreeId' => $initialTreeId,
+        'initialLocation' => $initialLocation,
     ]);
 })->name('/');
 
 Route::get('/map2', function (Request $request) {
 
     $initialTreeId = $request->filled('tree_id') ? (int) $request->input('tree_id') : null;
+    $requestedLat = $request->filled('lat') ? (float) $request->input('lat') : null;
+    $requestedLon = $request->filled('lon') ? (float) $request->input('lon') : null;
+
+    $initialLocation = [
+        'lat' => $requestedLat,
+        'lon' => $requestedLon,
+    ];
+
 
     return Inertia::render('Map/MapView', [
         'reportTypes' => ReportType::all(),
@@ -65,6 +81,7 @@ Route::get('/map2', function (Request $request) {
         'treeStatus' => Tree::getTreeStatusOptions(),
         'ownerType' => Tree::getOwnerTypeOptions(),
         'initialTreeId' => $initialTreeId,
+        'initialLocation' => $initialLocation,
     ]);
 })->name('/map2');
 

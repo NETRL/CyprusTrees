@@ -57,10 +57,11 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, toRef, watch } from 'vue'
 import { router } from '@inertiajs/vue3'
 import FormField from '@/Components/Primitives/FormField.vue'
 import { useDateParser } from '@/Composables/useDateParser'
+import { useTreeOptions } from '@/Composables/useTreeOptions'
 
 // props & emits
 const props = defineProps({
@@ -102,19 +103,7 @@ const emit = defineEmits(['update:visible'])
 
 const { parseDate } = useDateParser();
 
-const reportStatusOptions = computed(() => props.reportStatus)
-
-const treeOptions = computed(() =>
-    props.trees.map(index => ({
-        value: index.id,
-        label:
-            index.address
-                ? `#${index.id} – ${index.address}`
-                : index.species?.common_name
-                    ? `#${index.id} – ${index.species.common_name} (${index.lat}, ${index.lon})`
-                    : `#${index.id} – (${index.lat}, ${index.lon})`,
-    }))
-)
+const treeOptions = useTreeOptions(toRef(props, 'trees'))
 
 const typeOptions = computed(() =>
     (props.types ?? []).map(index => {

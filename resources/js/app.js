@@ -64,7 +64,8 @@ import TabView from 'primevue/tabview';
 import TabMenu from 'primevue/tabmenu';
 import Tag from 'primevue/tag';
 import Tooltip from 'primevue/tooltip';
-import  Slider from 'primevue/slider';
+import Slider from 'primevue/slider';
+import Popover from 'primevue/popover';
 
 import { __ } from './lang-handler';
 import TailAdminTheme from './primevue-theme';
@@ -153,6 +154,7 @@ createInertiaApp({
       .component('TabMenu', TabMenu)
       .component('Tag', Tag)
       .component('Slider', Slider)
+      .component('Popover', Popover)
       .directive('ripple', Ripple)
       .directive('tooltip', Tooltip)
       .directive('styleclass', StyleClass)

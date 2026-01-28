@@ -77,10 +77,10 @@ export async function setupBaseLayers(map, { maptilerKey, vectorStyles = [] }) {
     }
   }
 
-  let defaultMap = "darkGreen"
-  if( window.location.pathname.startsWith('/map2')){
-    defaultMap = "osmStandardLayer"
-  } 
+  let defaultMap = "osmStandardLayer"
+  // if( window.location.pathname.startsWith('/map2')){
+  //   defaultMap = "osmStandardLayer"
+  // } 
 
   const baseMapControl = new BaseMapControl({
     // defaultLayerId: layersConfig[0].id,

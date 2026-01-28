@@ -150,6 +150,11 @@ class Tree extends Model
         return $this->belongsToMany(Tag::class, 'tree_tags', 'tree_id', 'tag_id')->withTimestamps();
     }
 
+    public function plantingEventTrees()
+    {
+        return $this->hasMany(PlantingEventTree::class, 'tree_id', 'id');
+    }
+
     public function getSpeciesLabelAttribute()
     {
         return $this->species
@@ -170,11 +175,11 @@ class Tree extends Model
     }
 
     protected array $enumSearchMap = [
-    'sex' => TreeSex::class,
-    'status' => TreeStatus::class,
-    'health_status' => HealthStatus::class,
-    'owner_type' => OwnerType::class,
-];
+        'sex' => TreeSex::class,
+        'status' => TreeStatus::class,
+        'health_status' => HealthStatus::class,
+        'owner_type' => OwnerType::class,
+    ];
 
     public static function getTreeSexOptions(): array
     {

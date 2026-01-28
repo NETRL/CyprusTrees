@@ -5,21 +5,23 @@
         <form class="grid grid-cols-12 w-full gap-3" @submit.prevent="submit">
             <!-- Report Type -->
             <div class="col-span-12">
-                <FormField  v-model="dataRow.type_label" label="Report Type" disabled  inputClass="text-red-800!"/>
+                <FormField v-model="dataRow.type_label" label="Report Type" disabled inputClass="text-red-800!" />
             </div>
             <!-- Tree -->
             <div class="col-span-12">
                 <FormField component="Dropdown" filter v-model="formData.tree_id" :displayErrors="displayErrors"
-                label="Tree" name="tree_id" :options="treeOptions" optionLabel="label" optionValue="value" disabled/>
+                    label="Tree" name="tree_id" :options="treeOptions" optionLabel="label" optionValue="value"
+                    disabled />
             </div>
             <!-- Created By -->
             <div class="col-span-12">
-                <FormField v-model:="dataRow.creator_label" label="Created By" disabled/>
+                <FormField v-model:="dataRow.creator_label" label="Created By" disabled />
             </div>
             <!-- Maintenance Type -->
             <div class="col-span-12">
                 <FormField component="Dropdown" filter v-model="formData.type_id" :displayErrors="displayErrors"
-                    label="Maintenance Type" name="type_id" :options="typeOptions" optionLabel="label" optionValue="value" />
+                    label="Maintenance Type" name="type_id" :options="typeOptions" optionLabel="label"
+                    optionValue="value" />
             </div>
             <!-- Performed By -->
             <div class="col-span-6">
@@ -55,11 +57,12 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, toRef } from 'vue'
 import { router } from '@inertiajs/vue3'
 import FormField from '@/Components/Primitives/FormField.vue'
 import { useDateParser } from '@/Composables/useDateParser'
 import { data } from 'autoprefixer'
+import { useTreeOptions } from '@/Composables/useTreeOptions'
 
 // props & emits
 const props = defineProps({
@@ -96,19 +99,7 @@ const emit = defineEmits(['update:visible'])
 
 const { parseDate } = useDateParser();
 
-const treeOptions = computed(() =>
-    (props.trees ?? []).map((t) => {
-        const common = t.species?.common_name ?? 'Unknown species'
-        const latin = t.species?.latin_name ? ` (${t.species.latin_name})` : ''
-        const tags = t.tags_label ? ` · ${t.tags_label}` : ''
-
-        return {
-            value: t.id,
-            label: `${t.id} - ${common}${latin}${tags}`.trim(),
-        }
-    })
-)
-
+const treeOptions = useTreeOptions(toRef(props, 'trees'))
 
 const typeOptions = computed(() =>
     (props.types ?? []).map(index => {

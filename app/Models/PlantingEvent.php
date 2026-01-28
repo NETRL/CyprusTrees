@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PlantingEventStatus;
 use App\Models\Traits\BaseModelTrait;
 use App\Models\Traits\Paginatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,61 +16,83 @@ class PlantingEvent extends Model
     protected $primaryKey = 'planting_id';
 
     protected $fillable = [
-        'tree_id',
         'campaign_id',
-        'planted_by',
-        'planted_at',
-        'method',
+        'neighborhood_id',
+        'assigned_to',
+        'created_by',
+        'started_at',
+        'completed_at',
+        'lat',
+        'lon',
+        'target_tree_count',
+        'status',
         'notes',
     ];
 
     protected array  $tableColumns = [
         'planting_id',
-        'tree_id',
         'campaign_id',
-        'planted_by',
-        'planted_at',
-        'method',
+        'neighborhood_id',
+        'assigned_to',
+        'created_by',
+        'started_at',
+        'completed_at',
+        'location',
+        'target_tree_count',
+        'status',
         'notes',
     ];
 
 
     protected array  $formColumns = [
         'planting_id',
-        'tree_id',
         'campaign_id',
-        'planted_by',
-        'planted_at',
-        'method',
+        'neighborhood_id',
+        'assigned_to',
+        'created_by',
+        'started_at',
+        'completed_at',
+        'lat',
+        'lon',
+        'target_tree_count',
+        'status',
         'notes',
     ];
 
     protected array  $searchable = [
         'planting_id',
-        'tree_id',
         'campaign_id',
-        'planted_by',
-        'planted_at',
-        'method',
+        'neighborhood_id',
+        'assigned_to',
+        'created_by',
+        'started_at',
+        'completed_at',
+        'lat',
+        'lon',
+        'target_tree_count',
+        'status',
         'notes',
 
         'campaign.name',
         'campaign.sponsor',
-        'tree.address',
-        'tree.species.common_name',
-        'tree.species.latin_name',
-        'tree.tags.name',
-        'planter.first_name',
-        'planter.last_name',
+        'createdBy.first_name',
+        'createdBy.last_name',
+        'assignedTo.first_name',
+        'assignedTo.last_name',
     ];
 
     protected array $sortable = [
         'planting_id',
-        'tree_id',
         'campaign_id',
-        'planted_by',
-        'planted_at',
-        'method',
+        'neighborhood_id',
+        'assigned_to',
+        'created_by',
+        'started_at',
+        'completed_at',
+        'lat',
+        'lon',
+        'target_tree_count',
+        'status',
         'notes',
     ];
 
@@ -77,29 +100,64 @@ class PlantingEvent extends Model
     public static function relationships(): array
     {
         return [
-            'tree',
             'campaign',
-            'planter',
+            'neighborhood',
+            'createdBy',
+            'assignedTo',
+            'eventTrees',
         ];
     }
 
     protected $casts = [
-        'planted_at' => 'datetime',
+        'started_at' => 'datetime',
+        'completed_at' => 'datetime',
     ];
 
-
-    public function tree()
-    {
-        return $this->belongsTo(Tree::class);
-    }
 
     public function campaign()
     {
         return $this->belongsTo(Campaign::class);
     }
 
-    public function planter()
+    public function neighborhood()
     {
-        return $this->belongsTo(User::class, 'planted_by', 'id');
+        return $this->belongsTo(Neighborhood::class);
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by', 'id');
+    }
+
+    public function assignedTo()
+    {
+        return $this->belongsTo(User::class, 'assigned_to', 'id');
+    }
+
+    public function eventTrees()
+    {
+        // planting_events_trees.planting_id -> planting_events.planting_id
+        return $this->hasMany(PlantingEventTree::class, 'planting_id', 'planting_id');
+    }
+
+    public function trees()
+    {
+        // convenient many-to-many via pivot model/table
+        return $this->belongsToMany(Tree::class, 'planting_events_trees', 'planting_id', 'tree_id')
+            ->withPivot(['planted_by', 'planted_at', 'planting_method', 'notes', 'created_at', 'updated_at']);
+    }
+
+    public static function getPlantingEventStatusOptions(): array
+    {
+        return PlantingEventStatus::options();
+    }
+
+    public function getLocationAttribute()
+    {
+        if (!isset($this->attributes['lat'], $this->attributes['lon'])) {
+            return null;
+        }
+
+        return $this->attributes['lat'] . ',' . $this->attributes['lon'];
     }
 }

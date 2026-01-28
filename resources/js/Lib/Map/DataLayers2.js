@@ -57,7 +57,7 @@ function preprocessTreesGeojson(data) {
     // ensure promoteId works with properties.id
     if (p.id == null && f.id != null) p.id = f.id;
 
-    // parse nested JSON once (avoid JSON.parse in mousemove)
+    // parse nested JSON once
     if (typeof p.species === 'string') {
       try { p.species = JSON.parse(p.species); } catch { }
     }
@@ -70,7 +70,7 @@ function preprocessTreesGeojson(data) {
 
 // Store the raster size as a constant so offsets can reference it
 const PIN_RASTER_SIZE = 56;
-const PIN_COLOR = '#101828'
+const PIN_COLOR = '#6b8083'
 const PIN_HOVER_COLOR = '#009966'
 const PIN_SELECT_COLOR = '#009966'
 
@@ -121,9 +121,9 @@ export async function loadTreesLayer(mapInstance, {
     clusterMaxZoom: 15
   });
 
-    mapInstance.on('zoom', () => {
-      console.log('Zoom:', mapInstance.getZoom().toFixed(2));
-    });
+  mapInstance.on('zoom', () => {
+    console.log('Zoom:', mapInstance.getZoom().toFixed(2));
+  });
 
   // Icon size configuration
   const ICON_SIZE_CONFIG = [
@@ -147,31 +147,76 @@ export async function loadTreesLayer(mapInstance, {
   // Calculate text offset in em units
   const createTextOffset = (baseOffsetEm) => [
     'interpolate', ['linear'], ['zoom'],
-    10, ['literal', [0, baseOffsetEm * 1.4]],
-    14, ['literal', [0, baseOffsetEm * 1.4]],
-    18, ['literal', [0, baseOffsetEm * 1.4]],
-    20, ['literal', [0, baseOffsetEm * 1.4]]
+    10, ['literal', [0, baseOffsetEm * 1.3]],
+    14, ['literal', [0, baseOffsetEm * 1.3]],
+    18, ['literal', [0, baseOffsetEm * 1.3]],
+    20, ['literal', [0, baseOffsetEm * 1.3]]
   ];
 
-  // PIN layer (for both clustered and non-clustered)
+  // Non-cluster pins
+  // mapInstance.addLayer({
+  //   id: 'trees-pin-bg',
+  //   type: 'symbol',
+  //   source: 'trees',
+  //   filter: ['!', ['has', 'point_count']],
+  //   layout: {
+  //     'icon-image': 'pin-bg',
+  //     'icon-anchor': 'bottom',
+  //     'icon-size': ICON_SIZE_CONFIG,
+  //     'icon-allow-overlap': true,
+  //     'icon-ignore-placement': true,
+  //   },
+  //   paint: {
+  //     'icon-color': [
+  //       'case',
+  //       ['boolean', ['feature-state', 'selected'], false], PIN_SELECT_COLOR,
+  //       ['boolean', ['feature-state', 'hover'], false], PIN_HOVER_COLOR,
+  //       PIN_COLOR
+  //     ],
+  //     'icon-halo-color': '#ffffff',
+  //     'icon-halo-width': [
+  //       'case',
+  //       ['boolean', ['feature-state', 'hover'], false],
+  //       4, // Thick glow on hover
+  //       1  // Thin border normally
+  //     ],
+  //     'icon-halo-blur': 0
+  //   }
+  // });
+
+  // CIRCLE for individual trees (not clusters)
   mapInstance.addLayer({
     id: 'trees-pin-bg',
-    type: 'symbol',
+    type: 'circle',
     source: 'trees',
-    layout: {
-      'icon-image': 'pin-bg',
-      'icon-anchor': 'bottom',
-      'icon-size': ICON_SIZE_CONFIG,
-      'icon-allow-overlap': true,
-      'icon-ignore-placement': true,
-    },
+    filter: ['!', ['has', 'point_count']],
     paint: {
-      'icon-color': [
-        'case',
-        ['boolean', ['feature-state', 'selected'], false], PIN_SELECT_COLOR, // selected: green
-        ['boolean', ['feature-state', 'hover'], false], PIN_HOVER_COLOR,    // hover: blue
-        PIN_COLOR  // default: dark
-      ]
+      'circle-color': '#5A6B7C',
+      'circle-opacity': 0.8,
+      'circle-radius': 12,
+      'circle-stroke-width': 0,
+    }
+  });
+
+
+  // Cluster “pin” background (or circle) under the count
+  mapInstance.addLayer({
+    id: 'trees-cluster-bg',
+    type: 'circle',
+    source: 'trees',
+    filter: ['has', 'point_count'],
+    paint: {
+      'circle-color': '#5A6B7C',
+      'circle-opacity': 0.8,
+      'circle-radius': [
+        'step',
+        ['get', 'point_count'],
+        18,   // Radius 20px for < 10 trees
+        10, 24, // Radius 30px for 10-50 trees
+        50, 32  // Radius 40px for > 50 trees
+      ],
+      'circle-stroke-width': 0.1,
+      'circle-stroke-color': '#ffffff'
     }
   });
 
@@ -184,14 +229,14 @@ export async function loadTreesLayer(mapInstance, {
     paint: {
       'circle-radius': [
         'interpolate', ['linear'], ['zoom'],
-        10, 5,
-        14, 5,
-        18, 5,
-        20, 5
+        10, 6,
+        14, 6,
+        18, 6,
+        20, 6
       ],
       'circle-stroke-width': 0,
       'circle-color': PIN_COLOR,
-      'circle-translate': createPixelOffset(-32),
+      // 'circle-translate': createPixelOffset(-32),
       'circle-translate-anchor': 'map',
     }
   });
@@ -206,13 +251,13 @@ export async function loadTreesLayer(mapInstance, {
       'text-field': ['get', 'point_count_abbreviated'],
       'text-size': [
         'interpolate', ['linear'], ['zoom'],
-        10, 12,
-        14, 12,
-        18, 12,
-        20, 12
+        10, 13,
+        14, 13,
+        18, 13,
+        20, 13
       ],
       'text-anchor': 'center',
-      'text-offset': createTextOffset(-1.7),
+      // 'text-offset': createTextOffset(-1.7),
       'text-allow-overlap': true,
       'text-ignore-placement': true,
     },
@@ -377,7 +422,7 @@ export async function loadTreesLayer(mapInstance, {
     )`;
 
       if (mapInstance.getLayer('trees-pin-bg')) {
-        mapInstance.setPaintProperty('trees-pin-bg', 'icon-color', [
+        mapInstance.setPaintProperty('trees-pin-bg', 'circle-color', [
           'case',
           ['boolean', ['feature-state', 'selected'], false], color,
           ['boolean', ['feature-state', 'hover'], false], PIN_HOVER_COLOR,
@@ -425,7 +470,7 @@ export async function loadTreesLayer(mapInstance, {
 
     // Reset to static selected color
     if (mapInstance.getLayer('trees-pin-bg')) {
-      mapInstance.setPaintProperty('trees-pin-bg', 'icon-color', [
+      mapInstance.setPaintProperty('trees-pin-bg', 'circle-color', [
         'case',
         ['boolean', ['feature-state', 'selected'], false], PIN_SELECT_COLOR,
         ['boolean', ['feature-state', 'hover'], false], PIN_HOVER_COLOR,

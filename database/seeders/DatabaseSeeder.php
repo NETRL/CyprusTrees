@@ -40,6 +40,7 @@ class DatabaseSeeder extends Seeder
         // Domain-specific events & reports
         $this->call([
             PlantingEventsTableSeeder::class,
+            PlantingEventsTreesSeeder::class,
             CitizenReportsTableSeeder::class,
             MaintenanceEventsTableSeeder::class,
             HealthAssessmentsTableSeeder::class,
