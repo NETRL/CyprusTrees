@@ -60,55 +60,57 @@
 
         <main class="flex-1 relative overflow-hidden bg-white dark:bg-slate-900">
             <!-- Month Grid -->
-        <Transition v-if="viewMode === 'month'" :name="transitionName" mode="out-in">
-    <div :key="monthKey" class="absolute inset-0 grid grid-cols-7 grid-rows-6">
-        <button v-for="day in days" :key="day.iso" @click="handleDayClick(day.date, $event)"
-            class="group relative flex flex-col items-stretch justify-start p-1 lg:p-2 border-b border-r border-slate-100 dark:border-slate-800 transition-colors duration-150 outline-none focus:z-10 focus:ring-1 focus:ring-inset focus:ring-emerald-500/50"
-            :class="[
-                !day.isCurrentMonth ? 'bg-slate-50/50 dark:bg-slate-950/50 text-slate-400/70' : 'bg-white dark:bg-slate-900',
-                day.isToday ? 'bg-emerald-50/10 dark:bg-emerald-900/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
-            ]">
+            <Transition v-if="viewMode === 'month'" :name="transitionName" mode="out-in">
+                <div :key="monthKey" class="absolute inset-0 grid grid-cols-7 grid-rows-6">
+                    <button v-for="day in days" :key="day.iso" @click="handleDayClick(day.date, $event)"
+                        class="group relative flex flex-col items-stretch justify-start p-1 lg:p-2 border-b border-r border-slate-100 dark:border-slate-800 transition-colors duration-150 outline-none focus:z-10 focus:ring-1 focus:ring-inset focus:ring-emerald-500/50"
+                        :class="[
+                            !day.isCurrentMonth ? 'bg-slate-50/50 dark:bg-slate-950/50 text-slate-400/70' : 'bg-white dark:bg-slate-900',
+                            day.isToday ? 'bg-emerald-50/10 dark:bg-emerald-900/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                        ]">
 
-            <div class="flex items-center justify-center mb-1 lg:mb-2">
-                <span
-                    class="text-xs lg:text-sm font-medium w-6 h-6 lg:w-7 lg:h-7 flex items-center justify-center rounded-full transition-all"
-                    :class="day.isToday
-                        ? 'bg-emerald-100 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500/50'
-                        : 'text-slate-700 dark:text-slate-300 group-hover:bg-slate-200/70 dark:group-hover:bg-slate-700/70'">
-                    {{ day.date.getDate() }}
-                </span>
-            </div>
+                        <div class="flex items-center justify-center mb-1 lg:mb-2">
+                            <span
+                                class="text-xs lg:text-sm font-medium w-6 h-6 lg:w-7 lg:h-7 flex items-center justify-center rounded-full transition-all"
+                                :class="day.isToday
+                                    ? 'bg-emerald-100 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500/50'
+                                    : 'text-slate-700 dark:text-slate-300 group-hover:bg-slate-200/70 dark:group-hover:bg-slate-700/70'">
+                                {{ day.date.getDate() }}
+                            </span>
+                        </div>
 
-            <div class="flex-1 w-full overflow-hidden grid content-start gap-1">
-                
-                <div v-for="event in day.events.slice(0, getMaxEvents())" :key="event.id"
-                    class="hidden sm:flex items-center px-1.5 py-0.5 lg:py-1 rounded-[3px] border-l-[3px] transition-all duration-200 hover:brightness-95 hover:translate-x-0.5"
-                    :class="[
-                        eventChipClasses(event), // Should provide bg-color and text-color
-                        'border-current shadow-sm' // border-current uses the text color for the thin line
-                    ]">
-                    <span class="truncate font-medium text-[10px] lg:text-xs leading-tight">
-                        {{ event.title }}
-                    </span>
+                        <div class="flex-1 w-full overflow-hidden grid content-start gap-1">
+
+                            <div v-for="event in day.events.slice(0, getMaxEvents())" :key="event.id"
+                                class="hidden sm:flex items-center px-1.5 py-0.5 lg:py-1 rounded-[3px] border-l-[3px] transition-all duration-200 hover:brightness-95 hover:translate-x-0.5"
+                                :class="[
+                                    eventChipClasses(event), // Should provide bg-color and text-color
+                                    'border-current shadow-sm' // border-current uses the text color for the thin line
+                                ]">
+                                <span class="truncate font-medium text-[10px] lg:text-xs leading-tight">
+                                    {{ event.title }}
+                                </span>
+                            </div>
+
+                            <div
+                                class="sm:hidden flex gap-1 justify-center flex-wrap content-center h-full max-h-[60%]">
+                                <div v-for="event in day.events.slice(0, 4)" :key="event.id"
+                                    class="w-1.5 h-1.5 rounded-full ring-1 ring-white dark:ring-slate-900"
+                                    :class="[eventBulletColors(event)]">
+                                </div>
+                            </div>
+
+                            <div v-if="day.events.length > getMaxEvents()"
+                                class="hidden sm:block text-center sm:text-left px-1">
+                                <span
+                                    class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                                    +{{ day.events.length - getMaxEvents() }} more
+                                </span>
+                            </div>
+                        </div>
+                    </button>
                 </div>
-
-                <div class="sm:hidden flex gap-1 justify-center flex-wrap content-center h-full max-h-[60%]">
-                    <div v-for="event in day.events.slice(0, 4)" :key="event.id"
-                        class="w-1.5 h-1.5 rounded-full ring-1 ring-white dark:ring-slate-900" 
-                        :class="[eventBulletColors(event)]">
-                    </div>
-                </div>
-
-                <div v-if="day.events.length > getMaxEvents()"
-                    class="hidden sm:block text-center sm:text-left px-1">
-                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
-                        +{{ day.events.length - getMaxEvents() }} more
-                    </span>
-                </div>
-            </div>
-        </button>
-    </div>
-</Transition>
+            </Transition>
 
             <!-- Year Grid -->
             <Transition v-else-if="viewMode === 'year'" :name="transitionName" mode="out-in" @wheel.stop>
@@ -173,7 +175,8 @@
                                         'hover:border-current hover:shadow-md',
                                         // Expanded state: maintains the accent border and shadow
                                         { [eventCardColors(event, 'border') + ' shadow-md']: isExpanded(event.id) }
-                                    ]" @click="toggleExpansion(event.id)" role="button" :aria-expanded="isExpanded(event.id)"
+                                    ]" @click="toggleExpansion(event.id)" role="button"
+                                    :aria-expanded="isExpanded(event.id)"
                                     :aria-label="`${isExpanded(event.id) ? 'Collapse' : 'Expand'} event details`"
                                     tabindex="0" @keydown.enter="toggleExpansion(event.id)"
                                     @keydown.space.prevent="toggleExpansion(event.id)">
@@ -182,10 +185,18 @@
                                         <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 leading-snug">
                                             {{ event.title }}
                                         </h3>
-                                        <Link :href="route('/', { tree_id: event.tree.id })" @click.stop
-                                            class="text-xs shrink-0 font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 transition-colors duration-200 mt-0.5">
-                                        View in map
-                                        </Link>
+                                        <template v-if="event?.tree?.id">
+                                            <Link :href="route('/', { tree_id: event.tree.id })" @click.stop
+                                                class="text-xs shrink-0 font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 transition-colors duration-200 mt-0.5">
+                                            View in map
+                                            </Link>
+                                        </template>
+                                        <template v-if="event?.meta?.location">
+                                            <Link :href="route('/', { lat: event.meta.lat, lon: event.meta.lon })" @click.stop
+                                                class="text-xs shrink-0 font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 transition-colors duration-200 mt-0.5">
+                                            View in map
+                                            </Link>
+                                        </template>
                                     </div>
 
                                     <div class="h-px w-full bg-slate-200 dark:bg-slate-700/50 mb-3"></div>
@@ -826,7 +837,7 @@ function isSameDay(a, b) {
     )
 }
 
-const {formatDate} = useDateFormatter()
+const { formatDate } = useDateFormatter()
 
 function dayEventDateFormatter(val) {
     const d = normalizeToDate(val)

@@ -43,7 +43,6 @@ class PlantingEventController extends Controller
                 },
             ])
             ->withCount(['eventTrees'])
-            ->orderBy('planting_id', 'desc')
             ->setUpQuery();
 
 

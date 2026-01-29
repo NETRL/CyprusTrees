@@ -12,7 +12,7 @@
       <div class="h-full rounded-2xl shadow
                bg-white dark:bg-slate-900
                border border-slate-200/60 dark:border-slate-700/60">
-        <MonthCalendar :initial-date="new Date()" :events="events" @day-click="handleDayClick" />
+        <EventCalendar :initial-date="new Date()" :events="events" @day-click="handleDayClick" />
       </div>
     </div>
   </div>
@@ -20,7 +20,7 @@
 
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import MonthCalendar from '@/Pages/Calendar/Partials/MonthCalendar.vue'
+import EventCalendar from '@/Pages/Calendar/Partials/EventCalendar.vue'
 import { useCalendarUrlState } from '@/Composables/useCalendarUrlState'
 import { ref, watch } from 'vue';
 

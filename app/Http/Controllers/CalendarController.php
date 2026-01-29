@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PlantingEventStatus;
 use App\Models\MaintenanceEvent;
 use App\Models\PlantingEvent;
 use Carbon\Carbon;
@@ -52,72 +53,120 @@ class CalendarController extends Controller
         $isAdmin = $user?->hasRole('admin');
 
         /* Planting Events */
-        $plantingsQuery = PlantingEvent::with([
-            'tree.species',
-            'tree.neighborhood',
-            'campaign',
-            'planter',
+        $plantingQuery = PlantingEvent::with([
+            'campaign:id,name,sponsor',
+            'neighborhood:id,name',
+            'assignedTo:id,first_name,last_name',
+            'createdBy:id,first_name,last_name',
         ])
-            ->whereBetween('planted_at', [$start, $end]);
+            ->withCount(['eventTrees'])
+            // overlap filter: event intersects [start,end]
+            ->where(function ($q) use ($start, $end) {
+                $q->whereBetween('started_at', [$start, $end])
+                    ->orWhereBetween('completed_at', [$start, $end])
+                    ->orWhere(function ($qq) use ($start, $end) {
+                        $qq->where('started_at', '<=', $start)
+                            ->where(function ($qqq) use ($end) {
+                                $qqq->whereNull('completed_at')
+                                    ->orWhere('completed_at', '>=', $end);
+                            });
+                    });
+            });
 
         if (!$isAdmin && $userId) {
-            $plantingsQuery->where('planted_by', $userId);
+            $plantingQuery->where(function ($q) use ($userId) {
+                $q->where('assigned_to', $userId)
+                    ->orWhere('created_by', $userId);
+            });
         }
 
-        $plantings = $plantingsQuery->get()
-            ->map(function (PlantingEvent $p) {
-                if (!$p->tree || !$p->tree->species) {
-                    // malformed or orphaned, skip
-                    return null;
+        $plantings = $plantingQuery->get()
+            ->map(function (PlantingEvent $e) {
+
+                $campaign  = $e->campaign;
+                $assigned  = $e->assignedTo;
+                $creator   = $e->createdBy;
+
+                $campaignLabel = $campaign
+                    ? ($campaign->name . ($campaign->sponsor ? " ({$campaign->sponsor})" : ''))
+                    : '-';
+
+                $assignedName = $assigned
+                    ? trim(($assigned->first_name ?? '') . ' ' . ($assigned->last_name ?? ''))
+                    : '-';
+
+                $creatorName = $creator
+                    ? trim(($creator->first_name ?? '') . ' ' . ($creator->last_name ?? ''))
+                    : '-';
+
+                $neighborhoodName = $e->name;
+
+                $treesCount = (int) ($e->event_trees_count ?? 0);
+
+                // Short title form month view
+                $titleParts = ['Planting'];
+                if ($neighborhoodName) $titleParts[] = $neighborhoodName;
+                $title = implode(' - ', $titleParts);
+
+                // Longer description for day view / details
+                $desc = [];
+                $desc[] = 'Status: ' . $e->status;
+                if ($campaignLabel) $desc[] = 'Campaign: ' . $campaignLabel;
+                if ($assignedName) $desc[] = 'Assigned to: ' . $assignedName;
+                if ($creatorName)  $desc[] = 'Created by: ' . $creatorName;
+                if (!is_null($e->target_tree_count)) {
+                    $desc[] = "Trees: {$treesCount}/{$e->target_tree_count}";
+                } else {
+                    $desc[] = "Trees: {$treesCount}";
                 }
+                if ($e->notes) $desc[] = $e->notes;
 
-                $tree      = $p->tree;
-                $species   = $tree->species;
-                $campaign  = $p->campaign;
-                $planter   = $p->planter;
+                $description = implode("\n", array_filter($desc));
 
-                $treeLabel = $species->common_name
-                    . ' (' . $species->latin_name . ')';
+                // Calendar start/end:
+                // If started_at missing, fallback to created_at
+                $startIso = optional($e->started_at ?? $e->created_at)->toIso8601String();
+                $endIso   = optional($e->completed_at)->toIso8601String();
 
-                $roles = ($planter?->roles?->isNotEmpty())
-                    ? ' (' . $planter->roles->pluck('name')->join(', ') . ')'
-                    : '';
-
-                $userName = trim(
-                    $planter?->id . ' - ' . $planter?->first_name . ' ' . $planter?->last_name
-                ) . $roles;
-
-
-                // Human-readable description for Day view
-                $descriptionParts = [];
-                if ($campaign) $descriptionParts[] = 'Campaign: ' . $campaign->name;
-                if ($planter)  $descriptionParts[] = 'Planted by: ' . $userName;
-                if ($p->method) $descriptionParts[] = 'Method: ' . $p->method;
-                if ($p->notes)  $descriptionParts[] = $p->notes;
-
-                $description = implode("\n", array_filter($descriptionParts));
-
+                // Color by status
+                $color = match($e->status){
+                    PlantingEventStatus::DRAFT->value       => 'stone',
+                    PlantingEventStatus::SCHEDULED->value   => 'indigo',
+                    PlantingEventStatus::IN_PROGRESS->value => 'amber',
+                    PlantingEventStatus::COMPLETED->value   => 'emerald',
+                    PlantingEventStatus::CANCELLED->value   => 'red',
+                    default                                 => 'default',
+                };
 
                 return [
-                    'id'          => 'planting_' . $p->planting_id,
-                    'event_type'  => 'planting',
-                    'user_id'     => $p->planted_by,
-                    'user_name'   => $userName,
-                    'tree_id'     => $p->tree_id,
-                    'tree_label'  => $treeLabel,
-                    'tree'        => $tree,
-                    'campaign_id' => $p->campaign_id,
+                    'id'          => 'planting_event_' . $e->planting_id,
+                    'event_type'  => 'planting_event',
+
+                    // For filtering / ownership in UI
+                    'assigned_to' => $e->assigned_to,
+                    'created_by'  => $e->created_by,
+
+                    'planting_id' => $e->planting_id,
+                    'campaign_id' => $e->campaign_id,
                     'campaign'    => $campaign,
-                    'title'       => 'Planting – ' . $treeLabel,
-                    'start'       => optional($p->planted_at)->toIso8601String(),
+                    'neighborhood_id' => $e->neighborhood_id,
+                    'neighborhood'    => $e->neighborhood,
+
+                    'title'       => $title,
+                    'start'       => $startIso,
+                    'end'         => $endIso,           // optional (calendar can treat as all-day/single point)
                     'description' => $description !== '' ? $description : null,
-                    'color'       => 'emerald', // Tailwind color name
+                    'color'       => 'emerald',
+
                     'meta'        => [
-                        'method'  => $p->method,
-                        'notes'   => $p->notes,
-                        'tree'    => $tree,
-                        'species' => $species,
-                        'neighborhood' => $tree->neighborhood ?? null,
+                        'status'            => $e->status,
+                        'trees_count'        => $treesCount,
+                        'target_tree_count'  => $e->target_tree_count,
+                        'assigned_to_name'   => $assignedName,
+                        'creator_name'       => $creatorName,
+                        'location'           => method_exists($e, 'getLocationAttribute') ? $e->getLocationAttribute() : null,
+                        'lat'                => $e->lat,
+                        'lon'                => $e->lon,
                     ],
                 ];
             })
