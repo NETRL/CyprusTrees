@@ -192,7 +192,8 @@
                                             </Link>
                                         </template>
                                         <template v-if="event?.meta?.location">
-                                            <Link :href="route('/', { lat: event.meta.lat, lon: event.meta.lon })" @click.stop
+                                            <Link :href="route('/', { lat: event.meta.lat, lon: event.meta.lon })"
+                                                @click.stop
                                                 class="text-xs shrink-0 font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 transition-colors duration-200 mt-0.5">
                                             View in map
                                             </Link>
@@ -203,6 +204,9 @@
 
                                     <div class="overflow-hidden transition-[max-height] duration-500 ease-in-out"
                                         :style="{ maxHeight: isExpanded(event.id) ? '500px' : '48px' }">
+                                        <p
+                                            class="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-line leading-relaxed line-clamp-2">
+                                            #{{ event.id }}</p>
                                         <p class="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-line leading-relaxed line-clamp-2"
                                             :class="{ 'line-clamp-none': isExpanded(event.id) }">
                                             {{ event.description || 'No additional details provided for this event.' }}

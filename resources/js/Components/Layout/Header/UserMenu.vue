@@ -62,6 +62,7 @@ const dropdownRef = ref(null)
 const menuItems = [
   { href: 'profile.edit', icon: UserCircleIcon, text: 'My profile' },
   { href: 'reports.index', icon: ReportsIcon, text: 'My reports' },
+  { href: 'events.index', icon: ReportsIcon, text: 'My events' },
   // { href: '/', icon: SettingsIcon, text: 'Account settings' },
   // { href: '/', icon: InfoCircleIcon, text: 'Support' },
 ]

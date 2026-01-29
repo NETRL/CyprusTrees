@@ -33,7 +33,6 @@ class MaintenanceEventsController extends Controller
                 'tree',
                 'performer',
             ])
-            ->orderBy('event_id', 'desc')
             ->setUpQuery();
 
         $tableData = $query->paginate($perPage)->withQueryString();

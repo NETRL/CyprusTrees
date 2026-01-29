@@ -22,6 +22,7 @@ use App\Http\Controllers\SpeciesController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TreeController;
 use App\Http\Controllers\UserAddressController;
+use App\Http\Controllers\UserEventsController;
 use App\Http\Controllers\UserReportsController;
 use App\Models\Neighborhood;
 use App\Models\ReportType;
@@ -123,6 +124,7 @@ Route::middleware('auth', '2fa')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('/user/reports', UserReportsController::class)->only('index', 'update', 'destroy');
+    Route::resource('/user/events', UserEventsController::class)->only('index', 'update', 'destroy');
 
     Route::patch('/address', [UserAddressController::class, 'update'])->name('address.update');
 
