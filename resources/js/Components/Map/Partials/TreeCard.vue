@@ -12,7 +12,7 @@
             :action="formAction" :markerLatLng="markerLatLng" :dataRow="props.selected" />
         <NeighborhoodCardContent v-if="isNeighborhood" :activeNeighborhood="selectedNeighborhood"
             :stats="neighborhoodStats || {}" />
-        <TreeCardContent v-if="isSelected || isHovered" :hovered="props.hovered" :selected="props.selected"
+        <TreeCardContent v-if="(isSelected || isHovered) && (!isCreating && !isEditing)" :hovered="props.hovered" :selected="props.selected"
             :isHovered="isHovered" :isSelected="isSelected" @editClick="onEditClick" />
     </aside>
 
@@ -23,7 +23,7 @@
                 :action="formAction" :markerLatLng="markerLatLng" :dataRow="props.selected" />
             <NeighborhoodCardContent v-if="isNeighborhood" :activeNeighborhood="selectedNeighborhood"
                 :stats="neighborhoodStats || {}" />
-            <TreeCardContent v-if="isSelected || isHovered" :hovered="props.hovered" :selected="props.selected"
+            <TreeCardContent v-if="(isSelected || isHovered) && (!isCreating && !isEditing)" :hovered="props.hovered" :selected="props.selected"
                 :isHovered="isHovered" :isSelected="isSelected" @editClick="onEditClick" />
         </div>
     </BottomSheet>

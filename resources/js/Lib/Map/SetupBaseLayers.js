@@ -77,7 +77,7 @@ export async function setupBaseLayers(map, { maptilerKey, vectorStyles = [] }) {
     }
   }
 
-  let defaultMap = "osmStandardLayer"
+  let defaultMap = "cartoLightLayer"
   // if( window.location.pathname.startsWith('/map2')){
   //   defaultMap = "osmStandardLayer"
   // } 

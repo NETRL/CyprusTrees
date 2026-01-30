@@ -41,9 +41,9 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
     promoteId: 'id'
   })
 
-  const DOT_ZOOM_8 = 1.5
-    const DOT_ZOOM_14 = 1.5
-    const DOT_ZOOM_20 = 6
+  const DOT_ZOOM_8 = 4      //1.5
+    const DOT_ZOOM_14 = 4   //1.5
+    const DOT_ZOOM_20 = 4   //6
 
   mapInstance.addLayer({
     id: 'trees-circle',

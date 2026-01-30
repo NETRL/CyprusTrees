@@ -1,6 +1,6 @@
 export function useMapColors() {
 
-  const DEFAULT_COLOR = '#000'
+  const DEFAULT_COLOR = '#5A6B7C'
 
     // All colors have in HSL scale S=75% and L=50%
 const STATUS_COLORS = [

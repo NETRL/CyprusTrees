@@ -191,8 +191,8 @@ export async function loadTreesLayer(mapInstance, {
     source: 'trees',
     filter: ['!', ['has', 'point_count']],
     paint: {
-      'circle-color': PIN_COLOR,
-      'circle-opacity': 0.4,
+      'circle-color': '#000',
+      'circle-opacity': 0,
       'circle-radius': 10,
       'circle-stroke-width': 0,
       'circle-stroke-color': '#ffffff'
@@ -207,7 +207,7 @@ export async function loadTreesLayer(mapInstance, {
     source: 'trees',
     filter: ['has', 'point_count'],
     paint: {
-      'circle-color': PIN_COLOR,
+      'circle-color': '#000',
       'circle-opacity': 0.4,
       'circle-radius': [
         'step',
@@ -230,7 +230,7 @@ export async function loadTreesLayer(mapInstance, {
     paint: {
       'circle-radius': 4.5,
       'circle-stroke-width': 0,
-      'circle-color': PIN_COLOR,
+      'circle-color': '#fff',
       // 'circle-translate': createPixelOffset(-32),
       'circle-translate-anchor': 'map',
     }
