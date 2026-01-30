@@ -17,7 +17,7 @@ return new class extends Migration
         Schema::create('planting_events_trees', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(PlantingEvent::class, 'planting_id')->constrained('planting_events', 'planting_id')->cascadeOnDelete();
-            $table->foreignIdFor(Tree::class)->constrained();
+            $table->foreignIdFor(Tree::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(User::class, 'planted_by')->nullable()->constrained();
 
             $table->timestamp('planted_at')->nullable();

@@ -100,8 +100,8 @@ class Tree extends Model
         return [
             'species',
             'neighborhood',
-            'plantingEvents',
             'maintenanceEvents',
+            'plantingEventTree',
             // 'healthAssessments',
             'citizenReports',
             'photos',
@@ -120,9 +120,9 @@ class Tree extends Model
         return $this->belongsTo(Neighborhood::class);
     }
 
-    public function plantingEvents()
+    public function plantingEventTree()
     {
-        return $this->hasMany(PlantingEvent::class);
+        return $this->belongsTo(PlantingEventTree::class);
     }
 
     public function maintenanceEvents()

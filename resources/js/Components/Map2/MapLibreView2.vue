@@ -2,6 +2,54 @@
     <MapSidebar :treeData="treeData" :neighborhoodData="neighborhoodData" :selectedData="selectedData"
         :hiddenCategories="hiddenCategories" :currentMode="selectedFilter" @toggleCategory="onToggleCategory" />
 
+    <!-- Event Mode Top Bar -->
+    <div v-if="isPlantingMode" class="absolute top-3 left-3 right-3 z-40">
+        <div class="rounded-2xl border border-gray-200 bg-white/90 backdrop-blur px-4 py-3 shadow
+              dark:border-gray-800 dark:bg-slate-900/85">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                            Planting Event #{{ props.eventId }}
+                        </span>
+
+                        <span v-if="activeEvent?.status" class="rounded-md px-2 py-0.5 text-xs font-medium"
+                            :class="statusPill(activeEvent.status)">
+                            {{ activeEvent.status }}
+                        </span>
+
+                        <span v-if="eventLoading" class="text-xs text-gray-500 dark:text-gray-400">
+                            Loading…
+                        </span>
+
+                        <span v-if="eventError" class="text-xs text-red-600 dark:text-red-300">
+                            {{ eventError }}
+                        </span>
+                    </div>
+
+                    <div class="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                        <span v-if="activeEvent">
+                            Trees: {{ activeEvent.event_trees_count ?? 0 }}
+                            <template v-if="activeEvent.target_tree_count">/ {{ activeEvent.target_tree_count
+                            }}</template>
+                        </span>
+                        <span v-if="activeEvent?.neighborhood?.name"> • {{ activeEvent.neighborhood.name }}</span>
+                        <span v-if="activeEvent?.campaign?.name"> • {{ activeEvent.campaign.name }}</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <!-- Exit event mode -->
+                    <button type="button" class="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium
+                 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-white/5" @click="exitEventMode">
+                        Exit
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <div ref="mapContainer" class="map-container w-full h-full"></div>
 
     <button v-if="shouldShowButton" type="button"
@@ -12,8 +60,8 @@
     </button>
 
     <TreeCard :hovered="hoveredData" :selected="selectedData" :markerLatLng="markerLatLng"
-        :selectedNeighborhood="selectedNeighborhood" :neighborhoodStats="neighborhoodStats"
-        @update:selected="selectedData = $event" @cancelCreate="onCancelCreate" :pinClickFlag="pinClickFlag" />
+        :selectedNeighborhood="selectedNeighborhood" :neighborhoodStats="neighborhoodStats" :pinClickFlag="pinClickFlag"
+        @update:selected="selectedData = $event" @cancelCreate="onCancelCreate" />
     <MapLoadingOverlay :isLoading="isLoading" />
 
     <Modal v-if="showAuthPrompt" @close="showAuthPrompt = false">
@@ -55,27 +103,33 @@
 </template>
 
 <script setup>
-import { onMounted, ref, onBeforeUnmount, watch, computed, nextTick, onUnmounted, inject, provide } from 'vue'
+import { onMounted, ref, onBeforeUnmount, watch, computed, nextTick, provide } from 'vue'
 import MapSidebar from '@/Components/Map/Partials/MapSidebar.vue'
 import MapLoadingOverlay from '@/Components/Map/Partials/MapLoadingOverlay.vue'
 import TreeCard from '@/Components/Map/Partials/TreeCard.vue'
+import Modal from '@/Components/Modal.vue'
 
 import { initMap } from '@/Lib/Map/InitMap'
 import { setupBaseLayers } from '@/Lib/Map/SetupBaseLayers'
 import { loadTreesLayer, loadNeighborhoodsLayer, fetchTreeDetails, loadNeighborhoodStats } from '@/Lib/Map/DataLayers2'
 import { useMapFilter } from '@/Composables/useMapFilter'
 import { useMapColors } from '@/Composables/useMapColors'
-
 import { useRealTimePosition } from '@/Lib/Map/useRealTimePosition'
-import { LocateFixed, Crosshair, Loader2, Users } from 'lucide-vue-next'
+import { LocateFixed, Crosshair, Loader2 } from 'lucide-vue-next'
 import { storeNewTree } from '@/Lib/Map/LongClickFunctions'
-import Modal from '@/Components/Modal.vue'
 import { usePermissions } from '@/Composables/usePermissions'
+
 import mitt from 'mitt'
+import { router } from '@inertiajs/vue3'
+import { useSidebar } from '@/Composables/useSidebar'
 
 const props = defineProps({
     initialTreeId: { type: Number, default: null },
+    initialLocation: { type: Object, default: null, },
+    mode: { type: String, default: 'default' },
+    eventId: { type: Number, default: null },
 })
+
 const { can } = usePermissions()
 provide('can', can)
 
@@ -90,20 +144,87 @@ const isLoading = ref(true)
 const treeData = ref([])
 const neighborhoodData = ref([])
 const selectedData = ref(null)
+const hoveredData = ref(null)
+
+const neighborhoodStats = ref({});
 const selectedNeighborhoodId = ref(null)
 const selectedNeighborhood = ref(null)
-const neighborhoodStats = ref({});
-const hoveredData = ref(null)
-const toggleTreeCard = ref(null)
+
 const markerLatLng = ref(null)
-let longPressCtl = null
 const showAuthPrompt = ref(false)
 const pinClickFlag = ref(0)
 
+let longPressCtl = null
+let dataLayerApi = null
+
+const { selectedFilter } = useMapFilter()
+const { STATUS_COLORS, WATER_USE_COLORS, SHADE_COLORS, ORIGIN_COLORS, POLLEN_RISK_COLORS } = useMapColors()
+
+const isEventMode = computed(() => props.mode !== 'default' && !!props.eventId)
+const isPlantingMode = computed(() => props.mode === 'planting' && !!props.eventId)
+provide('isPlantingMode', isPlantingMode)
+
+// --- event state ---
+const activeEvent = ref(null)
+const eventLoading = ref(false)
+const eventError = ref(null)
+
+const lastCreatedTree = ref(null)
+provide('lastCreatedTree', lastCreatedTree)
+
+// --- visibility state ---
+const hiddenCategories = ref({
+    status: new Set(),
+    origin: new Set(),
+    water_use: new Set(),
+    shade: new Set(),
+    pollen_risk: new Set(),
+})
+
+const CATEGORY_KEYS = {
+    status: STATUS_COLORS.filter((_, i) => i % 2 === 0),
+    origin: ORIGIN_COLORS.filter((_, i) => i % 2 === 0),
+    water_use: WATER_USE_COLORS.filter((_, i) => i % 2 === 0),
+    shade: SHADE_COLORS.filter((_, i) => i % 2 === 0),
+}
+
+const modeToPropName = {
+    status: 'status',
+    origin: 'species_origin',
+    pollen_risk: 'calculated_pollen_risk',
+    water_use: 'species_drought_tolerance',
+    shade: 'species_canopy_class',
+}
+
+// --- helpers ---
+function whenLayerReady(layerId, fn) {
+    const m = map.value
+    if (!m) return
+
+    // Fast path: layer already exists
+    if (m.getLayer(layerId)) {
+        fn(m)
+        return
+    }
+
+    // Otherwise wait until style updates include the layer
+    const onStyleData = () => {
+        if (!m.getLayer(layerId)) return
+        m.off('styledata', onStyleData)
+        fn(m)
+    }
+
+    m.on('styledata', onStyleData)
+}
+
+
+function hasTreesLayer(m) {
+    return !!m?.getLayer?.('trees-circle')
+}
+
+// --- init ---
 const center = [33.37, 35.17]
 const zoom = 12
-
-let dataLayerApi = null
 
 const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY
 const CUSTOM_VECTOR_STYLES = [
@@ -127,16 +248,7 @@ const CUSTOM_VECTOR_STYLES = [
     },
 ]
 
-const { selectedFilter } = useMapFilter()
-const { STATUS_COLORS, WATER_USE_COLORS, SHADE_COLORS, ORIGIN_COLORS, POLLEN_RISK_COLORS } = useMapColors()
-
-const CATEGORY_KEYS = {
-    status: STATUS_COLORS.filter((_, i) => i % 2 === 0),
-    origin: ORIGIN_COLORS.filter((_, i) => i % 2 === 0),
-    water_use: WATER_USE_COLORS.filter((_, i) => i % 2 === 0),
-    shade: SHADE_COLORS.filter((_, i) => i % 2 === 0),
-}
-
+// --- bus ---
 mapBus.on('tree:saved', onTreeSaved)
 
 // -------- MAP INIT ----------
@@ -150,17 +262,15 @@ onMounted(async () => {
 
         map.value = m
 
-        // track when user pans/zooms away so we can re-show recenter
-        map.value.on('moveend', onMapMoveEnd)
-        map.value.on('zoomend', onMapMoveEnd)
-        map.value.on('rotateend', onMapMoveEnd)
+        // move/zoom/rotate tracking
+        m.on('moveend', onMapMoveEnd)
+        m.on('zoomend', onMapMoveEnd)
+        m.on('rotateend', onMapMoveEnd)
 
-        longPressCtl = storeNewTree(map.value, {
-            onLatLng: (latLng) => {
-                markerLatLng.value = latLng
-            },
-            requiresAuth: (v) => (showAuthPrompt.value = v),
-            onPinClick: (v) => { pinClickFlag.value++; }
+        longPressCtl = storeNewTree(m, {
+            onLatLng: (latLng) => { markerLatLng.value = latLng },
+            requiresAuth: (v) => { showAuthPrompt.value = v },
+            onPinClick: () => { pinClickFlag.value++ },
         })
 
         setupBaseLayers(m, {
@@ -168,32 +278,33 @@ onMounted(async () => {
             vectorStyles: CUSTOM_VECTOR_STYLES,
         })
 
-        const [_, treesApi] = await Promise.all([
+        const [, treesApi] = await Promise.all([
             loadNeighborhoodsLayer(m, {
-                onDataLoaded: (data) => (neighborhoodData.value = data),
-                onNeighborhoodSelected: (props) => { selectedNeighborhoodId.value = props; },
+                onDataLoaded: (data) => { neighborhoodData.value = data },
+                onNeighborhoodSelected: (id) => { selectedNeighborhoodId.value = id },
                 isInteractionEnabled: () => markerLatLng.value == null,
             }),
             loadTreesLayer(m, {
-                onDataLoaded: (data) => { treeData.value = data; allTreeData.value = data },
-                onTreeSelected: (props) => (selectedData.value = props),
-                onTreeHovered: (props) => (hoveredData.value = props),
-                setInitialFilter: (val) => (selectedFilter.value = val),
+                onDataLoaded: (data) => { treeData.value = data },
+                onTreeSelected: (props) => { selectedData.value = props },
+                onTreeHovered: (props) => { hoveredData.value = props },
+                setInitialFilter: (val) => { selectedFilter.value = val },
                 isInteractionEnabled: () => markerLatLng.value == null,
             }),
         ])
 
         dataLayerApi = treesApi
 
-        if (map.value && map.value.getLayer('trees-circle')) {
+        // initial styling/filtering once layer is ready
+        whenLayerReady('trees-circle', (m) => {
             visualiseTreeData(selectedFilter.value ?? 'status')
-        }
-
+            applyVisibility(selectedFilter.value ?? 'status')
+        })
         if (props.initialTreeId) {
             treesApi.selectTreeById(props.initialTreeId)
         }
 
-        // ensure centered state is correct on load (in case location already known)
+        // centered state initial
         isCentered.value = computeCentered()
     } catch (e) {
         console.error(e)
@@ -202,6 +313,7 @@ onMounted(async () => {
     }
 })
 
+// -------- Neighborhood stats (stale-safe) ----------
 let statsReq = 0
 watch(
     selectedNeighborhoodId,
@@ -222,68 +334,128 @@ watch(
         selectedNeighborhood.value = feature.properties
 
         try {
-            neighborhoodStats.value = null // το show loading state
+            neighborhoodStats.value = null
             const stats = await loadNeighborhoodStats(v)
-            if (reqId !== statsReq) return // stale response
+            if (reqId !== statsReq) return
             neighborhoodStats.value = stats
         } catch (err) {
             console.error(err)
-            neighborhoodStats.value = null
+            if (reqId === statsReq) neighborhoodStats.value = null
         }
     },
     { immediate: true }
 )
 
-watch(selectedData, v => {
-    console.log('selectedData', v)
-})
+// -------- marker create state ----------
+watch(
+    markerLatLng,
+    (v) => {
+        if (v == null) return
+        dataLayerApi?.clearSelection?.()
+        hoveredData.value = null
+        selectedData.value = null
+        const c = map.value?.getCanvas?.()
+        if (c) c.style.cursor = ''
+    },
+    { flush: 'post' }
+)
 
-const closeModal = () => {
-    showAuthPrompt.value = false
-}
 
-// -------- WATCHERS ----------
+// -------- FILTER + VISIBILITY (single watcher) ----------
 watch(
     selectedFilter,
     (mode) => {
-        if (!map.value || !map.value.getLayer('trees-circle')) return
-        visualiseTreeData(mode)
+        whenLayerReady('trees-circle', () => {
+            // if (!hasTreesLayer(map)) return
+            visualiseTreeData(mode)
+            applyVisibility(mode)
+        })
     },
     { immediate: true }
 )
 
-watch(hoveredData, (data) => {
-    if (!data) {
-        toggleTreeCard.value = false
-        return
-    }
-    toggleTreeCard.value = true
-})
+// -------- EVENT MODE (fetch + recenter) ----------
+const { hideSidebar } = useSidebar()
 
-watch(markerLatLng, (v) => {
-    if (v != null) {
-        dataLayerApi?.clearSelection?.()
-        hoveredData.value = null
-        selectedData.value = null
-        map.value?.getCanvas() && (map.value.getCanvas().style.cursor = '')
+watch(
+    () => [props.mode, props.eventId],
+    async ([mode, eventId]) => {
+        activeEvent.value = null
+        eventError.value = null
+        if (!(mode === 'planting' && eventId)) return
+
+        hideSidebar()
+
+        eventLoading.value = true
+        try {
+            const data = await fetchPlantingEvent(eventId)
+            activeEvent.value = data
+        } catch (e) {
+            console.error(e)
+            eventError.value = e?.message ?? 'Failed to load event'
+        } finally {
+            eventLoading.value = false
+        }
+    },
+    { immediate: true }
+)
+
+watch(
+    () => [map.value, activeEvent.value?.lat, activeEvent.value?.lon, isPlantingMode.value],
+    async () => {
+        if (!isPlantingMode.value) return
+        await nextTick()
+        if (!selectedData.value) {
+            recenterToEventIfPossible()
+        }
+    },
+    { immediate: true }
+)
+
+function recenterToEventIfPossible() {
+    const m = map.value
+    const ev = activeEvent.value
+    if (!m || !ev?.lat || !ev?.lon) return
+
+    m.easeTo({
+        center: [Number(ev.lon), Number(ev.lat)],
+        zoom: Math.max(m.getZoom(), 15),
+    })
+}
+
+
+async function fetchPlantingEvent(id) {
+    const res = await fetch(`/api/events/planting/${id}`)
+    if (!res.ok) throw new Error(`Failed to load planting event ${id}: ${res.status}`)
+    return await res.json()
+}
+
+
+function statusPill(status) {
+    switch (status) {
+        case 'draft': return 'bg-stone-100 text-stone-800 dark:bg-white/10 dark:text-stone-200'
+        case 'scheduled': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/15 dark:text-indigo-200'
+        case 'in_progress': return 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200'
+        case 'completed': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200'
+        case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-200'
+        default: return 'bg-gray-100 text-gray-800 dark:bg-white/10 dark:text-gray-200'
     }
-})
+}
+
+function exitEventMode() {
+    // just navigate to the map's route.
+    router.visit(route('/'), { preserveState: true, preserveScroll: true })
+}
 
 // -------- REAL TIME POSITION ----------
-const position = useRealTimePosition(map, {
-    recenterOnFirstFix: true,
-})
-
-// Hide recenter button when we're already centered
+const position = useRealTimePosition(map, { recenterOnFirstFix: true, })
 const isCentered = ref(false)
 
 const shouldShowButton = computed(() => {
     // show when inactive (so user can start)
     if (!position.isActive.value) return true
-
     // while waiting for first fix: show (but disabled)
     if (!position.hasFix.value) return true
-
     // active + has fix: only show if NOT centered
     return !isCentered.value
 })
@@ -301,10 +473,8 @@ const iconClass = computed(() => {
 
 function computeCentered() {
     if (!map.value || !position.lastLngLat.value) return false
-
     const c = map.value.getCenter()
     const [uLng, uLat] = position.lastLngLat.value
-
     const thresholdM = 35
     return distanceMeters([c.lng, c.lat], [uLng, uLat]) <= thresholdM
 }
@@ -319,8 +489,6 @@ const onFloatingButtonClick = async () => {
     if (!position.isActive.value) {
         try {
             await position.start()
-            // If your composable does NOT auto-recenter on first fix, leave recenterOnFirstFix false and do it here.
-            // Since recenterOnFirstFix is true, we just wait for the first fix.
         } catch (e) {
             console.warn(e)
         }
@@ -333,9 +501,6 @@ const onFloatingButtonClick = async () => {
     // Recenter
     position.recenterOnce()
 
-    // After animation ends, 'moveend' will run and update isCentered
-    // But to be extra safe (some cases no moveend fires if already centered),
-    // schedule a recompute after the next tick + small delay.
     await nextTick()
     window.setTimeout(() => {
         isCentered.value = computeCentered()
@@ -368,139 +533,79 @@ function distanceMeters([lng1, lat1], [lng2, lat2]) {
 }
 
 // -------- VISUALIZATION / FILTERING ----------
-const visualiseTreeData = (mode) => {
-    if (!map.value || !map.value.getLayer('trees-circle')) return
+let lastPaintMode = null
 
-    let layerId = 'circle-color'
-    // if (window.location.pathname.startsWith('/map2')) {
-    //     layerId = 'icon-color'
-    // }
+const paintByMode = {
+    status: () => ['match', ['get', 'status'], ...STATUS_COLORS],
+    origin: () => ['match', ['get', 'species_origin'], ...ORIGIN_COLORS],
+    pollen_risk: () => ['step', ['get', 'calculated_pollen_risk'], ...POLLEN_RISK_COLORS],
+    water_use: () => ['match', ['get', 'species_drought_tolerance'], ...WATER_USE_COLORS],
+    shade: () => ['match', ['get', 'species_canopy_class'], ...SHADE_COLORS],
+}
 
-    let propertyKey
-    let colorExpression
+function visualiseTreeData(mode) {
+
+    console.log('mode')
+    if (mode === lastPaintMode) return
+    lastPaintMode = mode
+
     const DEFAULT_COLOR = '#16a34a'
+    const expr = paintByMode[mode]?.()
 
-    switch (mode) {
-        case 'status':
-            propertyKey = ['get', 'status']
-            colorExpression = ['match', propertyKey, ...STATUS_COLORS]
-            break
-        case 'origin':
-            propertyKey = ['get', 'species_origin']
-            colorExpression = ['match', propertyKey, ...ORIGIN_COLORS]
-            break
-        case 'pollen_risk':
-            propertyKey = ['get', 'calculated_pollen_risk']
-            colorExpression = ['step', propertyKey, ...POLLEN_RISK_COLORS]
-            break
-        case 'water_use':
-            propertyKey = ['get', 'species_drought_tolerance']
-            colorExpression = ['match', propertyKey, ...WATER_USE_COLORS]
-            break
-        case 'shade':
-            propertyKey = ['get', 'species_canopy_class']
-            colorExpression = ['match', propertyKey, ...SHADE_COLORS]
-            break
-        default:
-            map.value.setPaintProperty('trees-circle', layerId, DEFAULT_COLOR)
-            return
-    }
-
-    if (colorExpression) {
-        map.value.setPaintProperty('trees-circle', layerId, colorExpression)
-    }
+    const m = map.value
+    if (!m || !hasTreesLayer(m)) return
+    m.setPaintProperty('trees-circle', 'circle-color', expr ?? DEFAULT_COLOR)
 }
 
-const hiddenCategories = ref({
-    status: new Set(),
-    origin: new Set(),
-    water_use: new Set(),
-    shade: new Set(),
-    pollen_risk: new Set(),
-})
+// small cache to avoid re-allocating identical filters for same hidden set
+const filterCache = new Map()
 
-const modeToPropName = {
-    status: 'status',
-    origin: 'species_origin',
-    pollen_risk: 'calculated_pollen_risk',
-    water_use: 'species_drought_tolerance',
-    shade: 'species_canopy_class',
+function applyVisibility(mode = selectedFilter.value) {
+  const m = map.value
+  if (!m || !hasTreesLayer(m)) return
+
+  const propName = modeToPropName[mode]
+  if (!propName) return m.setFilter('trees-circle', null)
+
+  const set = hiddenCategories.value[mode]
+  const hidden = set ? Array.from(set) : []
+  if (!hidden.length) return m.setFilter('trees-circle', null)
+
+  hidden.sort()
+  const cacheKey = `${mode}:${hidden.join('|')}`
+  let filter = filterCache.get(cacheKey)
+  if (!filter) {
+    filter = ['!', ['in', ['get', propName], ['literal', hidden]]]
+    filterCache.set(cacheKey, filter)
+  }
+  m.setFilter('trees-circle', filter)
 }
 
-const onToggleCategory = ({ mode, key }) => {
-    if (!hiddenCategories.value[mode]) hiddenCategories.value[mode] = new Set()
-    const currentSet = hiddenCategories.value[mode]
+function onToggleCategory({ mode, key }) {
+  const hc = hiddenCategories.value
+  const currentSet = hc[mode] ?? (hc[mode] = new Set())
 
-    if (key === 'all') {
-        const allKeys = CATEGORY_KEYS[mode] || []
-        const anyHidden = currentSet.size > 0
-        const next = new Set()
-        if (!anyHidden) allKeys.forEach((k) => next.add(k))
-
-        hiddenCategories.value = { ...hiddenCategories.value, [mode]: next }
-        applyVisibility(mode)
-        return
-    }
-
-    const next = new Set(currentSet)
-    next.has(key) ? next.delete(key) : next.add(key)
-
-    hiddenCategories.value = { ...hiddenCategories.value, [mode]: next }
+  if (key === 'all') {
+    const allKeys = CATEGORY_KEYS[mode] || []
+    const anyHidden = currentSet.size > 0
+    const next = new Set()
+    if (!anyHidden) allKeys.forEach(k => next.add(k))
+    hc[mode] = next
     applyVisibility(mode)
+    return
+  }
+
+  const next = new Set(currentSet)
+  next.has(key) ? next.delete(key) : next.add(key)
+  hc[mode] = next
+  applyVisibility(mode)
 }
 
-const NOT_CLUSTER = ['!', ['has', 'point_count']]
-const allTreeData = ref(null)      // master FeatureCollection 
-const visibleTreeData = ref(null)  // what we feed to the source (optional)
-
-function buildFilteredTrees(mode) {
-    const fc = allTreeData.value
-    if (!fc?.features) return fc
-
-    const propName = modeToPropName[mode]
-    const hidden = Array.from(hiddenCategories.value[mode] || [])
-
-    // no mode/prop or nothing hidden => show all
-    if (!propName || hidden.length === 0) return fc
-
-    const hiddenSet = new Set(hidden)
-
-    return {
-        type: 'FeatureCollection',
-        features: fc.features.filter(f => {
-            const v = f?.properties?.[propName]
-            return !hiddenSet.has(v)
-        }),
-    }
-}
-
-
-const applyVisibility = (mode = selectedFilter.value) => {
-    if (!map.value) return
-    if (!allTreeData.value) return
-
-    const filtered = buildFilteredTrees(mode)
-    visibleTreeData.value = filtered
-
-    // IMPORTANT: this makes clusters + counts recompute
-    dataLayerApi?.setTreesData?.(filtered)
-}
-
-
-watch(
-    selectedFilter,
-    (mode) => {
-        if (!map.value) return
-        visualiseTreeData(mode)
-        applyVisibility(mode)
-    },
-    { immediate: true }
-)
-
+// -------- CRUD hooks ----------
 function onCancelCreate() {
     dataLayerApi?.clearSelection?.()
     markerLatLng.value = null
-    longPressCtl?.hide()    // or remove()
+    longPressCtl?.hide?.()
 }
 
 function onCreateSuccess() {
@@ -509,37 +614,70 @@ function onCreateSuccess() {
 }
 
 async function onTreeSaved(payload) {
-    const props = await fetchTreeDetails(payload.id) // returns properties object
+    const propsObj = await fetchTreeDetails(payload.id)
 
     const existed = treeExistsInCollection(treeData.value, payload.id)
+    const next = upsertTreeFeature(treeData.value, propsObj)
 
-    // upsert into FeatureCollection
-    const next = upsertTreeFeature(treeData.value, props)
     treeData.value = next
-
-    // push into map source 
     dataLayerApi?.setTreesData?.(next)
 
-    // if this was a brand new feature, auto-select it
     if (!existed) {
-        // ensure map has applied the new source data before querying/selecting
         requestAnimationFrame(() => {
             dataLayerApi?.clearSelection?.()
             dataLayerApi?.selectTreeById?.(payload.id)
         })
     }
 
-    // keep selection synced
-    if (selectedData.value?.id === props.id) {
-        selectedData.value = props
+    if (selectedData.value?.id === propsObj.id) {
+        selectedData.value = propsObj
     }
+
+    if (isPlantingMode.value) {
+        try {
+            lastCreatedTree.value = propsObj
+            await attachTreeToPlantingEvent(payload.id)
+            if (activeEvent.value) {
+                activeEvent.value = {
+                    ...activeEvent.value,
+                    event_trees_count: (Number(activeEvent.value.event_trees_count ?? 0) + 1),
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+    }
+}
+
+function attachTreeToPlantingEvent(treeId) {
+    return new Promise((resolve, reject) => {
+        router.post(
+            route('plantingEventTrees.store', props.eventId),
+            {
+                tree_id: treeId,
+                planted_at: new Date().toISOString(),
+                planting_method: null,
+                notes: null,
+            },
+            {
+                preserveScroll: true,
+                preserveState: true,
+                replace: true,
+                onSuccess: (page) => {
+                    resolve(page)
+                },
+                onError: (errors) => {
+                    reject(errors)
+                },
+            }
+        )
+    })
 }
 
 function treeExistsInCollection(fc, id) {
     const numericId = Number(id)
     return !!fc?.features?.some(f => Number(f?.properties?.id ?? f?.id) === numericId)
 }
-
 
 function toPointFeature(treeProps) {
     const id = Number(treeProps.id)
@@ -552,7 +690,7 @@ function toPointFeature(treeProps) {
 
     return {
         type: 'Feature',
-        id, // good for promoteId/feature-state
+        id,
         geometry: { type: 'Point', coordinates: [lon, lat] },
         properties: treeProps,
     }
@@ -570,7 +708,6 @@ function upsertTreeFeature(featureCollection, treeProps) {
 
     const nextFeature = toPointFeature(treeProps)
     const id = nextFeature.id
-
     const idx = next.features.findIndex(f => Number(f?.properties?.id ?? f?.id) === id)
 
     if (idx >= 0) next.features[idx] = nextFeature
@@ -582,17 +719,23 @@ function upsertTreeFeature(featureCollection, treeProps) {
 
 // -------- CLEANUP ----------
 onBeforeUnmount(() => {
-    if (map.value) {
-        map.value.off('moveend', onMapMoveEnd)
-        map.value.off('zoomend', onMapMoveEnd)
-        map.value.off('rotateend', onMapMoveEnd)
-        map.value.remove()
-        map.value = null
+    const m = map.value
+    if (m) {
+        m.off('moveend', onMapMoveEnd)
+        m.off('zoomend', onMapMoveEnd)
+        m.off('rotateend', onMapMoveEnd)
+        m.remove()
     }
+    map.value = null
+
     position.stop?.()
-    longPressCtl?.cleanup()
-    longPressCtl?.remove()
+
+    longPressCtl?.cleanup?.()
+    longPressCtl?.remove?.()
+    longPressCtl = null
+
     dataLayerApi = null
-    mapBus.off('tree.saved', onTreeSaved)
+
+    mapBus.off('tree:saved', onTreeSaved)
 })
 </script>

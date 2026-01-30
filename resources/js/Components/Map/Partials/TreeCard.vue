@@ -10,7 +10,8 @@
     ]">
         <MapTreeForm v-if="isCreating || isEditing" v-model:visible="formVisible" routeResource="trees"
             :action="formAction" :markerLatLng="markerLatLng" :dataRow="props.selected" />
-        <NeighborhoodCardContent v-if="isNeighborhood" :activeNeighborhood="selectedNeighborhood" :stats="neighborhoodStats || {}" />
+        <NeighborhoodCardContent v-if="isNeighborhood" :activeNeighborhood="selectedNeighborhood"
+            :stats="neighborhoodStats || {}" />
         <TreeCardContent v-if="isSelected || isHovered" :hovered="props.hovered" :selected="props.selected"
             :isHovered="isHovered" :isSelected="isSelected" @editClick="onEditClick" />
     </aside>
@@ -20,7 +21,8 @@
         <div class="flex flex-col h-full px-5 pt-4 pb-6 w-full sm:items-center">
             <MapTreeForm v-if="isCreating || isEditing" v-model:visible="formVisible" routeResource="trees"
                 :action="formAction" :markerLatLng="markerLatLng" :dataRow="props.selected" />
-            <NeighborhoodCardContent v-if="isNeighborhood" :activeNeighborhood="selectedNeighborhood" :stats="neighborhoodStats || {}" />
+            <NeighborhoodCardContent v-if="isNeighborhood" :activeNeighborhood="selectedNeighborhood"
+                :stats="neighborhoodStats || {}" />
             <TreeCardContent v-if="isSelected || isHovered" :hovered="props.hovered" :selected="props.selected"
                 :isHovered="isHovered" :isSelected="isSelected" @editClick="onEditClick" />
         </div>
@@ -37,35 +39,17 @@ import NeighborhoodCardContent from '@/Components/Map/Partials/NeighborhoodCardC
 const emit = defineEmits(['cancelCreate'])
 
 const props = defineProps({
-    hovered: {
-        type: Object,
-        default: null
-    },
-    selected: {
-        type: Object,
-        default: null
-    },
-    markerLatLng: {
-        type: Object,
-        default: null
-    },
-    pinClickFlag: {
-        type: Number,
-        default: 0
-    },
-    selectedNeighborhood: {
-        type: Object,
-        default: null
-    },
-    neighborhoodStats: {
-        type: Object,
-        default: null
-    },
+    hovered:                { type: Object, default: null },
+    selected:               { type: Object, default: null },
+    markerLatLng:           { type: Object, default: null },
+    pinClickFlag:           { type: Number, default: 0 },
+    selectedNeighborhood:   { type: Object, default: null },
+    neighborhoodStats:      { type: Object, default: null },
 })
 
 const formVisible = ref(false)
 
-const isHovered = computed(() => props.hovered !== null  && props.selectedNeighborhood === null)
+const isHovered = computed(() => props.hovered !== null && props.selectedNeighborhood === null)
 const isSelected = computed(() => props.selected !== null)
 const isCreating = computed(() => props.markerLatLng !== null)
 const isEditing = ref(false)

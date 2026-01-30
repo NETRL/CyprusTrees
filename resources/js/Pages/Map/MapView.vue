@@ -11,8 +11,10 @@
 
         <main class="flex-1 relative overflow-hidden">
             <MapFilterProvider>
-                <MapLibreView2 v-if="isMap2" :initialTreeId="initialTreeId" />
-                <MapLibreView v-else :initialTreeId="initialTreeId" />
+                <MapLibreView2 v-if="isMap2" :initialTreeId="initialTreeId" :initialLocation="initialLocation"
+                    :mode="mode" :eventId="eventId" />
+                <MapLibreView v-else :initialTreeId="initialTreeId" :initialLocation="initialLocation" :mode="mode"
+                    :eventId="eventId" />
             </MapFilterProvider>
         </main>
     </div>
@@ -28,42 +30,18 @@ import { provide } from 'vue';
 import { useCustomToast } from '@/Composables/useCustomToast';
 
 const props = defineProps({
-    reportTypes: {
-        type: Array,
-        default: () => []
-    },
-    speciesData: {
-        type: Array,
-        default: () => []
-    },
-    neighborhoodData: {
-        type: Array,
-        default: () => []
-    },
-    tagData: {
-        type: Array,
-        default: () => []
-    },
-    treeSex: {
-        type: Array,
-        default: () => []
-    },
-    healthStatus: {
-        type: Array,
-        default: () => []
-    },
-    treeStatus: {
-        type: Array,
-        default: () => []
-    },
-    ownerType: {
-        type: Array,
-        default: () => []
-    },
-    initialTreeId: {
-        type: Number,
-        default: null,
-    }
+    reportTypes:        { type: Array, default: () => [] },
+    speciesData:        { type: Array, default: () => [] },
+    neighborhoodData:   { type: Array, default: () => [] },
+    tagData:            { type: Array, default: () => [] },
+    treeSex:            { type: Array, default: () => [] },
+    healthStatus:       { type: Array, default: () => [] },
+    treeStatus:         { type: Array, default: () => [] },
+    ownerType:          { type: Array, default: () => [] },
+    initialTreeId:      { type: Number, default: null, },
+    initialLocation:    { type: Object, default: null, },
+    mode:               { type: String, default: 'default' },
+    eventId:            { type: Number, default: null },
 })
 
 const isMap2 = window.location.pathname.startsWith('/map2')

@@ -30,6 +30,11 @@
                 </p>
             </div>
 
+            <button v-if="true && isSelected" type="button" class="px-2.5 py-1 w-full text-xs rounded-md border border-gray-200 hover:bg-gray-50
+               dark:border-gray-700 dark:hover:bg-white/5 disabled:opacity-50" @click="copySelected"
+                title="Copy values from the currently selected tree">
+                Copy selected
+            </button>
         </div>
 
         <!-- Content Sections -->
@@ -52,7 +57,7 @@
                     <div class="text-[10px] uppercase tracking-tighter text-gray-500 dark:text-gray-400">Canopy</div>
                     <div class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ activeTree.canopy_diameter_m ||
                         '—'
-                    }}m</div>
+                        }}m</div>
                 </div>
             </div>
 
@@ -378,25 +383,16 @@ const page = usePage();
 const can = inject('can')
 
 const props = defineProps({
-    hovered: {
-        type: Object,
-        default: null
-    },
-    selected: {
-        type: Object,
-        default: null
-    },
-    isHovered: {
-        type: Boolean,
-        required: true
-    },
-    isSelected: {
-        type: Boolean,
-        required: true
-    }
+    hovered: { type: Object, default: null },
+    selected: { type: Object, default: null },
+    isHovered: { type: Boolean, required: true },
+    isSelected: { type: Boolean, required: true }
 });
 
 const reportTypes = inject('reportTypes');
+
+const isPlantingMode = inject('isPlantingMode')
+const lastCreatedTree = inject('lastCreatedTree')
 
 const userId = computed(() => page.props.auth.user?.id);
 
@@ -498,6 +494,12 @@ const neighborhoodData = computed(() => {
 });
 
 // Helper functions
+
+function copySelected() {
+    lastCreatedTree.value = activeTree.value
+    console.log(lastCreatedTree.value)
+}
+
 const getStatusColor = (status) => {
     const colors = {
         existing: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400',

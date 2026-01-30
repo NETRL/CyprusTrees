@@ -27,6 +27,22 @@ export function useSidebarProvider() {
     window.removeEventListener('resize', handleResize)
   })
 
+  const showSidebar = () => {
+    if (isMobile.value) {
+      isMobileOpen.value = true
+    } else {
+      isExpanded.value = true
+    }
+  }
+
+  const hideSidebar = () => {
+    if (isMobile.value) {
+      isMobileOpen.value = false
+    } else {
+      isExpanded.value = false
+    }
+  }
+
   const toggleSidebar = () => {
     if (isMobile.value) {
       isMobileOpen.value = !isMobileOpen.value
@@ -63,6 +79,8 @@ export function useSidebarProvider() {
     setIsHovered,
     setActiveItem,
     toggleSubmenu,
+    hideSidebar,
+    showSidebar,
   }
 
   provide(SidebarSymbol, context)

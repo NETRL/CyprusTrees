@@ -2,7 +2,19 @@
     <div class="w-full max-w-[450px] rounded-xl bg-white dark:bg-gray-900 select-none overflow-y-auto my-2">
         <!-- Header -->
         <div class="sticky flex items-center justify-between px-4 py-3 border-b dark:border-gray-700">
-            <h2 class="text-lg font-semibold">Tree Details</h2>
+            <div class="flex items-center gap-2">
+                <h2 class="text-lg font-semibold">Tree Details</h2>
+
+                <!-- Only in CREATE mode -->
+                <div v-if="action === 'Create' && markerLatLng" class="flex items-center gap-2">
+                    <button type="button" class="px-2.5 py-1 text-xs rounded-md border border-gray-200 hover:bg-gray-50
+               dark:border-gray-700 dark:hover:bg-white/5 disabled:opacity-50" 
+                        @click="copyLast" title="Copy values from the last saved tree">
+                        Copy last
+                    </button>
+                </div>
+            </div>
+
             <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" @click="closeForm">
                 ✕
             </button>
@@ -119,31 +131,17 @@ import { safeJsonParse } from '@/Composables/safeJsonParser'
 
 // props 
 const props = defineProps({
-    visible: {
-        type: Boolean,
-        default: false,
-    },
-    dataRow: {
-        type: Object,
-        default: null,
-    },
-    action: {
-        type: String,
-        default: '',
-    },
-    routeResource: {
-        type: String,
-        required: true
-    },
-    markerLatLng: {
-        type: Object,
-        default: null,
-    }
+    visible: { type: Boolean, default: false, },
+    dataRow: { type: Object, default: null, },
+    action: { type: String, default: '', },
+    routeResource: { type: String, required: true },
+    markerLatLng: { type: Object, default: null, }
 })
 
 const page = usePage()
 
 const mapBus = inject('mapBus', null)
+const lastCreatedTree = inject('lastCreatedTree', ref(null))
 
 const speciesData = inject('speciesData')
 const neighborhoodData = inject('neighborhoodData')
@@ -290,6 +288,54 @@ function initForm() {
         formData.lat = props.markerLatLng.lat
         formData.lon = props.markerLatLng.lng
     }
+}
+
+// event functions
+function normalizeTagIds(row) {
+    // row.tags can be: JSON string, array, null
+    const tags = typeof row?.tags === 'string' ? safeJsonParse(row.tags) : row?.tags
+    if (!Array.isArray(tags)) return []
+    return tags.map(t => t.id).filter(Boolean)
+}
+
+
+function applyTemplate(row) {
+    if (!row) return
+
+    // keep current coords (from marker)
+    const currentLat = formData.lat
+    const currentLon = formData.lon
+
+    formData.species_id = row.species_id ?? null
+    formData.tag_ids = normalizeTagIds(row)
+    formData.neighborhood_id = row.neighborhood_id ?? null
+    formData.address = row.address ?? ''
+
+    formData.planted_at = new Date()
+    formData.last_inspected_at = new Date()
+
+    formData.status = row.status ?? null
+    formData.health_status = row.health_status ?? null
+    formData.sex = row.sex ?? null
+
+    formData.height_m = row.height_m ?? null
+    formData.dbh_cm = row.dbh_cm ?? null
+    formData.canopy_diameter_m = row.canopy_diameter_m ?? null
+
+    formData.owner_type = row.owner_type ?? null
+    formData.source = row.source ?? source
+
+    // restore coords
+    formData.lat = currentLat
+    formData.lon = currentLon
+
+    displayErrors.value = false
+}
+
+function copyLast() {
+    const row = lastCreatedTree?.value
+    if (!row) return
+    applyTemplate(row)
 }
 
 // Watch for visibility changes

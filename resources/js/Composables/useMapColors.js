@@ -1,5 +1,7 @@
 export function useMapColors() {
 
+  const DEFAULT_COLOR = '#000'
+
     // All colors have in HSL scale S=75% and L=50%
 const STATUS_COLORS = [
   'existing',        '#20df80', // H=150 (Emerald)
@@ -12,33 +14,33 @@ const STATUS_COLORS = [
   'proposed',        '#8020df', // H=270 (Purple)
   'vacant_pit',      '#20dfdf', // H=180 (Cyan)
   'unknown',         '#df20df', // H=300 (Magenta)
-  '#2020df'                     // Default (Blue)
+  DEFAULT_COLOR                     // Default (Blue)
 ];
 
    const WATER_USE_COLORS = [
   'high',     '#20df20', // Low Water Need (Red = High Need)
   'moderate', '#dfdf20', // Medium Water Need (Yellow = Warning)
   'low',      '#df2020', // High Water Need (Green = Efficient)
-  '#000000'              // Default Fallback
+  DEFAULT_COLOR              // Default Fallback
 ];
 
 const SHADE_COLORS = [
   'S', '#dfdf20', // Small Canopy (Sunlight/Yellow)
   'M', '#20df80', // Medium Canopy (Growth/Emerald)
   'L', '#2080df', // Large Canopy (Deep Shade/Blue)
-  '#000000'       // Default Fallback
+  DEFAULT_COLOR       // Default Fallback
 ];
 
 const ORIGIN_COLORS = [
   'native',  '#20df50', // Environment
   'endemic', '#8020df', // Rare/Purple
   'exotic',  '#df8020', // Different/Orange
-  '#000000'             // Default Fallback
+  DEFAULT_COLOR             // Default Fallback
 ];
 
     // --- Sequential Color Palette (Enhanced for visibility) ---
 const POLLEN_RISK_COLORS = [
-    '#808080', // Missing Data (Neutral Gray)
+    DEFAULT_COLOR, // Missing Data (Neutral Gray)
     // Safe (Green to Lime)
     1,  '#20df20', // H=120
     2,  '#50df20', // H=107

@@ -70,7 +70,7 @@ function preprocessTreesGeojson(data) {
 
 // Store the raster size as a constant so offsets can reference it
 const PIN_RASTER_SIZE = 56;
-const PIN_COLOR = '#6b8083'
+const PIN_COLOR = '#000'
 const PIN_HOVER_COLOR = '#009966'
 const PIN_SELECT_COLOR = '#009966'
 
@@ -191,10 +191,11 @@ export async function loadTreesLayer(mapInstance, {
     source: 'trees',
     filter: ['!', ['has', 'point_count']],
     paint: {
-      'circle-color': '#5A6B7C',
-      'circle-opacity': 0.8,
-      'circle-radius': 12,
+      'circle-color': PIN_COLOR,
+      'circle-opacity': 0.4,
+      'circle-radius': 10,
       'circle-stroke-width': 0,
+      'circle-stroke-color': '#ffffff'
     }
   });
 
@@ -206,8 +207,8 @@ export async function loadTreesLayer(mapInstance, {
     source: 'trees',
     filter: ['has', 'point_count'],
     paint: {
-      'circle-color': '#5A6B7C',
-      'circle-opacity': 0.8,
+      'circle-color': PIN_COLOR,
+      'circle-opacity': 0.4,
       'circle-radius': [
         'step',
         ['get', 'point_count'],
@@ -215,7 +216,7 @@ export async function loadTreesLayer(mapInstance, {
         10, 24, // Radius 30px for 10-50 trees
         50, 32  // Radius 40px for > 50 trees
       ],
-      'circle-stroke-width': 0.1,
+      'circle-stroke-width': 0,
       'circle-stroke-color': '#ffffff'
     }
   });
@@ -227,13 +228,7 @@ export async function loadTreesLayer(mapInstance, {
     source: 'trees',
     filter: ['!', ['has', 'point_count']],
     paint: {
-      'circle-radius': [
-        'interpolate', ['linear'], ['zoom'],
-        10, 6,
-        14, 6,
-        18, 6,
-        20, 6
-      ],
+      'circle-radius': 4.5,
       'circle-stroke-width': 0,
       'circle-color': PIN_COLOR,
       // 'circle-translate': createPixelOffset(-32),

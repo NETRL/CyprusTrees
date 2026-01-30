@@ -28,7 +28,7 @@ export async function initMap(container, { center, zoom, styleUrl }) {
   map.addControl(new maplibregl.NavigationControl())
 
   // Wait for load once, return a promise
-  await new Promise(resolve => map.on('load', resolve))
+  await new Promise(resolve => map.once('load', resolve))
 
   return { map, styleJson }
 }
