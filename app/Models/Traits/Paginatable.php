@@ -2,7 +2,10 @@
 
 namespace App\Models\Traits;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -23,7 +26,15 @@ trait Paginatable
 
         $baseQuery->with($valid);
 
+        // for date filter.
+        $dateFrom   = request()->input('date_from');
+        $dateTo     = request()->input('date_to');
+        $dateFields = request()->input('date_fields', []);
+        $tz         = request()->input('tz', 'Europe/Athens');
 
+        if (($dateFrom || $dateTo) && !empty($dateFields)) {
+            $baseQuery->customDateFilter($dateFields, $dateFrom, $dateTo, $tz);
+        }
         // accept both camelCase and snake_case params
         $sortOrder = request()->input('sortOrder', request()->input('sort_order'));
         $sortField = request()->input('sortField', request()->input('sort_field'));
@@ -55,11 +66,40 @@ trait Paginatable
         }
 
         if (str_contains($sortField, '.') && $this->tryRelationSort($query, $sortField, $sortOrder)) {
-            $relationship = explode('.', $sortField)[0];
-            $related      = $this->$relationship()->getRelated();
-            return $query->leftJoin("{$related->getTable()} AS $relationship", "{$this->getTable()}.{$this->$relationship()->getLocalKeyName()}", '=', "$relationship.{$related->getKeyName()}")
-                ->orderBy($sortField, $sortOrder);
+            [$relationship, $column] = explode('.', $sortField, 2);
+
+            /** @var Relation $rel */
+            $rel = $this->$relationship();
+            $related = $rel->getRelated();
+            $relTable = $related->getTable();
+
+            // Always select only base table columns to avoid collisions (id, created_at, etc.)
+            $query->select($this->getTable() . '.*');
+
+            if ($rel instanceof BelongsTo) {
+                // maintenance_events.tree_id = tree.id
+                $foreignKey = $rel->getForeignKeyName(); // e.g. tree_id
+                $ownerKey   = $rel->getOwnerKeyName();   // e.g. id
+
+                return $query
+                    ->leftJoin("$relTable AS $relationship", "{$this->getTable()}.$foreignKey", '=', "$relationship.$ownerKey")
+                    ->orderBy("$relationship.$column", $sortOrder);
+            }
+
+            if ($rel instanceof HasOneOrMany) {
+                // base.id = rel.base_id (rare for your case, but keeps it generic)
+                $localKey   = $rel->getLocalKeyName();
+                $foreignKey = $rel->getForeignKeyName();
+
+                return $query
+                    ->leftJoin("$relTable AS $relationship", "{$this->getTable()}.$localKey", '=', "$relationship.$foreignKey")
+                    ->orderBy("$relationship.$column", $sortOrder);
+            }
+
+            // Fallback: do nothing
+            return $query;
         }
+
 
         if ($this->tryBaseTableSort($query, $sortField, $sortOrder)) {
             return $query->orderBy($sortField, $sortOrder);
@@ -99,6 +139,40 @@ trait Paginatable
 
                 $outer->orWhereHas($relations[0], function ($q) use ($relations, $column, $searchTerm) {
                     $this->applyNestedWhereHas($q, array_slice($relations, 1), $column, $searchTerm);
+                });
+            }
+        });
+    }
+
+
+    public function scopeCustomDateFilter(
+        Builder $query,
+        array $fields,
+        ?string $from,
+        ?string $to,
+        string $tz = 'Europe/Athens'
+    ): Builder {
+        // whitelist: only allow filterable date columns
+        $allowed = property_exists($this, 'dateFilterable') ? $this->dateFilterable : [];
+        $fields = array_values(array_intersect($fields, $allowed));
+        if (empty($fields)) return $query;
+
+        // parse boundaries (local tz day bounds -> UTC)
+        $fromUtc = $from
+            ? CarbonImmutable::parse($from, $tz)->startOfDay()->utc()
+            : null;
+
+        $toUtc = $to
+            ? CarbonImmutable::parse($to, $tz)->endOfDay()->utc()
+            : null;
+
+        if (!$fromUtc && !$toUtc) return $query;
+
+        return $query->where(function ($q) use ($fields, $fromUtc, $toUtc) {
+            foreach ($fields as $i => $field) {
+                $q->orWhere(function ($qq) use ($field, $fromUtc, $toUtc) {
+                    if ($fromUtc) $qq->where($field, '>=', $fromUtc);
+                    if ($toUtc)   $qq->where($field, '<=', $toUtc);
                 });
             }
         });
@@ -189,16 +263,42 @@ trait Paginatable
     private function tryRelationSort($query, $sortField, $sortOrder): bool
     {
         try {
-            $relationship = explode('.', $sortField)[0];
-            $related      = $this->$relationship()->getRelated();
-            $query->clone()->leftJoin("{$related->getTable()} AS $relationship", "{$this->getTable()}.{$this->$relationship()->getLocalKeyName()}", '=', "$relationship.{$related->getKeyName()}")
-                ->orderBy($sortField, $sortOrder)->limit(1)->get();
-        } catch (Throwable $e) {
+            [$relationship, $column] = explode('.', $sortField, 2);
+
+            $rel = $this->$relationship();
+            $related = $rel->getRelated();
+            $relTable = $related->getTable();
+
+            $q = $query->clone()->select($this->getTable() . '.*');
+
+            if ($rel instanceof BelongsTo) {
+                $foreignKey = $rel->getForeignKeyName();
+                $ownerKey   = $rel->getOwnerKeyName();
+
+                $q->leftJoin("$relTable AS $relationship", "{$this->getTable()}.$foreignKey", '=', "$relationship.$ownerKey")
+                    ->orderBy("$relationship.$column", $sortOrder)
+                    ->limit(1)->get();
+
+                return true;
+            }
+
+            if ($rel instanceof HasOneOrMany) {
+                $localKey   = $rel->getLocalKeyName();
+                $foreignKey = $rel->getForeignKeyName();
+
+                $q->leftJoin("$relTable AS $relationship", "{$this->getTable()}.$localKey", '=', "$relationship.$foreignKey")
+                    ->orderBy("$relationship.$column", $sortOrder)
+                    ->limit(1)->get();
+
+                return true;
+            }
+
+            return false;
+        } catch (\Throwable) {
             return false;
         }
-
-        return true;
     }
+
 
     private function tryDefinedSort($query, $sortField, $sortOrder): bool
     {

@@ -38,7 +38,6 @@ class TreeController extends Controller
         $query = Tree::query()
             ->with(['species', 'tags', 'neighborhood'])
             ->withCount('photos')
-            ->orderBy('id', 'desc')
             ->setUpQuery();
 
 

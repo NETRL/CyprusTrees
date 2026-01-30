@@ -29,6 +29,7 @@ class MaintenanceEvent extends Model
     protected $tableColumns = [
         'event_id',
         'tree_id',
+        'tree.address',
         'type_id',
         'performed_by',
         'performed_at',
@@ -65,6 +66,11 @@ class MaintenanceEvent extends Model
         'quantity',
         'cost',
         'notes',
+        'tree.address',
+    ];
+
+    protected array $dateFilterable = [
+        'performed_at',
     ];
 
     public static function relationships(): array
@@ -81,7 +87,6 @@ class MaintenanceEvent extends Model
         'quantity'     => 'float',
         'cost'         => 'float',
     ];
-
 
     public function getIdAttribute()
     {

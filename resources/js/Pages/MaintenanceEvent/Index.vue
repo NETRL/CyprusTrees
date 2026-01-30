@@ -1,8 +1,9 @@
 <template>
   <div>
     <ReusableDataTable routeResource="maintenanceEvents" :columns="dataColumns" :tableData="tableData"
-      inertiaKey="tableData" pageTitle="Manage Maintenance Events" @create="openCreateForm" @edit="openEditForm"
-      @afterDelete="onAfterDelete" @afterMassDelete="onAfterMassDelete">
+      :dateFilterable="dateFilterable" inertiaKey="tableData" pageTitle="Manage Maintenance Events"
+      @create="openCreateForm" @edit="openEditForm" @afterDelete="onAfterDelete" @afterMassDelete="onAfterMassDelete"
+      :showDateFilter="true">
 
 
       <template #columns="{ isColumnVisible }">
@@ -22,6 +23,12 @@
             </Link>
           </template>
         </Column>
+        <Column v-if="isColumnVisible('tree.address')" field="tree.address" header="Address" sortable>
+          <template #body="{ data }">
+            {{ data?.tree?.address ?? '-' }}
+          </template>
+        </Column>
+
         <!-- Type-->
         <Column v-if="isColumnVisible('type_id')" field="type_id" header="Type" sortable>
           <template #body="{ data }">
@@ -83,27 +90,16 @@ defineOptions({
 });
 
 const props = defineProps({
-  tableData: {
-    type: Object,
-    required: true,
-  },
-  dataColumns: {
-    type: Object,
-  },
-  treeData: {
-    type: Array,
-    default: () => [],
-  },
-  typeData: {
-    type: Array,
-    default: () => [],
-  },
-  userData: {
-    type: Array,
-    default: () => [],
-  },
+  tableData: { type: Object, required: true, },
+  dataColumns: { type: Object, },
+  dateFilterable: { type: Array, default: () => [] },
+  treeData: { type: Array, default: () => [], },
+  typeData: { type: Array, default: () => [], },
+  userData: { type: Array, default: () => [], },
 
 });
+
+console.log(props.tableData)
 
 const { formatDate } = useDateFormatter();
 

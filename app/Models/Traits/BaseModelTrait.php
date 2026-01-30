@@ -8,6 +8,14 @@ use Throwable;
 
 trait BaseModelTrait
 {
+
+    public static function getDateFilterable(): array
+    {
+        return property_exists(static::class, 'dateFilterable')
+            ? (new static)->dateFilterable
+            : [];
+    }
+
     public function getModelRelationships(): array
     {
         try {

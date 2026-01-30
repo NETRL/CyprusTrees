@@ -62,6 +62,7 @@ class MaintenanceEventsController extends Controller
         return Inertia::render('MaintenanceEvent/Index', [
             'tableData' => $tableData,
             'dataColumns' => MaintenanceEvent::getDataColumns(),
+            'dateFilterable' => MaintenanceEvent::getDateFilterable(),
             'treeData' => Tree::with('species:id,latin_name,common_name')
                 ->select('id', 'species_id', 'lat', 'lon', 'address')
                 ->get(),
