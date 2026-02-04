@@ -58,89 +58,80 @@
         :rowExpansionTemplate="undefined">
         <!-- Header -->
         <template #header>
-          <div class="flex flex-col gap-3">
-            <!-- Title + meta -->
-            <div class="flex items-start justify-between gap-3">
+          <div class="flex flex-col gap-4 p-1">
+            <div class="flex flex-wrap items-center justify-between gap-4">
               <div class="min-w-0">
-                <h5 class="m-0 text-lg md:text-xl font-semibold truncate">
+                <h5 class="m-0 text-xl font-bold tracking-tight text-slate-900 dark:text-white">
                   {{ pageTitle }}
                 </h5>
-
-                <div
-                  class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
-                  <span v-if="tableData?.total != null">
-                    {{ tableData.total }} total
-                  </span>
-                  <span v-if="tableData?.current_page && tableData?.last_page">
-                    Page {{ tableData.current_page }} / {{ tableData.last_page }}
-                  </span>
-                  <span v-if="activeFiltersCount > 0">
-                    {{ activeFiltersCount }} filter{{ activeFiltersCount === 1 ? '' : 's' }} active
-                  </span>
+                <div class="mt-1 flex items-center gap-2 text-sm text-slate-400">
+                  <span class="font-medium">{{ tableData?.total ?? 0 }} total records</span>
+                  <span class="text-slate-300">|</span>
+                  <span>Page {{ tableData?.current_page }} of {{ tableData?.last_page }}</span>
                 </div>
               </div>
 
-              <div class="flex items-center gap-2 shrink-0">
-                <!-- Quick clear -->
-                <Button v-if="activeFiltersCount > 0" severity="secondary" outlined icon="pi pi-times" label="Clear"
-                  class="max-sm:text-sm!" @click="clearFilters" />
+              <div class="flex items-center gap-2">
+                <span class="">
+                  <FormField v-model="searchQuery" placeholder="Quick search..." class="p-inputtext-sm w-64" />
+                </span>
 
-                <!-- filter toggle -->
-                <Button v-if="(showSearch || showDateFilter)" icon="pi pi-filter" severity="secondary" outlined
+                <Button v-if="activeFiltersCount > 0" label="Clear" icon="pi pi-filter-slash" text severity="secondary" outlined
+                  size="small" @click="clearFilters"  />
+
+                <Button icon="pi pi-filter" severity="secondary" outlined
                   @click="toggleFilters" :badge="activeFiltersCount > 0 ? String(activeFiltersCount) : null"
-                  aria-label="Toggle filters" />
+                  badgeClass="p-badge-secondary" />
               </div>
             </div>
 
-            <!-- Filters -->
-            <div v-if="showFilters"
-              class="rounded-xl border border-slate-200 bg-gray-50 p-3 dark:border-slate-800 dark:bg-white/1">
-              <div class="flex flex-col gap-3">
-                <!-- Search -->
-                <div v-if="showSearch" class="flex flex-col gap-1">
-                  <label class="text-xs text-slate-600 dark:text-slate-300">Search</label>
-                  <InputText v-model="searchQuery" class="w-full" placeholder="Search..." inputClass="w-full" />
-                </div>
+            <!-- <div class="sm:hidden w-full">
+              <span class="p-input-icon-left w-full">
+                <FormField v-model="searchQuery" placeholder="Search..." class="w-full" />
+              </span>
+            </div> -->
 
-                <!-- Date Filters -->
-                <div v-if="showDateFilter && props.dateFilterable?.length" class="flex flex-col gap-2">
-                  <label class="text-xs text-slate-600 dark:text-slate-300">Date filters</label>
+            <Transition name="p-connected-overlay">
+              <div v-if="showFilters"
+                class="rounded-xl border border-slate-200 bg-slate-50/50 p-4 dark:border-gray-800 dark:bg-white/1">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
 
-                  <FormField component="MultiSelect" v-model="selectedDateFields" :options="props.dateFilterable"
-                    optionLabel="label" optionValue="value" :maxSelectedLabels="1" placeholder="Date fields"
-                    class="w-full" />
-
-                  <div v-if="selectedDateFields.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <FormField component="Calendar" v-model="dateFrom" placeholder="From" dateFormat="dd/mm/yy" showIcon
-                      class="w-full" />
-                    <FormField component="Calendar" v-model="dateTo" placeholder="To" dateFormat="dd/mm/yy" showIcon
-                      class="w-full" :minDate="dateFrom"  />
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Filter By</label>
+                    <FormField component="MultiSelect" v-model="selectedDateFields" :options="props.dateFilterable" optionLabel="label"
+                      optionValue="value" placeholder="Select fields" class="w-full p-inputtext-sm"
+                      :maxSelectedLabels="2" />
                   </div>
-                </div>
 
-                <!-- Actions -->
-                <div v-if="selectedDateFields.length > 0" class="flex flex-wrap gap-2">
-                  <Button size="small" label="Apply" icon="pi pi-check" class="flex-1 min-w-[140px]"
-                    @click="applyFilters" />
-                  <Button v-if="activeFiltersCount > 0" size="small" severity="secondary" label="Clear"
-                    icon="pi pi-times" class="flex-1 min-w-[140px]" @click="clearFilters" />
+                  <div class="md:col-span-2 flex flex-col gap-1.5">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Date Range</label>
+                    <div class="flex flex-wrap sm:flex-nowrap gap-2">
+                      <FormField component="Calendar" v-model="dateFrom" placeholder="From" dateFormat="dd/mm/yy" showIcon class="flex-1"
+                        inputClass="p-inputtext-sm" />
+                      <FormField component="Calendar" v-model="dateTo" placeholder="To" dateFormat="dd/mm/yy" showIcon class="flex-1"
+                        :minDate="dateFrom" inputClass="p-inputtext-sm" />
+                      <Button label="Apply" icon="pi pi-check" class="w-full sm:w-auto" @click="applyFilters" />
+                    </div>
+                  </div>
+
                 </div>
               </div>
-            </div>
+            </Transition>
 
-            <!-- Selection hint -->
             <div v-if="selected?.length"
-              class="flex items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-900/10 dark:text-amber-100">
-              <div class="truncate">
-                <i class="pi pi-check-circle mr-2" />
-                {{ selected.length }} selected
+              class="flex items-center justify-between animate-in fade-in slide-in-from-top-2 rounded-lg bg-primary-50 px-4 py-2 border border-primary-100 dark:bg-primary-900/20 dark:border-primary-800">
+              <div class="flex items-center gap-3">
+                <i class="pi pi-check-circle text-primary-600 dark:text-primary-400" />
+                <span class="text-sm font-semibold text-primary-900 dark:text-primary-100">
+                  {{ selected.length }} items selected
+                </span>
               </div>
-              <Button severity="secondary" outlined size="small" icon="pi pi-times" label="Clear selection"
-                @click="selected = []" />
+              <div class="flex items-center gap-2">
+                <Button text size="small" label="Deselect All" @click="selected = []" />
+              </div>
             </div>
           </div>
         </template>
-
         <!-- Empty -->
         <template #empty>
           <div class="text-center py-10 text-slate-500 dark:text-slate-400">
