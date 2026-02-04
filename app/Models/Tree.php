@@ -64,14 +64,12 @@ class Tree extends Model
         'lat',
         'lon',
         'address',
-        'planted_at',
         'status',
         'health_status',
         'sex',
         'height_m',
         'dbh_cm',
         'canopy_diameter_m',
-        'last_inspected_at',
         'owner_type',
         'source',
 
@@ -82,7 +80,10 @@ class Tree extends Model
         'neighborhood.district',
     ];
 
-
+    protected array $dateFilterable = [
+        'planted_at',
+        'last_inspected_at',
+    ];
 
 
     protected $casts = [

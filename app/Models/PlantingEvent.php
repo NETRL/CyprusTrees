@@ -15,6 +15,8 @@ class PlantingEvent extends Model
 
     protected $primaryKey = 'planting_id';
 
+    protected $appends = ['id'];
+
     protected $fillable = [
         'campaign_id',
         'neighborhood_id',
@@ -31,15 +33,15 @@ class PlantingEvent extends Model
 
     protected array  $tableColumns = [
         'planting_id',
-        'campaign_id',
-        'neighborhood_id',
-        'assigned_to',
-        'created_by',
+        'campaign_label',
+        'neighborhood_label',
+        'assigned_to_label',
+        'status',
         'started_at',
         'completed_at',
-        'location',
         'target_tree_count',
-        'status',
+        'trees_count',
+        'location',
         'notes',
     ];
 
@@ -65,8 +67,6 @@ class PlantingEvent extends Model
         'neighborhood_id',
         'assigned_to',
         'created_by',
-        'started_at',
-        'completed_at',
         'lat',
         'lon',
         'target_tree_count',
@@ -96,6 +96,11 @@ class PlantingEvent extends Model
         'notes',
     ];
 
+    protected array $dateFilterable = [
+        'started_at',
+        'completed_at',
+    ];
+
 
     public static function relationships(): array
     {
@@ -113,6 +118,10 @@ class PlantingEvent extends Model
         'completed_at' => 'datetime',
     ];
 
+    public function getIdAttribute()
+    {
+        return $this->attributes['planting_id'] ?? null;
+    }
 
     public function campaign()
     {

@@ -53,6 +53,7 @@ class HealthAssessmentController extends Controller
         return Inertia::render('HealthAssessment/Index', [
             'tableData'     =>   $tableData,
             'dataColumns'   => HealthAssessment::getDataColumns(),
+            'dateFilterable' => HealthAssessment::getDateFilterable(),
             'treeData'      => Tree::with('species:id,latin_name,common_name')
                 ->select(['id', 'species_id', 'lat', 'lon', 'address'])
                 ->get(),

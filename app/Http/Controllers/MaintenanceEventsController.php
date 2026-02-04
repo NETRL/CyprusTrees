@@ -58,7 +58,6 @@ class MaintenanceEventsController extends Controller
             ];
         });
 
-
         return Inertia::render('MaintenanceEvent/Index', [
             'tableData' => $tableData,
             'dataColumns' => MaintenanceEvent::getDataColumns(),

@@ -1,117 +1,127 @@
 <template>
-  <div>
-    <ReusableDataTable routeResource="plantingEvents" :columns="dataColumns" :tableData="tableData"
-      inertiaKey="tableData" pageTitle="Manage Planting Events" :showDateFilter="true" :showMassDeleteButton="false"
-      :dateFilterable="dateFilterable" rowKey="planting_id" v-model:expandedRows="expandedRows"
-      @afterDelete="onAfterDelete" @create="openCreateForm" @edit="openEditForm">
-      <!-- 
-      <template #toolbarStart>
-        <span class="flex gap-2 items-center">
-          <Button class="my-2 max-sm:text-sm! text-xs!" severity="primary" icon="pi pi-plus" label="Expand All"
-            @click="expandAll" />
-          <Button class="my-2 max-sm:text-sm! text-xs!" severity="primary" icon="pi pi-minus" label="Collapse All"
-            @click="collapseAll" />
-        </span>
-      </template> -->
-
-      <!-- Override DataTable itself to add expander support -->
-      <template #tableStart>
-        <!-- We'll inject expander support by using slots inside ReusableDataTable (see section 2 below) -->
+  <div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
+    <Toolbar class="m-4 dark:border-gray-800! dark:bg-transparent!">
+      <template #start>
+        <Button severity="success" class="mr-2 mb-2 max-sm:text-sm!" icon="pi pi-plus" label="New Event"
+          @click="openCreateForm()" />
       </template>
 
+      <template #end>
+        <Button class="mb-2 max-sm:text-sm!" severity="help" icon="pi pi-upload" label="Export"
+          @click="exportCSV($event)" />
+      </template>
+    </Toolbar>
 
-      <template #columns="{ isColumnVisible }">
+    <DataTable ref="dt" class="m-4 rounded-xl border border-gray-200 dark:border-gray-800 truncate"
+      :value="tableData.data" :lazy="true" dataKey="planting_id" v-model:expandedRows="expandedRows" :paginator="true"
+      :rows="perPage" :totalRecords="tableData.total" :first="(tableData.current_page - 1) * tableData.per_page"
+      :rowsPerPageOptions="[5, 10, 25, 50, 100]" responsiveLayout="scroll" :loading="isLoading" @page="onPage"
+      :sortField="sortField" :sortOrder="sortOrder === 'asc' ? 1 : sortOrder === 'desc' ? -1 : null" @sort="onSort">
+      <template #header>
+        <div class="table-header flex flex-column md:flex-row md:justiify-content-between">
+          <div>
 
-        <!-- Expander -->
-        <!-- <Column :expander="true" headerStyle="width:3rem" /> -->
+            <h5 class="mb-2 md:m-0 p-as-md-center">Manage Planting Events</h5>
 
-        <Column headerStyle="width:3rem" :exportable="false">
-          <template #body="{ data }">
-            <button v-if="(data?.planted_trees?.length ?? 0) > 0" type="button"
-              class="p-0 m-0 text-gray-400" @click.stop="toggleRow(data)" aria-label="Toggle row">
-              <i :class="isExpanded(data)
-                ? 'pi pi-chevron-down'
-                : 'pi pi-chevron-right'" />
-            </button>
-          </template>
-        </Column>
-
-
-        <Column v-if="isColumnVisible('planting_id')" field="planting_id" header="Event ID" sortable />
-
-        <Column v-if="isColumnVisible('campaign_label')" class="max-w-[400px] overflow-hidden" field="campaign_label"
-          header="Campaign" sortField="campaign_id" sortable>
-          <template #body="{ data }">
-            <div v-tooltip="data.campaign_label" class="max-w-full truncate cursor-pointer hover:text-primary"
-              @click="toggleNote($event, data.campaign_label)">
-              {{ data.campaign_label }}
-            </div>
-          </template>
-        </Column>
-        <Column v-if="isColumnVisible('neighborhood_label')" field="neighborhood_label" header="Neighborhood"
-          sortField="neighborhood_id" sortable />
-
-        <Column v-if="isColumnVisible('assigned_to_label')" field="assigned_to_label" header="Assigned To"
-          sortField="assigned_to" sortable />
-
-        <Column v-if="isColumnVisible('status')" field="status" header="Status" sortable>
-          <template #body="{ data }">
-            <span :class="statusInfo(data.status).color">
-              {{ statusInfo(data.status).label }}
+            <span class="flex gap-2 items-center max-md:w-full">
+              <Button class="my-2 max-sm:text-sm! text-xs!" severity="primary" icon="pi pi-plus" label="Expand All"
+                @click="expandAll" />
+              <Button class="my-2 max-sm:text-sm! text-xs!" severity="primary" icon="pi pi-minus" label="Collapse All"
+                @click="collapseAll" />
             </span>
-          </template>
-        </Column>
-
-        <Column v-if="isColumnVisible('started_at')" field="started_at" header="Started" sortable>
-          <template #body="{ data }">{{ formatDate(data.started_at) }}</template>
-        </Column>
-
-        <Column v-if="isColumnVisible('completed_at')" field="completed_at" header="Completed" sortable>
-          <template #body="{ data }">{{ formatDate(data.completed_at) }}</template>
-        </Column>
-
-        <Column v-if="isColumnVisible('target_tree_count')" field="target_tree_count" header="Target" sortable>
-          <template #body="{ data }">{{ data.target_tree_count ?? '-' }}</template>
-        </Column>
-
-        <Column v-if="isColumnVisible('trees_count')" field="trees_count" header="Actual Trees">
-          <template #body="{ data }">{{ data.trees_count ?? 0 }}</template>
-        </Column>
-
-        <!-- Location  -->
-        <Column v-if="isColumnVisible('location')" field="location" header="Location" sortField="lat" sortable>
-          <template #body="{ data }">
-            <Link v-if="data.location" :href="route('/', { lat: data.lat, lon: data.lon })"
-              class="flex justify-start items-center spece-x-2 hover:cursor-pointer hover:text-brand-600">
-              {{ data.location }}
-              <ExternalLink class="w-3.5 h-3.5 mx-1" />
-            </Link>
-            <template v-else>-</template>
-          </template>
-        </Column>
-
-        <Column v-if="isColumnVisible('notes')" class="max-w-[400px] overflow-hidden" field="notes" header="Notes"
-          sortable>
-          <template #body="{ data }">
-            <div v-tooltip="data.notes" class="max-w-full truncate cursor-pointer hover:text-primary"
-              @click="toggleNote($event, data.notes)">
-              {{ data.notes }}
-            </div>
-          </template>
-        </Column>
+          </div>
+          <InputText v-model="searchQuery" class="p-inputtext-sm max-md:w-full" placeholder="Search..." />
+        </div>
       </template>
 
-      <!-- Expansion template -->
+      <template #empty>No planting events found.</template>
+
+      <Column :expander="true" headerStyle="width:3rem" />
+
+      <Column field="planting_id" header="Event ID" sortable />
+
+      <Column class="max-w-[400px] overflow-hidden" field="campaign_label" header="Campaign" sortField="campaign_id"
+        sortable>
+        <template #body="{ data }">
+          <div v-tooltip="data.campaign_label" class="max-w-full truncate cursor-pointer hover:text-primary"
+            @click="toggleNote($event, data.campaign_label)">
+            {{ data.campaign_label }}
+          </div>
+        </template>
+      </Column>
+      <Column field="neighborhood_label" header="Neighborhood" sortField="neighborhood_id" sortable />
+
+      <Column field="assigned_to_label" header="Assigned To" sortField="assigned_to" sortable />
+
+      <Column field="status" header="Status" sortable>
+        <template #body="{ data }">
+          <span :class="statusInfo(data.status).color">
+            {{ statusInfo(data.status).label }}
+          </span>
+        </template>
+      </Column>
+
+      <Column field="started_at" header="Started" sortable>
+        <template #body="{ data }">{{ formatDate(data.started_at) }}</template>
+      </Column>
+
+      <Column field="completed_at" header="Completed" sortable>
+        <template #body="{ data }">{{ formatDate(data.completed_at) }}</template>
+      </Column>
+
+      <Column field="target_tree_count" header="Target" sortable>
+        <template #body="{ data }">{{ data.target_tree_count ?? '-' }}</template>
+      </Column>
+
+      <Column field="trees_count" header="Actual Trees">
+        <template #body="{ data }">{{ data.trees_count ?? 0 }}</template>
+      </Column>
+
+      <!-- Location  -->
+      <Column field="location" header="Location" sortField="lat" sortable>
+        <template #body="{ data }">
+          <Link v-if="data.location" :href="route('/', { lat: data.lat, lon: data.lon })"
+            class="flex justify-start items-center spece-x-2 hover:cursor-pointer hover:text-brand-600">
+            {{ data.location }}
+            <ExternalLink class="w-3.5 h-3.5 mx-1" />
+          </Link>
+          <template v-else>-</template>
+        </template>
+      </Column>
+
+      <Column class="max-w-[400px] overflow-hidden" field="notes" header="Notes" sortable>
+        <template #body="{ data }">
+          <div v-tooltip="data.notes" class="max-w-full truncate cursor-pointer hover:text-primary"
+            @click="toggleNote($event, data.notes)">
+            {{ data.notes }}
+          </div>
+        </template>
+      </Column>
+      <Column :exportable="false" header="Actions">
+        <template #body="{ data }">
+          <Button class="p-button-rounded mr-2 max-sm:text-sm! my-1" severity="primary" icon="pi pi-pencil"
+            @click="openEditForm(data)" />
+          <Button class="p-button-rounded max-sm:text-sm!" severity="danger" icon="pi pi-trash"
+            @click="deleteResource(data.planting_id)" />
+        </template>
+      </Column>
+
+      <!-- Expansion -->
       <template #expansion="{ data }">
-        <div v-if="(data?.planted_trees?.length ?? 0) > 0" class="pt-3">
+        <div class="pt-3">
           <div class="flex items-center justify-between mb-2">
             <div class="text-sm font-medium">
               Planted Trees ({{ data.planted_trees?.length ?? 0 }})
             </div>
+
+            <!-- Maybe make a "Manage Trees" page -->
+            <!-- <Link :href="route('plantingEvents.show', data.planting_id)" class="text-sm text-brand-600 hover:underline">
+              Manage Trees
+            </Link> -->
           </div>
 
-          <DataTable :value="data.planted_trees" :key="data.planting_id" dataKey="id"
-            class="rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-900"
+          <DataTable :value="data.planted_trees" :key="data.planting_id"
+            class="rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-900 "
             responsiveLayout="scroll">
             <Column field="id" header="Planting Id" sortable />
             <Column field="tree_id" header="Tree Id" sortable />
@@ -145,16 +155,15 @@
           </DataTable>
         </div>
       </template>
+    </DataTable>
 
-    </ReusableDataTable>
+    <PlantingEventForm v-model:visible="formVisible" routeResource="plantingEvents" :action="formAction"
+      :campaigns="campaignData" :neighborhoods="neighborhoodData" :users="userData" :statusOptions="statusOptions"
+      :dataRow="formRow" @created="reloadTable" @updated="reloadTable" />
+
+    <PlantingEventTreeForm v-model:visible="itemFormVisible" routeResource="plantingEventTrees" :action="itemFormAction"
+      :users="userData" :dataRow="itemFormRow" @updated="reloadTable" />
   </div>
-
-  <PlantingEventForm v-model:visible="formVisible" routeResource="plantingEvents" :action="formAction"
-    :campaigns="campaignData" :neighborhoods="neighborhoodData" :users="userData" :statusOptions="statusOptions"
-    :dataRow="formRow" @created="reloadTable" @updated="reloadTable" />
-
-  <PlantingEventTreeForm v-model:visible="itemFormVisible" routeResource="plantingEventTrees" :action="itemFormAction"
-    :users="userData" :dataRow="itemFormRow" @updated="reloadTable" />
 
   <Popover ref="op">
     <div class="p-3 max-w-[300px] text-sm leading-relaxed">
@@ -171,19 +180,26 @@ import PlantingEventForm from "@/Pages/PlantingEvent/Partials/PlantingEventForm.
 import PlantingEventTreeForm from "@/Pages/PlantingEvent/Partials/PlantingEventTreeForm.vue";
 import { useDateFormatter } from "@/Composables/useDateFormatter";
 import { debounce } from "lodash";
-import ReusableDataTable from "@/Components/ReusableDataTable.vue";
-import { useCrudOperations } from "@/Composables/useCrudOperations";
 
 defineOptions({ layout: AuthenticatedLayout });
 
 const props = defineProps({
-  tableData: { type: Object, required: true },
-  dataColumns: { type: Object, required: true, },
-  dateFilterable: { type: Array, default: () => [], },
-  campaignData: { type: Array, default: () => [] },
-  neighborhoodData: { type: Array, default: () => [] },
-  userData: { type: Array, default: () => [] },
-  statusOptions: { type: Array, default: () => [] },
+  tableData: {
+    type: Object,
+    required: true
+  },
+  campaignData: {
+    type: Array, default: () => []
+  },
+  neighborhoodData: {
+    type: Array, default: () => []
+  },
+  userData: {
+    type: Array, default: () => []
+  },
+  statusOptions: {
+    type: Array, default: () => []
+  },
 });
 
 // --- UI helpers ---
@@ -206,8 +222,6 @@ const statusInfo = (status) => {
 };
 
 const { formatDate } = useDateFormatter();
-
-const { deleteOne } = useCrudOperations('plantingEventTrees');
 
 const dt = ref(null);
 const exportCSV = () => dt.value?.exportCSV?.();
@@ -279,22 +293,6 @@ watch(searchQuery, () => {
 const expandedRows = ref({});
 const EXPANDED_KEY = "plantingEvents_expanded_ids";
 const expandedIdSet = ref(new Set());
-
-
-const rowKey = (row) => row.planting_id
-
-const isExpanded = (row) =>
-  !!expandedRows.value?.[rowKey(row)]
-
-const toggleRow = (row) => {
-  const key = rowKey(row)
-  const next = { ...expandedRows.value }
-
-  next[key] ? delete next[key] : (next[key] = true)
-  expandedRows.value = next
-}
-
-
 
 const loadExpandedSet = () => {
   try {
@@ -431,10 +429,6 @@ const openEditForm = (row) => {
 
 const reloadTable = () => router.reload({ only: ["tableData"] });
 
-
-const onAfterDelete = () => {
-  reloadTable();
-};
 const deleteResource = (id) => {
   router.delete(route("plantingEvents.destroy", id), {
     preserveScroll: true,
@@ -449,8 +443,9 @@ const openItemEditForm = (row) => {
 };
 
 const deleteItemResource = (id) => {
-  deleteOne(id, () => {
-    refreshData();
+  router.delete(route("plantingEventTrees.destroy", id), {
+    preserveScroll: true,
+    onSuccess: () => reloadTable(),
   });
 };
 

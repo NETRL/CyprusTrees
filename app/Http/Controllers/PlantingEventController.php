@@ -105,11 +105,10 @@ class PlantingEventController extends Controller
             ];
         });
 
-
         return Inertia::render('PlantingEvent/Index', [
             'tableData'    => $tableData,
             'dataColumns'  => PlantingEvent::getDataColumns(),
-
+            'dateFilterable' => PlantingEvent::getDateFilterable(),
             'campaignData' => Campaign::query()
                 ->select('id', 'name', 'sponsor', 'start_date', 'end_date')
                 ->get(),

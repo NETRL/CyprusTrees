@@ -1,8 +1,8 @@
 <template>
     <div>
         <ReusableDataTable routeResource="trees" :columns="dataColumns" :tableData="tableData" inertiaKey="tableData"
-            pageTitle="Manage Trees" @create="openCreateForm" @edit="openEditForm" @afterDelete="onAfterDelete"
-            @afterMassDelete="onAfterMassDelete">
+            pageTitle="Manage Trees" @create="openCreateForm" @edit="openEditForm" @afterDelete="onAfterDelete" :showDateFilter="true"
+            @afterMassDelete="onAfterMassDelete" :dateFilterable="dateFilterable">
             <template #columns="{ isColumnVisible }">
                 <Column v-if="isColumnVisible('id')" field="id" header="Id" sortable>
                     <template #body="{ data }">
@@ -135,42 +135,15 @@ defineOptions({
 });
 
 const props = defineProps({
-    tableData: {
-        type: Object,
-        required: true,
-    },
-    speciesData: {
-        type: Array,
-        required: true,
-    },
-    neighborhoodData: {
-        type: Object,
-        required: true,
-    },
-    tagData: {
-        type: Object,
-        required: true,
-    },
-    dataColumns: {
-        type: Object,
-        required: true,
-    },
-    treeSex: {
-        type: Array,
-        default: () => [],
-    },
-    healthStatus: {
-        type: Array,
-        default: () => [],
-    },
-    treeStatus: {
-        type: Array,
-        default: () => [],
-    },
-    ownerType: {
-        type: Array,
-        default: () => [],
-    }
+    tableData: { type: Object, required: true, }, speciesData: { type: Array, required: true, },
+    neighborhoodData: { type: Object, required: true, },
+    tagData: { type: Object, required: true, },
+    dataColumns: { type: Object, required: true, },
+    treeSex: { type: Array, default: () => [], },
+    healthStatus: { type: Array, default: () => [], },
+    treeStatus: { type: Array, default: () => [], },
+    ownerType: { type: Array, default: () => [], },
+    dateFilterable: { type: Array, default: () => [], }
 });
 const { formatDate } = useDateFormatter();
 

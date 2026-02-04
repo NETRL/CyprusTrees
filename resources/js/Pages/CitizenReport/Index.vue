@@ -2,7 +2,8 @@
   <div>
     <ReusableDataTable routeResource="citizenReports" :columns="dataColumns" :tableData="tableData"
       inertiaKey="tableData" pageTitle="Manage Citizen Reports" :showCreateButton="false" @edit="openEditForm"
-      @afterDelete="onAfterDelete" @afterMassDelete="onAfterMassDelete">
+      @afterDelete="onAfterDelete" @afterMassDelete="onAfterMassDelete" :showDateFilter="true"
+      :dateFilterable="dateFilterable">
 
 
       <template #columns="{ isColumnVisible }">
@@ -159,37 +160,15 @@ defineOptions({
 });
 
 const props = defineProps({
-  tableData: {
-    type: Object,
-    required: true,
-  },
-  dataColumns: {
-    type: Object,
-  },
-  treeData: {
-    type: Array,
-    default: () => [],
-  },
-  typeData: {
-    type: Array,
-    default: () => [],
-  },
-  mntTypeData: {
-    type: Array,
-    default: () => [],
-  },
-  userData: {
-    type: Array,
-    default: () => [],
-  },
-  reportStatus: {
-    type: Array,
-    default: () => [],
-  },
-  reportTypes: {
-    type: Object,
-    default: null,
-  },
+  tableData: { type: Object, required: true, },
+  dataColumns: { type: Object, },
+  treeData: { type: Array, default: () => [], },
+  typeData: { type: Array, default: () => [], },
+  mntTypeData: { type: Array, default: () => [], },
+  userData: { type: Array, default: () => [], },
+  reportStatus: { type: Array, default: () => [], },
+  reportTypes: { type: Object, default: null, },
+  dateFilterable: { type: Array, default: () => [], },
 });
 
 const { formatDate } = useDateFormatter();

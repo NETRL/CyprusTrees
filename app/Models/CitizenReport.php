@@ -70,6 +70,11 @@ class CitizenReport extends Model
         'resolved_at',
     ];
 
+    protected $dateFilterable = [
+        'created_at',
+        'resolved_at',
+    ];
+
 
     public static function relationships(): array
     {

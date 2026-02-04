@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full flex flex-col">
+  <div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
     <!-- Top Toolbar -->
     <Toolbar v-if="showToolbar"
       class="m-4 rounded-xl border border-gray-200 bg-white/70 backdrop-blur dark:border-gray-800! dark:bg-transparent!">
@@ -15,7 +15,9 @@
             :badge="selected?.length ? String(selected.length) : null" @click="onMassDeleteClick" />
 
           <!-- Toolbar start slot -->
-          <slot name="toolbarStart"></slot>
+          <slot name="toolbarStart">
+
+          </slot>
         </div>
       </template>
 
@@ -48,11 +50,12 @@
     </div>
 
     <div class="flex-1 min-h-0">
-      <DataTable ref="dt" class="m-4 rounded-xl border border-gray-200 dark:border-gray-800 truncate" :value="tableData.data"
-        :lazy="true" :paginator="true" :rows="perPage" :totalRecords="tableData.total"
+      <DataTable ref="dt" class="m-4 rounded-xl border border-gray-200 dark:border-gray-800 truncate"
+        :value="tableData.data" :lazy="true" :paginator="true" :rows="perPage" :totalRecords="tableData.total"
         :first="(tableData.current_page - 1) * tableData.per_page" :rowsPerPageOptions="[5, 10, 25, 50, 100]"
         responsiveLayout="scroll" :loading="isLoading" v-model:selection="selected" v-model:filters="filters"
-        dataKey="id" :rowHover="true" @page="onPage" @sort="onSort">
+        :dataKey="props.rowKey" :rowHover="true" @page="onPage" @sort="onSort" v-model:expandedRows="localExpandedRows"
+        :rowExpansionTemplate="undefined">
         <!-- Header -->
         <template #header>
           <div class="flex flex-col gap-3">
@@ -84,8 +87,8 @@
 
                 <!-- filter toggle -->
                 <Button v-if="(showSearch || showDateFilter)" icon="pi pi-filter" severity="secondary" outlined
-                  @click="toggleFilters"
-                  :badge="activeFiltersCount > 0 ? String(activeFiltersCount) : null" aria-label="Toggle filters" />
+                  @click="toggleFilters" :badge="activeFiltersCount > 0 ? String(activeFiltersCount) : null"
+                  aria-label="Toggle filters" />
               </div>
             </div>
 
@@ -103,20 +106,20 @@
                 <div v-if="showDateFilter && props.dateFilterable?.length" class="flex flex-col gap-2">
                   <label class="text-xs text-slate-600 dark:text-slate-300">Date filters</label>
 
-                  <FormField component="MultiSelect" v-model="selectedDateFields"
-                    :options="props.dateFilterable.map(f => ({ label: f, value: f }))" optionLabel="label"
-                    optionValue="value" :maxSelectedLabels="1" placeholder="Date fields" class="w-full" />
+                  <FormField component="MultiSelect" v-model="selectedDateFields" :options="props.dateFilterable"
+                    optionLabel="label" optionValue="value" :maxSelectedLabels="1" placeholder="Date fields"
+                    class="w-full" />
 
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div v-if="selectedDateFields.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <FormField component="Calendar" v-model="dateFrom" placeholder="From" dateFormat="dd/mm/yy" showIcon
                       class="w-full" />
                     <FormField component="Calendar" v-model="dateTo" placeholder="To" dateFormat="dd/mm/yy" showIcon
-                      class="w-full" />
+                      class="w-full" :minDate="dateFrom"  />
                   </div>
                 </div>
 
                 <!-- Actions -->
-                <div class="flex flex-wrap gap-2">
+                <div v-if="selectedDateFields.length > 0" class="flex flex-wrap gap-2">
                   <Button size="small" label="Apply" icon="pi pi-check" class="flex-1 min-w-[140px]"
                     @click="applyFilters" />
                   <Button v-if="activeFiltersCount > 0" size="small" severity="secondary" label="Clear"
@@ -179,6 +182,7 @@
         <!-- Actions column -->
         <Column :exportable="false" header="Actions" style="width: 1%; white-space: nowrap;">
           <template #body="slotProps">
+
             <div class="flex items-center justify-end gap-2">
               <Button v-if="showEditButton"
                 v-has-permission="{ props: $page.props, permissions: [finalPermissionEdit] }"
@@ -193,6 +197,14 @@
         </Column>
 
         <slot name="tableEnd"></slot>
+
+
+        <template v-if="$slots.expansion" #expansion="slotProps"
+          class="rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-900 ">
+          <slot name="expansion" v-bind="slotProps" />
+        </template>
+
+
       </DataTable>
 
       <!-- Jump to page -->
@@ -238,6 +250,9 @@ const props = defineProps({
   emptyMessage: { type: String, default: "No records found.", },
   pageTitle: { type: String, default: "", },
   dateFilterable: { type: Array, default: () => [] },
+  expandable: { type: Boolean, default: false },
+  rowKey: { type: String, default: 'id' },
+  expandedRows: { type: Object, default: () => ({}) },
 
   // ---- Toggle views props  ----
   showCreateButton: { type: Boolean, default: true, },
@@ -256,7 +271,8 @@ const emit = defineEmits([
   'create',        // user clicked New
   'edit',          // user clicked Edit on a row
   'afterDelete',   // optional: inform parent after delete
-  'afterMassDelete'
+  'afterMassDelete',
+  'update:expandedRows',
 ]);
 
 const { formatDate } = useDateFormatter()
@@ -285,6 +301,11 @@ const PER_PAGE_KEY = `per_page`;
 
 const perPage = ref(parseInt(localStorage.getItem(PER_PAGE_KEY), 10) || 10);
 watch(perPage, (v) => localStorage.setItem(PER_PAGE_KEY, String(v)));
+
+const localExpandedRows = computed({
+  get: () => props.expandedRows,
+  set: (v) => emit('update:expandedRows', v),
+})
 
 const columnsToShow = computed(() =>
   (props.columns?.items ?? []).map((item) => ({
@@ -342,10 +363,9 @@ const selectedDateFields = ref([]);
 
 watch(
   () => props.dateFilterable,
-  (v) => {
-    if (!Array.isArray(v)) return
-    // keep existing selection if still valid
-    selectedDateFields.value = selectedDateFields.value.filter(f => v.includes(f))
+  (items) => {
+    const allowed = new Set((items ?? []).map(i => i.value))
+    selectedDateFields.value = (selectedDateFields.value ?? []).filter(v => allowed.has(v))
   },
   { immediate: true }
 )

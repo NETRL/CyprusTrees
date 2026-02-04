@@ -43,7 +43,6 @@ class MaintenanceEvent extends Model
         'tree_id',
         'type_id',
         'performed_by',
-        'performed_at',
         'quantity',
         'cost',
         'notes',

@@ -11,10 +11,21 @@ trait BaseModelTrait
 
     public static function getDateFilterable(): array
     {
-        return property_exists(static::class, 'dateFilterable')
-            ? (new static)->dateFilterable
-            : [];
+        if (! property_exists(static::class, 'dateFilterable')) {
+            return [];
+        }
+
+        return array_map(function (string $value) {
+            $label = str_replace(['_', '.'], ' ', $value);
+            $label = ucwords($label);
+
+            return [
+                'value' => $value,
+                'label' => $label,
+            ];
+        }, (new static)->dateFilterable);
     }
+
 
     public function getModelRelationships(): array
     {

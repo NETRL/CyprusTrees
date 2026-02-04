@@ -64,6 +64,7 @@ class TreeController extends Controller
 
         return Inertia::render('Tree/Index', [
             'tableData' => $tableData,
+            'dateFilterable' => Tree::getDateFilterable(),
             'speciesData' => Species::orderBy('common_name')
                 ->get(['id', 'latin_name', 'common_name']),
             'neighborhoodData' => Neighborhood::orderBy('name')->get(['id', 'name', 'city']),

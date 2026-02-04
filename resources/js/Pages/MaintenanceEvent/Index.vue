@@ -77,7 +77,6 @@
 
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-
 import ReusableDataTable from "@/Components/ReusableDataTable.vue";
 import { router } from "@inertiajs/vue3";
 import { ref } from "vue";

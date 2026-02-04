@@ -59,6 +59,7 @@ class CitizenReportController extends Controller
         return Inertia::render('CitizenReport/Index', [
             'tableData' => $tableData,
             'dataColumns' => CitizenReport::getDataColumns(),
+            'dateFilterable' => CitizenReport::getDateFilterable(),
             'typeData' => ReportType::select(['id', 'name'])->get(),
             'mntTypeData' => MaintenanceType::select(['type_id', 'name'])->get(),
             'treeData' => Tree::with('species:id,latin_name,common_name')

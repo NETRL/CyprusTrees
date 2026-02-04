@@ -115,6 +115,9 @@ layer(base);
 
 
 /* PrimeVue DataTable */
+/* .p-datatable-row-expansion{
+    @apply bg-red-500!;
+} */
 .p-datatable {
     --p-datatable-header-background: rgba(0, 0, 0, 0);
     --p-datatable-header-cell-background: rgba(0, 0, 0, 0);
@@ -123,6 +126,7 @@ layer(base);
     --p-checkbox-background: rgba(0, 0, 0, 0);
     --p-inputtext-background: rgba(0, 0, 0, 0);
     --p-select-background: rgba(0, 0, 0, 0);
+    --p-datatable-row-hover-background: rgba(0, 0, 0, 0);
 }
 /* PrimeVue InputText */
 .p-inputtext {

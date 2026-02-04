@@ -67,6 +67,10 @@ class HealthAssessment extends Model
         'actions_recommended',
     ];
 
+    protected $dateFilterable = [
+        'assessed_at',
+    ];
+
     public static function relationships(): array
     {
         return [

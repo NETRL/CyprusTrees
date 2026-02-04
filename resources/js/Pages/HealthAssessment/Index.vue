@@ -2,7 +2,7 @@
   <div>
     <ReusableDataTable routeResource="healthAssessments" :columns="dataColumns" :tableData="tableData"
       inertiaKey="tableData" pageTitle="Health Assessments" @create="openCreateForm" @edit="openEditForm"
-      @afterDelete="onAfterDelete" @afterMassDelete="onAfterMassDelete">
+      @afterDelete="onAfterDelete" @afterMassDelete="onAfterMassDelete" :showDateFilter="true" :dateFilterable="dateFilterable">
 
       <template #columns="{ isColumnVisible }">
         <!-- ID -->
@@ -27,6 +27,13 @@
             {{ data.assessor_label }}
           </template>
         </Column>
+
+        <Column v-if="isColumnVisible('assessed_at')" field="assessed_at" header="Assessed At" sortable>
+          <template #body="{ data }">
+            {{ formatDate(data.assessed_at) }}
+          </template>
+        </Column>
+
 
 
         <Column v-if="isColumnVisible('health_status')" field="health_status" header="Health Status" sortable>
@@ -81,26 +88,12 @@ defineOptions({
 });
 
 const props = defineProps({
-  tableData: {
-    type: Object,
-    required: true,
-  },
-  dataColumns: {
-    type: Object,
-  },
-  treeData: {
-    type: Array,
-    default: () => []
-  },
-  userData: {
-    type: Array,
-    default: () => []
-  },
-  healthStatus: {
-    type: Array,
-    default: () => []
-  },
-
+  tableData: { type: Object, required: true, },
+  dataColumns: { type: Object, },
+  treeData: { type: Array, default: () => [] },
+  userData: { type: Array, default: () => [] },
+  healthStatus: { type: Array, default: () => [] },
+  dateFilterable: { type: Array, default: () => [] },
 });
 
 

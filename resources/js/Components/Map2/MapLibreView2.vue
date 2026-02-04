@@ -31,7 +31,7 @@
                         <span v-if="activeEvent">
                             Trees: {{ activeEvent.event_trees_count ?? 0 }}
                             <template v-if="activeEvent.target_tree_count">/ {{ activeEvent.target_tree_count
-                            }}</template>
+                                }}</template>
                         </span>
                         <span v-if="activeEvent?.neighborhood?.name"> • {{ activeEvent.neighborhood.name }}</span>
                         <span v-if="activeEvent?.campaign?.name"> • {{ activeEvent.campaign.name }}</span>
@@ -244,6 +244,18 @@ const CUSTOM_VECTOR_STYLES = [
         id: 'satellite',
         name: 'Satellite View',
         styleUrl: `https://api.maptiler.com/maps/hybrid/style.json?key=${MAPTILER_KEY}`,
+        preview: '/storage/images/map-custom.png',
+    },
+    {
+        id: 'street',
+        name: 'Street View',
+        styleUrl: `https://api.maptiler.com/maps/019c27fc-f979-75a2-8a6b-bbe7e6ce558b/style.json?key=${MAPTILER_KEY}`,
+        preview: '/storage/images/map-custom.png',
+    },
+    {
+        id: 'pastel',
+        name: 'Pastel View',
+        styleUrl: `https://api.maptiler.com/maps/019ac201-8ff9-76ea-b752-4b2b1e4ed570/style.json?key=${MAPTILER_KEY}`,
         preview: '/storage/images/map-custom.png',
     },
 ]
@@ -561,44 +573,44 @@ function visualiseTreeData(mode) {
 const filterCache = new Map()
 
 function applyVisibility(mode = selectedFilter.value) {
-  const m = map.value
-  if (!m || !hasTreesLayer(m)) return
+    const m = map.value
+    if (!m || !hasTreesLayer(m)) return
 
-  const propName = modeToPropName[mode]
-  if (!propName) return m.setFilter('trees-circle', null)
+    const propName = modeToPropName[mode]
+    if (!propName) return m.setFilter('trees-circle', null)
 
-  const set = hiddenCategories.value[mode]
-  const hidden = set ? Array.from(set) : []
-  if (!hidden.length) return m.setFilter('trees-circle', null)
+    const set = hiddenCategories.value[mode]
+    const hidden = set ? Array.from(set) : []
+    if (!hidden.length) return m.setFilter('trees-circle', null)
 
-  hidden.sort()
-  const cacheKey = `${mode}:${hidden.join('|')}`
-  let filter = filterCache.get(cacheKey)
-  if (!filter) {
-    filter = ['!', ['in', ['get', propName], ['literal', hidden]]]
-    filterCache.set(cacheKey, filter)
-  }
-  m.setFilter('trees-circle', filter)
+    hidden.sort()
+    const cacheKey = `${mode}:${hidden.join('|')}`
+    let filter = filterCache.get(cacheKey)
+    if (!filter) {
+        filter = ['!', ['in', ['get', propName], ['literal', hidden]]]
+        filterCache.set(cacheKey, filter)
+    }
+    m.setFilter('trees-circle', filter)
 }
 
 function onToggleCategory({ mode, key }) {
-  const hc = hiddenCategories.value
-  const currentSet = hc[mode] ?? (hc[mode] = new Set())
+    const hc = hiddenCategories.value
+    const currentSet = hc[mode] ?? (hc[mode] = new Set())
 
-  if (key === 'all') {
-    const allKeys = CATEGORY_KEYS[mode] || []
-    const anyHidden = currentSet.size > 0
-    const next = new Set()
-    if (!anyHidden) allKeys.forEach(k => next.add(k))
+    if (key === 'all') {
+        const allKeys = CATEGORY_KEYS[mode] || []
+        const anyHidden = currentSet.size > 0
+        const next = new Set()
+        if (!anyHidden) allKeys.forEach(k => next.add(k))
+        hc[mode] = next
+        applyVisibility(mode)
+        return
+    }
+
+    const next = new Set(currentSet)
+    next.has(key) ? next.delete(key) : next.add(key)
     hc[mode] = next
     applyVisibility(mode)
-    return
-  }
-
-  const next = new Set(currentSet)
-  next.has(key) ? next.delete(key) : next.add(key)
-  hc[mode] = next
-  applyVisibility(mode)
 }
 
 // -------- CRUD hooks ----------
