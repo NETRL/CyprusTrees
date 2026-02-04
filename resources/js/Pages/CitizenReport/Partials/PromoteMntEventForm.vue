@@ -61,39 +61,17 @@ import { computed, reactive, ref, toRef } from 'vue'
 import { router } from '@inertiajs/vue3'
 import FormField from '@/Components/Primitives/FormField.vue'
 import { useDateParser } from '@/Composables/useDateParser'
-import { data } from 'autoprefixer'
 import { useTreeOptions } from '@/Composables/useTreeOptions'
 
 // props & emits
 const props = defineProps({
-    visible: {
-        type: Boolean,
-        default: false,
-    },
-    dataRow: {
-        type: Object,
-        default: null,
-    },
-    routeResource: {
-        type: String,
-        required: true,
-    },
-    trees: {
-        type: Array,
-        default: () => [],
-    },
-    types: {
-        type: Array,
-        default: () => [],
-    },
-    users: {
-        type: Array,
-        default: () => [],
-    },
+    visible: { type: Boolean, default: false, },
+    dataRow: { type: Object, default: null, },
+    routeResource: { type: String, required: true, },
+    trees: { type: Array, default: () => [], },
+    types: { type: Array, default: () => [], },
+    users: { type: Array, default: () => [], },
 })
-
-console.log(props?.dataRow)
-console.log(props.trees)
 
 const emit = defineEmits(['update:visible'])
 
@@ -155,8 +133,6 @@ const initForm = () => {
 
     displayErrors.value = false
 
-    console.log(row?.type.id)
-
     formData.event_id = row?.event_id ?? null
     formData.tree_id = row?.tree_id ?? null
     formData.type_id = row?.type_id ?? null
@@ -171,10 +147,20 @@ const submit = () => {
     router.post(route(props.routeResource + '.store'), { ...formData }, {
         preserveScroll: true,
         onSuccess: () => {
-            closeForm()
+            updateReportStatus(props.dataRow)
         },
         onFinish: () => {
             displayErrors.value = true
+        },
+    })
+}
+
+const updateReportStatus = (reportObj) => {
+    reportObj.status = "triaged"
+    router.patch(route('citizenReports' + '.update', reportObj.report_id), { ...reportObj }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            closeForm()
         },
     })
 }

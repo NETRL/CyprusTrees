@@ -14,8 +14,8 @@ enum TreeStatus: string
     case REMOVED = 'removed';
     case STUMP = 'stump';
     case MISSING = 'missing';
-    case UNKNOWN = 'unknown';
     case PENDING_REMOVAL = 'pending_removal';
+    case UNKNOWN = 'unknown';
     case VACANT_PIT = 'vacant_pit';
 
 

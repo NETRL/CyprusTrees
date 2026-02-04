@@ -107,9 +107,8 @@ class NeighborhoodGeoController extends Controller
             'open_reports' => $openReports,
             // Example of fetching last planting event
             'last_planted_at' => DB::table('planting_events')
-                ->join('trees', 'planting_events.tree_id', '=', 'trees.id')
-                ->where('trees.neighborhood_id', $id)
-                ->max('planting_events.planted_at'),
+                ->where('planting_events.neighborhood_id', $id)
+                ->max('planting_events.completed_at'),
             'maintenance_cost_ytd' => $maintenance_cost_ytd
         ]);
     }

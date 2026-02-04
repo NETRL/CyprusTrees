@@ -90,8 +90,8 @@ export async function loadTreesLayer(mapInstance, {
   const data = preprocessTreesGeojson(dataRaw);
   let currentData = data;
 
-  // await loadSvgAsSdfImage(mapInstance, 'pin-bg', '/icons/pin-bg.svg', PIN_RASTER_SIZE);
-  // await loadSvgAsSdfImage(mapInstance, 'tree-foliage', '/icons/tree-foliage.svg', PIN_RASTER_SIZE);
+  await loadSvgAsSdfImage(mapInstance, 'pin-bg', '/icons/pin-bg.svg', PIN_RASTER_SIZE);
+  await loadSvgAsSdfImage(mapInstance, 'tree-foliage', '/icons/tree-foliage.svg', PIN_RASTER_SIZE);
 
   const interactionsAllowed = () => (isInteractionEnabled ? !!isInteractionEnabled() : true);
 
@@ -125,6 +125,23 @@ export async function loadTreesLayer(mapInstance, {
     console.log('Zoom:', mapInstance.getZoom().toFixed(2));
   });
 
+  // CIRCLE for individual trees (not clusters)
+  mapInstance.addLayer({
+    id: 'trees-pin-bg',
+    type: 'circle',
+    source: 'trees',
+    filter: ['!', ['has', 'point_count']],
+    paint: {
+      'circle-color': '#000',
+      'circle-opacity': 1,
+      'circle-radius': 10,
+      'circle-stroke-width': 0,
+      'circle-stroke-color': '#ffffff'
+    }
+  });
+
+
+  // 1. CLUSTER SHADOW (adds depth)
   mapInstance.addLayer({
     id: 'trees-cluster-shadow',
     type: 'circle',
@@ -166,104 +183,24 @@ export async function loadTreesLayer(mapInstance, {
     }
   });
 
-  // 4. INDIVIDUAL TREE - INTERACTION BACKGROUND (invisible, for clicks)
-  mapInstance.addLayer({
-    id: 'trees-pin-bg',
-    type: 'circle',
-    source: 'trees',
-    filter: ['!', ['has', 'point_count']],
-    paint: {
-      'circle-color': '#000',
-      'circle-opacity': 0,           // Invisible
-      'circle-radius': 12,            // Larger hit area
-      'circle-stroke-width': 0,
-    }
-  });
-
-  // 5. INDIVIDUAL TREE - SELECTION PULSE (animated outer ring)
-  mapInstance.addLayer({
-    id: 'trees-selection-pulse',
-    type: 'circle',
-    source: 'trees',
-    filter: ['!', ['has', 'point_count']],
-    paint: {
-      'circle-radius': 14,
-      'circle-color': 'transparent',
-      'circle-stroke-width': [
-        'case',
-        ['boolean', ['feature-state', 'selected'], false], 2,
-        0
-      ],
-      'circle-stroke-color': '#009966',
-      'circle-stroke-opacity': [
-        'case',
-        ['boolean', ['feature-state', 'selected'], false], 0.6,
-        0
-      ],
-      'circle-translate-anchor': 'map',
-    }
-  });
-
-  // 6. INDIVIDUAL TREE - SELECTION RING (static)
-  mapInstance.addLayer({
-    id: 'trees-selection-ring',
-    type: 'circle',
-    source: 'trees',
-    filter: ['!', ['has', 'point_count']],
-    paint: {
-      'circle-radius': 11,
-      'circle-color': 'transparent',
-      'circle-stroke-width': [
-        'case',
-        ['boolean', ['feature-state', 'selected'], false], 2.5,
-        0
-      ],
-      'circle-stroke-color': '#009966',
-      'circle-translate-anchor': 'map',
-    }
-  });
-
-  // 7. INDIVIDUAL TREE - HOVER RING
-  mapInstance.addLayer({
-    id: 'trees-hover-ring',
-    type: 'circle',
-    source: 'trees',
-    filter: ['!', ['has', 'point_count']],
-    paint: {
-      'circle-radius': 11,
-      'circle-color': 'transparent',
-      'circle-stroke-width': [
-        'case',
-        ['boolean', ['feature-state', 'hover'], false], 2,
-        0
-      ],
-      'circle-stroke-color': '#1F2937',
-      'circle-stroke-opacity': [
-        'case',
-        ['boolean', ['feature-state', 'hover'], false], 0.8,
-        0
-      ],
-      'circle-translate-anchor': 'map',
-    }
-  });
-
-  // 8. INDIVIDUAL TREE - WHITE HALO
+  // CIRCLE for individual trees (not clusters)
   mapInstance.addLayer({
     id: 'trees-circle-halo',
     type: 'circle',
     source: 'trees',
     filter: ['!', ['has', 'point_count']],
     paint: {
-      'circle-radius': 8.5,
+      'circle-radius': 8.5,           // Increased from 7
       'circle-color': '#ffffff',
-      'circle-opacity': 1,
-      'circle-stroke-width': 1,
+      'circle-opacity': 1,             // Fully opaque white
+      'circle-stroke-width': 1,        // Add subtle gray border
       'circle-stroke-color': '#D1D5DB',
       'circle-translate-anchor': 'map',
     }
   });
 
-  // 9. INDIVIDUAL TREE - MAIN COLORED CIRCLE
+
+  // Main colored circle (on top of halo)
   mapInstance.addLayer({
     id: 'trees-circle',
     type: 'circle',
@@ -272,13 +209,12 @@ export async function loadTreesLayer(mapInstance, {
     paint: {
       'circle-radius': [
         'interpolate', ['linear'], ['zoom'],
-        10, 5,
-        14, 7,
-        18, 8.5
+        10, 5,      // Smaller at city level
+        14, 7,      // Medium at neighborhood level
+        18, 8.5     // Larger at street level
       ],
-      'circle-color': '#20df80',  // initial color
       'circle-stroke-width': 0,
-      'circle-stroke-color': '#1F2937',
+      'circle-color': '#20df80',
       'circle-translate-anchor': 'map',
     }
   });
@@ -313,87 +249,11 @@ export async function loadTreesLayer(mapInstance, {
   });
 
 
-
-  // ============================================================================
-  // ENHANCED ANIMATION FUNCTIONS
-  // ============================================================================
-
   let hoveredId = null;
   let selectedId = null;
   let pulseAnimationId = null;
 
-  // --- PULSE ANIMATION FOR SELECTION ---
-  function startPulse() {
-    if (pulseAnimationId != null) return;
-    if (selectedId === null) return;
-
-    const start = performance.now();
-
-    const frame = (time) => {
-      if (selectedId === null) {
-        stopPulse();
-        return;
-      }
-
-      const elapsed = time - start;
-      const t = elapsed / 1500; // 1.5 second cycle
-
-      // Smooth sine wave for pulsing
-      const pulse = Math.sin(t * Math.PI * 2) * 0.5 + 0.5;
-
-      // Pulse the outer ring opacity (0.3 to 0.8)
-      const opacity = 0.3 + (pulse * 0.5);
-
-      // Pulse the outer ring size (13 to 15)
-      const radius = 13 + (pulse * 2);
-
-      if (mapInstance.getLayer('trees-selection-pulse')) {
-        mapInstance.setPaintProperty('trees-selection-pulse', 'circle-radius', [
-          'case',
-          ['boolean', ['feature-state', 'selected'], false],
-          radius,
-          0
-        ]);
-
-        mapInstance.setPaintProperty('trees-selection-pulse', 'circle-stroke-opacity', [
-          'case',
-          ['boolean', ['feature-state', 'selected'], false],
-          opacity,
-          0
-        ]);
-      }
-
-      pulseAnimationId = requestAnimationFrame(frame);
-    };
-
-    pulseAnimationId = requestAnimationFrame(frame);
-  }
-
-  function stopPulse() {
-    if (pulseAnimationId != null) {
-      cancelAnimationFrame(pulseAnimationId);
-      pulseAnimationId = null;
-    }
-
-    // Reset pulse layer to default
-    if (mapInstance.getLayer('trees-selection-pulse')) {
-      mapInstance.setPaintProperty('trees-selection-pulse', 'circle-radius', [
-        'case',
-        ['boolean', ['feature-state', 'selected'], false],
-        14,
-        0
-      ]);
-
-      mapInstance.setPaintProperty('trees-selection-pulse', 'circle-stroke-opacity', [
-        'case',
-        ['boolean', ['feature-state', 'selected'], false],
-        0.6,
-        0
-      ]);
-    }
-  }
-
-  // --- INTERACTION HANDLERS (Updated) ---
+  // --- INTERACTION HANDLERS ---
 
   mapInstance.on('click', 'trees-pin-bg', (e) => {
     if (!interactionsAllowed()) return;
@@ -401,7 +261,11 @@ export async function loadTreesLayer(mapInstance, {
     e.originalEvent?.stopImmediatePropagation();
 
     const feature = e.features?.[0];
-    if (feature?.properties?.cluster) return;
+
+    // Don't handle clicks on clusters
+    if (feature?.properties?.cluster) {
+      return;
+    }
 
     handleTreeClick(feature);
   });
@@ -410,7 +274,10 @@ export async function loadTreesLayer(mapInstance, {
     if (!interactionsAllowed()) return;
 
     const feature = e.features?.[0];
-    if (feature?.properties?.cluster) return;
+    // Don't show pointer for clusters
+    if (feature?.properties?.cluster) {
+      return;
+    }
 
     mapInstance.getCanvas().style.cursor = 'pointer';
   });
@@ -421,6 +288,7 @@ export async function loadTreesLayer(mapInstance, {
     const feature = e.features?.[0];
     if (!feature) return;
 
+    // Don't hover clusters
     if (feature.properties?.cluster) {
       if (hoveredId !== null) {
         mapInstance.setFeatureState(
@@ -437,7 +305,7 @@ export async function loadTreesLayer(mapInstance, {
     const id = p?.id ?? feature.id;
     if (!id) return;
 
-    // Don't show hover if this tree is selected
+    // Don't hover if this tree is selected
     if (id === selectedId) {
       if (hoveredId !== null) {
         mapInstance.setFeatureState(
@@ -449,7 +317,7 @@ export async function loadTreesLayer(mapInstance, {
       return;
     }
 
-    // Clear previous hover
+    // If hovering a different tree, clear previous hover
     if (hoveredId !== null && hoveredId !== id) {
       mapInstance.setFeatureState(
         { source: 'trees', id: hoveredId },
@@ -464,7 +332,7 @@ export async function loadTreesLayer(mapInstance, {
       { hover: true }
     );
 
-    // Parse and callback
+    // Parse nested properties for callback
     let species = null;
     let neighborhood = null;
     try {
@@ -509,40 +377,88 @@ export async function loadTreesLayer(mapInstance, {
     clearSelection();
   });
 
-  // --- CLUSTER CLICK TO ZOOM ---
-  mapInstance.on('click', 'trees-cluster-bg', (e) => {
-    if (!interactionsAllowed()) return;
+  // --- ANIMATION FUNCTIONS ---
 
-    const features = mapInstance.queryRenderedFeatures(e.point, {
-      layers: ['trees-cluster-bg']
-    });
+  function startPulse() {
+    if (pulseAnimationId != null) return;
+    if (selectedId === null) return;
 
-    if (!features.length) return;
+    const base = hexToRgb(PIN_SELECT_COLOR);
+    const bright = brighten(base, 30); // intensity control here
+    const start = performance.now();
 
-    const clusterId = features[0].properties.cluster_id;
-    const source = mapInstance.getSource('trees');
+    const frame = (time) => {
+      if (selectedId === null) {
+        stopPulse();
+        return;
+      }
 
-    source.getClusterExpansionZoom(clusterId, (err, zoom) => {
-      if (err) return;
+      const t = (time - start) / 2000;
+      const eased = Math.sin(t * Math.PI * 2) * 0.5 + 0.5;
 
-      mapInstance.easeTo({
-        center: features[0].geometry.coordinates,
-        zoom: zoom + 0.5,
-        duration: 500
-      });
-    });
-  });
+      const color = `rgb(
+      ${lerp(base.r, bright.r, eased)},
+      ${lerp(base.g, bright.g, eased)},
+      ${lerp(base.b, bright.b, eased)}
+    )`;
 
-  // Show pointer on cluster hover
-  mapInstance.on('mouseenter', 'trees-cluster-bg', () => {
-    mapInstance.getCanvas().style.cursor = 'pointer';
-  });
+      if (mapInstance.getLayer('trees-pin-bg')) {
+        mapInstance.setPaintProperty('trees-pin-bg', 'circle-color', [
+          'case',
+          ['boolean', ['feature-state', 'selected'], false], color,
+          ['boolean', ['feature-state', 'hover'], false], PIN_HOVER_COLOR,
+          PIN_COLOR
+        ]);
+      }
 
-  mapInstance.on('mouseleave', 'trees-cluster-bg', () => {
-    mapInstance.getCanvas().style.cursor = '';
-  });
+      pulseAnimationId = requestAnimationFrame(frame);
+    };
 
-  // --- STATE MANAGEMENT ---
+    pulseAnimationId = requestAnimationFrame(frame);
+  }
+
+
+  function hexToRgb(hex) {
+    const h = hex.replace('#', '');
+    const bigint = parseInt(h.length === 3
+      ? h.split('').map(c => c + c).join('')
+      : h, 16);
+
+    return {
+      r: (bigint >> 16) & 255,
+      g: (bigint >> 8) & 255,
+      b: bigint & 255
+    };
+  }
+
+  function lerp(a, b, t) {
+    return Math.round(a + (b - a) * t);
+  }
+
+  function brighten({ r, g, b }, amount = 30) {
+    return {
+      r: Math.min(255, r + amount),
+      g: Math.min(255, g + amount),
+      b: Math.min(255, b + amount),
+    };
+  }
+
+  function stopPulse() {
+    if (pulseAnimationId != null) {
+      cancelAnimationFrame(pulseAnimationId);
+      pulseAnimationId = null;
+    }
+
+    // Reset to static selected color
+    if (mapInstance.getLayer('trees-pin-bg')) {
+      mapInstance.setPaintProperty('trees-pin-bg', 'circle-color', [
+        'case',
+        ['boolean', ['feature-state', 'selected'], false], PIN_SELECT_COLOR,
+        ['boolean', ['feature-state', 'hover'], false], PIN_HOVER_COLOR,
+        PIN_COLOR
+      ]);
+    }
+  }
 
   function clearSelection() {
     if (selectedId !== null) {
@@ -625,7 +541,6 @@ export async function loadTreesLayer(mapInstance, {
 
     handleTreeClick(feature);
   }
-
 
   setInitialFilter?.('status');
 
@@ -776,7 +691,6 @@ export async function loadNeighborhoodsLayer(mapInstance, { onDataLoaded, onNeig
   }
 
   function clearSelection() {
-    console.log('clearSelection')
     onNeighborhoodSelected(null)
   }
 

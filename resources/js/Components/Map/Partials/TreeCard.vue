@@ -11,9 +11,9 @@
         <MapTreeForm v-if="isCreating || isEditing" v-model:visible="formVisible" routeResource="trees"
             :action="formAction" :markerLatLng="markerLatLng" :dataRow="props.selected" />
         <NeighborhoodCardContent v-if="isNeighborhood" :activeNeighborhood="selectedNeighborhood"
-            :stats="neighborhoodStats || {}" />
+            :stats="neighborhoodStats || {}" @clearSelection="emit('clearSelection')"/>
         <TreeCardContent v-if="(isSelected || isHovered) && (!isCreating && !isEditing)" :hovered="props.hovered" :selected="props.selected"
-            :isHovered="isHovered" :isSelected="isSelected" @editClick="onEditClick" />
+            :isHovered="isHovered" :isSelected="isSelected" @editClick="onEditClick" @clearSelection="emit('clearSelection')"/>
     </aside>
 
     <!-- Mobile Bottom Sheet -->
@@ -22,9 +22,9 @@
             <MapTreeForm v-if="isCreating || isEditing" v-model:visible="formVisible" routeResource="trees"
                 :action="formAction" :markerLatLng="markerLatLng" :dataRow="props.selected" />
             <NeighborhoodCardContent v-if="isNeighborhood" :activeNeighborhood="selectedNeighborhood"
-                :stats="neighborhoodStats || {}" />
+                :stats="neighborhoodStats || {}" @clearSelection="emit('clearSelection')"/>
             <TreeCardContent v-if="(isSelected || isHovered) && (!isCreating && !isEditing)" :hovered="props.hovered" :selected="props.selected"
-                :isHovered="isHovered" :isSelected="isSelected" @editClick="onEditClick" />
+                :isHovered="isHovered" :isSelected="isSelected" @editClick="onEditClick" @clearSelection="emit('clearSelection')"/>
         </div>
     </BottomSheet>
 </template>
@@ -36,7 +36,7 @@ import BottomSheet from '@/Components/Map/Partials/BottomSheet.vue'
 import MapTreeForm from '@/Components/Map/Partials/MapTreeForm.vue'
 import NeighborhoodCardContent from '@/Components/Map/Partials/NeighborhoodCardContent.vue'
 
-const emit = defineEmits(['cancelCreate'])
+const emit = defineEmits(['cancelCreate', 'clearSelection'])
 
 const props = defineProps({
     hovered:                { type: Object, default: null },

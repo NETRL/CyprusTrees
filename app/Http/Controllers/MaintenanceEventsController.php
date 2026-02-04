@@ -98,7 +98,7 @@ class MaintenanceEventsController extends Controller
             'message' => __('Item type has been created.'),
         ]);
 
-        return redirect()->route('maintenanceEvents.index');
+        return redirect()->back();
     }
 
 

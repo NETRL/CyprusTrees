@@ -55,6 +55,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import UserMenuNavLink from './UserMenuNavLink.vue'
 import ThemeToggler from '@/Components/Common/ThemeToggler.vue'
 import ReportTypeIcon from '@/Icons/ReportTypeIcon.vue'
+import EventIcon from '@/Icons/EventIcon.vue'
 
 const dropdownOpen = ref(false)
 const dropdownRef = ref(null)
@@ -62,7 +63,7 @@ const dropdownRef = ref(null)
 const menuItems = [
   { href: 'profile.edit', icon: UserCircleIcon, text: 'My profile' },
   { href: 'reports.index', icon: ReportsIcon, text: 'My reports' },
-  { href: 'events.index', icon: ReportsIcon, text: 'My events' },
+  { href: 'events.index', icon: EventIcon, text: 'My events' },
   // { href: '/', icon: SettingsIcon, text: 'Account settings' },
   // { href: '/', icon: InfoCircleIcon, text: 'Support' },
 ]

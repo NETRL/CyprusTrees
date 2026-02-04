@@ -16,9 +16,14 @@
                 ]">
                     {{ isSelected ? 'Selected' : 'Hovering' }}
                 </span>
-                <span class="text-[10px] font-mono text-gray-400 dark:text-gray-500">
-                    ID: {{ activeTree.id }}
-                </span>
+                <div class="flex items-center space-x-2">
+                    <span class="text-[10px] font-mono text-gray-400 dark:text-gray-500 p-auto">
+                        ID: {{ activeTree.id }}
+                    </span>
+                    <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" @click="emit('clearSelection')">
+                        ✕
+                    </button>
+                </div>
             </div>
 
             <div class="mb-4">
@@ -57,7 +62,7 @@
                     <div class="text-[10px] uppercase tracking-tighter text-gray-500 dark:text-gray-400">Canopy</div>
                     <div class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ activeTree.canopy_diameter_m ||
                         '—'
-                        }}m</div>
+                    }}m</div>
                 </div>
             </div>
 
@@ -318,7 +323,7 @@
             <!-- Report Issue Button -->
             <div v-if="isSelected" :class="[
                 'pt-2 grid gap-2',
-                (can('trees.edit') ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1')
+                (can('trees.edit') ? 'grid-cols-1 sm:grid-cols-1' : 'grid-cols-1')
             ]">
                 <!-- Report Issue -->
                 <div>
@@ -339,7 +344,6 @@
                         <span>{{ userHasActiveReports ? 'Report another Issue' : 'Report an Issue' }}</span>
                     </button>
                 </div>
-
                 <!-- Edit Tree -->
                 <button @click="emit('editClick')" v-if="can('trees.edit')"
                     class="w-full bg-linear-to-r from-green-600 to-emerald-600 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-[0.98]">
@@ -364,7 +368,7 @@ import { safeJsonParse } from '@/Composables/safeJsonParser';
 import { usePage } from '@inertiajs/vue3';
 import { fetchTreeDetails } from '@/Lib/Map/DataLayers';
 
-const emit = defineEmits(['update:selected', 'editClick'])
+const emit = defineEmits(['update:selected', 'editClick', 'clearSelection'])
 
 const formatRelativeTime = (date) => {
     const now = new Date();
@@ -494,7 +498,6 @@ const neighborhoodData = computed(() => {
 });
 
 // Helper functions
-
 function copySelected() {
     lastCreatedTree.value = activeTree.value
     console.log(lastCreatedTree.value)

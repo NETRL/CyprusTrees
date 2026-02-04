@@ -42,8 +42,8 @@ export async function loadTreesLayer(mapInstance, { onDataLoaded, onTreeSelected
   })
 
   const DOT_ZOOM_8 = 4      //1.5
-    const DOT_ZOOM_14 = 4   //1.5
-    const DOT_ZOOM_20 = 4   //6
+  const DOT_ZOOM_14 = 4   //1.5
+  const DOT_ZOOM_20 = 4   //6
 
   mapInstance.addLayer({
     id: 'trees-circle',
@@ -409,6 +409,15 @@ export async function loadNeighborhoodsLayer(mapInstance, { onDataLoaded, onNeig
     })
     return hits.length > 0
   }
+
+  function clearSelection() {
+    onNeighborhoodSelected(null)
+
+  }
+
+  return {
+    clearSelection
+  }
 }
 
 export async function loadNeighborhoodStats(id) {
@@ -416,6 +425,5 @@ export async function loadNeighborhoodStats(id) {
   if (!res.ok) throw new Error(`Failed to load neighborhood ${id} stats: ${res.status}`)
 
   const data = await res.json()
-  console.log(data)
   return data
 }

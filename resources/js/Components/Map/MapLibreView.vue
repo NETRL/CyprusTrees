@@ -61,7 +61,7 @@
 
     <TreeCard :hovered="hoveredData" :selected="selectedData" :markerLatLng="markerLatLng"
         :selectedNeighborhood="selectedNeighborhood" :neighborhoodStats="neighborhoodStats" :pinClickFlag="pinClickFlag"
-        @update:selected="selectedData = $event" @cancelCreate="onCancelCreate" />
+        @update:selected="selectedData = $event" @cancelCreate="onCancelCreate" @clearSelection="onClearSelection" />
     <MapLoadingOverlay :isLoading="isLoading" />
 
     <Modal v-if="showAuthPrompt" @close="showAuthPrompt = false">
@@ -155,7 +155,8 @@ const showAuthPrompt = ref(false)
 const pinClickFlag = ref(0)
 
 let longPressCtl = null
-let dataLayerApi = null
+let treeLayerApi = null
+let neighLayerApi = null
 
 const { selectedFilter } = useMapFilter()
 const { STATUS_COLORS, WATER_USE_COLORS, SHADE_COLORS, ORIGIN_COLORS, POLLEN_RISK_COLORS } = useMapColors()
@@ -234,12 +235,12 @@ const CUSTOM_VECTOR_STYLES = [
         styleUrl: `https://api.maptiler.com/maps/019abffb-04c2-7927-8c58-ff64512e9321/style.json?key=${MAPTILER_KEY}`,
         preview: '/storage/images/map-custom.png',
     },
-    {
-        id: 'landcapeDark',
-        name: 'Landscape Dark',
-        styleUrl: `https://api.maptiler.com/maps/019ac206-7965-7795-8035-d9b24b5c8815/style.json?key=${MAPTILER_KEY}`,
-        preview: '/storage/images/map-custom.png',
-    },
+    // {
+    //     id: 'landcapeDark',
+    //     name: 'Landscape Dark',
+    //     styleUrl: `https://api.maptiler.com/maps/019ac206-7965-7795-8035-d9b24b5c8815/style.json?key=${MAPTILER_KEY}`,
+    //     preview: '/storage/images/map-custom.png',
+    // },
     {
         id: 'satellite',
         name: 'Satellite View',
@@ -290,7 +291,7 @@ onMounted(async () => {
             vectorStyles: CUSTOM_VECTOR_STYLES,
         })
 
-        const [, treesApi] = await Promise.all([
+        const [neighApi, treesApi] = await Promise.all([
             loadNeighborhoodsLayer(m, {
                 onDataLoaded: (data) => { neighborhoodData.value = data },
                 onNeighborhoodSelected: (id) => { selectedNeighborhoodId.value = id },
@@ -305,7 +306,8 @@ onMounted(async () => {
             }),
         ])
 
-        dataLayerApi = treesApi
+        treeLayerApi = treesApi
+        neighLayerApi = neighApi
 
         // initial styling/filtering once layer is ready
         whenLayerReady('trees-circle', (m) => {
@@ -363,7 +365,7 @@ watch(
     markerLatLng,
     (v) => {
         if (v == null) return
-        dataLayerApi?.clearSelection?.()
+        treeLayerApi?.clearSelection?.()
         hoveredData.value = null
         selectedData.value = null
         const c = map.value?.getCanvas?.()
@@ -556,8 +558,6 @@ const paintByMode = {
 }
 
 function visualiseTreeData(mode) {
-
-    console.log('mode')
     if (mode === lastPaintMode) return
     lastPaintMode = mode
 
@@ -614,8 +614,12 @@ function onToggleCategory({ mode, key }) {
 }
 
 // -------- CRUD hooks ----------
+function onClearSelection() {
+     treeLayerApi?.clearSelection?.()
+     neighLayerApi?.clearSelection?.()
+}
 function onCancelCreate() {
-    dataLayerApi?.clearSelection?.()
+    treeLayerApi?.clearSelection?.()
     markerLatLng.value = null
     longPressCtl?.hide?.()
 }
@@ -632,12 +636,12 @@ async function onTreeSaved(payload) {
     const next = upsertTreeFeature(treeData.value, propsObj)
 
     treeData.value = next
-    dataLayerApi?.setTreesData?.(next)
+    treeLayerApi?.setTreesData?.(next)
 
     if (!existed) {
         requestAnimationFrame(() => {
-            dataLayerApi?.clearSelection?.()
-            dataLayerApi?.selectTreeById?.(payload.id)
+            treeLayerApi?.clearSelection?.()
+            treeLayerApi?.selectTreeById?.(payload.id)
         })
     }
 
@@ -746,7 +750,7 @@ onBeforeUnmount(() => {
     longPressCtl?.remove?.()
     longPressCtl = null
 
-    dataLayerApi = null
+    treeLayerApi = null
 
     mapBus.off('tree:saved', onTreeSaved)
 })

@@ -12,7 +12,8 @@
           <Button v-if="showMassDeleteButton"
             v-has-permission="{ props: $page.props, permissions: [finalPermissionDelete] }" severity="danger"
             icon="pi pi-trash" label="Delete" class="max-sm:text-sm!" :disabled="!selected?.length"
-            :badge="selected?.length ? String(selected.length) : null" @click="onMassDeleteClick" />
+            badgeClass="p-badge-danger" :badge="selected?.length ? String(selected.length) : null"
+            @click="onMassDeleteClick" />
 
           <!-- Toolbar start slot -->
           <slot name="toolbarStart">
@@ -76,12 +77,11 @@
                   <FormField v-model="searchQuery" placeholder="Quick search..." class="p-inputtext-sm w-64" />
                 </span>
 
-                <Button v-if="activeFiltersCount > 0" label="Clear" icon="pi pi-filter-slash" text severity="secondary" outlined
-                  size="small" @click="clearFilters"  />
+                <Button v-if="activeFiltersCount > 0" label="Clear" icon="pi pi-filter-slash" text severity="secondary"
+                  outlined size="small" @click="clearFilters" />
 
-                <Button icon="pi pi-filter" severity="secondary" outlined
-                  @click="toggleFilters" :badge="activeFiltersCount > 0 ? String(activeFiltersCount) : null"
-                  badgeClass="p-badge-secondary" />
+                <Button icon="pi pi-filter" severity="secondary" outlined @click="toggleFilters"
+                  :badge="activeFiltersCount > 0 ? String(activeFiltersCount) : null" badgeClass="p-badge-secondary" />
               </div>
             </div>
 
@@ -98,18 +98,18 @@
 
                   <div class="flex flex-col gap-1.5">
                     <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Filter By</label>
-                    <FormField component="MultiSelect" v-model="selectedDateFields" :options="props.dateFilterable" optionLabel="label"
-                      optionValue="value" placeholder="Select fields" class="w-full p-inputtext-sm"
+                    <FormField component="MultiSelect" v-model="selectedDateFields" :options="props.dateFilterable"
+                      optionLabel="label" optionValue="value" placeholder="Select fields" class="w-full p-inputtext-sm"
                       :maxSelectedLabels="2" />
                   </div>
 
                   <div class="md:col-span-2 flex flex-col gap-1.5">
                     <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Date Range</label>
                     <div class="flex flex-wrap sm:flex-nowrap gap-2">
-                      <FormField component="Calendar" v-model="dateFrom" placeholder="From" dateFormat="dd/mm/yy" showIcon class="flex-1"
-                        inputClass="p-inputtext-sm" />
-                      <FormField component="Calendar" v-model="dateTo" placeholder="To" dateFormat="dd/mm/yy" showIcon class="flex-1"
-                        :minDate="dateFrom" inputClass="p-inputtext-sm" />
+                      <FormField component="Calendar" v-model="dateFrom" placeholder="From" dateFormat="dd/mm/yy"
+                        showIcon class="flex-1" inputClass="p-inputtext-sm" />
+                      <FormField component="Calendar" v-model="dateTo" placeholder="To" dateFormat="dd/mm/yy" showIcon
+                        class="flex-1" :minDate="dateFrom" inputClass="p-inputtext-sm" />
                       <Button label="Apply" icon="pi pi-check" class="w-full sm:w-auto" @click="applyFilters" />
                     </div>
                   </div>
@@ -118,7 +118,7 @@
               </div>
             </Transition>
 
-            <div v-if="selected?.length"
+            <!-- <div v-if="selected?.length"
               class="flex items-center justify-between animate-in fade-in slide-in-from-top-2 rounded-lg bg-primary-50 px-4 py-2 border border-primary-100 dark:bg-primary-900/20 dark:border-primary-800">
               <div class="flex items-center gap-3">
                 <i class="pi pi-check-circle text-primary-600 dark:text-primary-400" />
@@ -129,7 +129,7 @@
               <div class="flex items-center gap-2">
                 <Button text size="small" label="Deselect All" @click="selected = []" />
               </div>
-            </div>
+            </div> -->
           </div>
         </template>
         <!-- Empty -->
@@ -396,8 +396,8 @@ const buildQueryParams = (overrides = {}) => ({
   per_page: perPage.value,
   search: asSearchParam(searchQuery.value),
 
-  ...(sortField.value ? { sortField: sortField.value } : {}),
-  ...(sortOrder.value ? { sortOrder: sortOrder.value === 1 ? "asc" : "desc" } : {}),
+  ...(sortField.value ? { sort_field: sortField.value } : {}),
+  ...(sortOrder.value ? { sort_order: sortOrder.value === 1 ? "asc" : "desc" } : {}),
 
   date_fields: selectedDateFields.value?.length ? selectedDateFields.value : null,
   date_from: toYmd(dateFrom.value),

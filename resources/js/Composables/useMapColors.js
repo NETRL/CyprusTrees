@@ -1,66 +1,72 @@
 export function useMapColors() {
+  const DEFAULT_COLOR = '#4A5568'  // Darker default for better visibility
+  
+  // ENHANCED COLORS FOR LIGHT MAP
+  // Increased saturation and adjusted lightness for better visibility on white/light backgrounds
+  // All colors now have HSL scale with S=85-90% and L=45-48% for punch
+  
+  const STATUS_COLORS = [
+    'existing',        '#0DC278', // Emerald - more saturated
+    'newly_planted',   '#10B810', // Green - deeper
+    'dead',            '#E87020', // Orange - richer
+    'stump',           '#6B7280', // Gray - darker for visibility
+    'removed',         '#DC2626', // Red - more vibrant
+    'missing',         '#D4AF37', // Yellow-Gold - more visible than pure yellow
+    'pending_removal', '#E11D48', // Crimson - stronger
+    'proposed',        '#7C3AED', // Purple - deeper
+    'vacant_pit',      '#06B6D4', // Cyan - more saturated
+    'unknown',         '#D946EF', // Magenta - brighter
+    DEFAULT_COLOR
+  ];
 
-  const DEFAULT_COLOR = '#5A6B7C'
+  const WATER_USE_COLORS = [
+    'high',     '#DC2626', // Changed: Red for HIGH need (intuitive)
+    'moderate', '#D97706', // Orange for moderate
+    'low',      '#059669', // Green for LOW need (efficient/good)
+    DEFAULT_COLOR
+  ];
 
-    // All colors have in HSL scale S=75% and L=50%
-const STATUS_COLORS = [
-  'existing',        '#20df80', // H=150 (Emerald)
-  'newly_planted',   '#20df20', // H=120 (Green)
-  'dead',            '#df8020', // H=30  (Orange)
-  'stump',           '#808080', // *Note: HSL(0,0,50) for neutral; otherwise H=210 #2080df
-  'removed',         '#df2020', // H=0   (Red)
-  'missing',         '#dfdf20', // H=60  (Yellow)
-  'pending_removal', '#df2050', // H=345 (Crimson)
-  'proposed',        '#8020df', // H=270 (Purple)
-  'vacant_pit',      '#20dfdf', // H=180 (Cyan)
-  'unknown',         '#df20df', // H=300 (Magenta)
-  DEFAULT_COLOR                     // Default (Blue)
-];
+  const SHADE_COLORS = [
+    'S', '#EAB308', // Small Canopy - Gold/Yellow
+    'M', '#059669', // Medium - Emerald
+    'L', '#2563EB', // Large - Deep Blue
+    DEFAULT_COLOR
+  ];
 
-   const WATER_USE_COLORS = [
-  'high',     '#20df20', // Low Water Need (Red = High Need)
-  'moderate', '#dfdf20', // Medium Water Need (Yellow = Warning)
-  'low',      '#df2020', // High Water Need (Green = Efficient)
-  DEFAULT_COLOR              // Default Fallback
-];
+  const ORIGIN_COLORS = [
+    'native',  '#059669', // Green - belongs here
+    'endemic', '#7C3AED', // Purple - special/rare
+    'exotic',  '#EA580C', // Orange - foreign
+    DEFAULT_COLOR
+  ];
 
-const SHADE_COLORS = [
-  'S', '#dfdf20', // Small Canopy (Sunlight/Yellow)
-  'M', '#20df80', // Medium Canopy (Growth/Emerald)
-  'L', '#2080df', // Large Canopy (Deep Shade/Blue)
-  DEFAULT_COLOR       // Default Fallback
-];
+  // POLLEN RISK - Enhanced gradient
+  const POLLEN_RISK_COLORS = [
+    DEFAULT_COLOR,
+    1,  '#10B981', // Safe - Emerald
+    2,  '#34D399',
+    3,  '#84CC16', // Lime
+    4,  '#A3E635',
+    5,  '#EAB308', // Yellow
+    6,  '#FBBF24',
+    7,  '#F59E0B', // Amber
+    8,  '#F97316', // Orange
+    9,  '#EF4444', // Red
+    10, '#DC2626'  // Dark Red
+  ];
 
-const ORIGIN_COLORS = [
-  'native',  '#20df50', // Environment
-  'endemic', '#8020df', // Rare/Purple
-  'exotic',  '#df8020', // Different/Orange
-  DEFAULT_COLOR             // Default Fallback
-];
-
-    // --- Sequential Color Palette (Enhanced for visibility) ---
-const POLLEN_RISK_COLORS = [
-    DEFAULT_COLOR, // Missing Data (Neutral Gray)
-    // Safe (Green to Lime)
-    1,  '#20df20', // H=120
-    2,  '#50df20', // H=107
-    3,  '#80df20', // H=93
-    // Moderate (Yellow to Gold)
-    4,  '#b0df20', // H=80
-    5,  '#dfdf20', // H=60
-    6,  '#dfb020', // H=47
-    // High (Orange to Red)
-    7,  '#df8020', // H=33
-    8,  '#df5020', // H=20
-    9,  '#df3520', // H=10
-    10, '#df2020'  // H=0
-];
-
-    return {
-        STATUS_COLORS,
-        WATER_USE_COLORS,
-        SHADE_COLORS,
-        ORIGIN_COLORS,
-        POLLEN_RISK_COLORS,
-    };
+  return {
+    STATUS_COLORS,
+    WATER_USE_COLORS,
+    SHADE_COLORS,
+    ORIGIN_COLORS,
+    POLLEN_RISK_COLORS,
+  };
 }
+
+// USAGE NOTE:
+// These colors are optimized for LIGHT backgrounds (white/light gray maps)
+// They have:
+// - Higher saturation (more vibrant)
+// - Slightly darker lightness (better contrast)
+// - Adjusted hues for maximum distinction

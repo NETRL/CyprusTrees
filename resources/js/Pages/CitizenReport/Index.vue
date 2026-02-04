@@ -138,7 +138,8 @@
     <PhotoPreview v-model:visible="previewVisible" :photo="previewPhoto" />
 
     <PromoteMntEventForm v-model:visible="mntFormVisible" routeResource="maintenanceEvents" :dataRow="formRow"
-      @updated="reloadTable" @created="reloadTable" :trees="treeData" :types="mntTypeData" :users="userData" />
+      :trees="treeData" :types="mntTypeData" :users="userData" />
+
   </div>
 </template>
 
@@ -153,11 +154,14 @@ import NavLinkButton from "@/Components/NavLinkButton.vue";
 import { Eye, ImageIcon, ImageOff, ExternalLink, ArrowUpCircle } from 'lucide-vue-next';
 import PhotoPreview from "@/Pages/Photo/Partials/PhotoPreview.vue";
 import PromoteMntEventForm from "./Partials/PromoteMntEventForm.vue";
+import Modal from "@/Components/Modal.vue";
+import { useConfirm } from "primevue/useconfirm";
 
 
 defineOptions({
   layout: AuthenticatedLayout,
 });
+
 
 const props = defineProps({
   tableData: { type: Object, required: true, },
@@ -172,6 +176,7 @@ const props = defineProps({
 });
 
 const { formatDate } = useDateFormatter();
+const confirm = useConfirm();
 
 // --- preview state ---
 const previewVisible = ref(false)
@@ -201,8 +206,22 @@ const statusInfo = (status) => {
 // --- Maintenance Form State ---
 const mntFormVisible = ref(false);
 const openMntForm = (row) => {
-  formRow.value = row;
-  mntFormVisible.value = true;
+  console.log(row.status)
+  if (row.status === 'triaged') {
+    confirm.require({
+      message: 'Are you sure you want to promote it again?',
+      header: 'This report is already Triaged',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        formRow.value = row;
+        mntFormVisible.value = true;
+      },
+      reject: () => { }
+    });
+  } else {
+    formRow.value = row;
+    mntFormVisible.value = true;
+  }
 };
 
 // --- form state ---
