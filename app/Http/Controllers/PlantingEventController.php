@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Enums\PlantingEventStatus;
+use App\Jobs\ProcessPhotoUpload;
 use App\Models\Campaign;
 use App\Models\Neighborhood;
+use App\Models\Photo;
 use App\Models\PlantingEvent;
+use App\Models\PlantingEventTree;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -225,5 +229,82 @@ class PlantingEventController extends Controller
         ]);
 
         return redirect()->route('plantingEvents.index');
+    }
+
+
+    public function storePhoto(Request $request, PlantingEvent $plantingEvent)
+    {
+        $validated = $request->validate([
+            'tree_id' => ['required', 'exists:trees,id'],
+            'caption' => ['nullable', 'string', 'max:255'],
+            'source'  => ['nullable', 'in:camera,upload'],
+
+            // match the existing PhotoController.store
+            'photos'  => ['required', 'array', 'max:20'],
+            'photos.*' => [
+                'image',
+                'mimes:jpeg,jpg,png,webp',
+                'max:15360',
+            ],
+        ]);
+
+
+        // Ensure this tree belongs to this planting event
+        if (!$plantingEvent->eventTrees()->where('tree_id', $validated['tree_id'])->exists()) {
+            return redirect()
+                ->back()
+                ->with('message', [
+                    'type' => 'error',
+                    'message' => __('Tree does not belong to this planting event.'),
+                ]);
+        }
+
+        $photoCount = 0;
+        $jobs = [];
+        $createdPhotoIds = [];
+
+        DB::transaction(function () use ($validated, $plantingEvent, &$jobs, &$photoCount, &$createdPhotoIds) {
+            $treeId  = $validated['tree_id'];
+            $caption = $validated['caption'] ?? null;
+            $source  = $validated['source'] ?? 'upload';
+
+            foreach ($validated['photos'] as $file) {
+                // If extractCapturedAt is currently private in PhotoController, move it to a shared service/trait.
+                // For now: store null or implement minimal extraction here.
+                $capturedAt = null;
+
+                $filename = uniqid('photo_', true) . '.jpg';
+                $path = $file->storeAs('tree-photos', $filename, 'public');
+
+                $photo = Photo::create([
+                    'tree_id'     => $treeId,
+                    'caption'     => $caption,
+                    'url'         => null,
+                    'captured_at' => $capturedAt,
+                    'source'      => $source,
+                    'path'        => $path,
+                    'status'      => 'processing',
+                ]);
+
+                // Attach to planting event via pivot
+                $plantingEvent->photos()->attach($photo->id);
+
+                $createdPhotoIds[] = $photo->id;
+
+                $jobs[] = new ProcessPhotoUpload($photo->id);
+                $photoCount++;
+            }
+        });
+
+        Bus::batch($jobs)->dispatch();
+
+        return back()->with('message', [
+            'type'    => 'success',
+            'message' => trans_choice(
+                '{1} :count photo uploaded, processing in background.|[2,*] :count photos uploaded, processing in background.',
+                $photoCount,
+                ['count' => $photoCount]
+            ),
+        ]);
     }
 }

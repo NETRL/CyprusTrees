@@ -145,15 +145,19 @@ class PlantingEvent extends Model
 
     public function eventTrees()
     {
-        // planting_events_trees.planting_id -> planting_events.planting_id
         return $this->hasMany(PlantingEventTree::class, 'planting_id', 'planting_id');
     }
 
     public function trees()
     {
-        // convenient many-to-many via pivot model/table
-        return $this->belongsToMany(Tree::class, 'planting_events_trees', 'planting_id', 'tree_id')
-            ->withPivot(['planted_by', 'planted_at', 'planting_method', 'notes', 'created_at', 'updated_at']);
+        return $this->belongsToMany(Tree::class, 'planting_events_trees', 'planting_id', 'tree_id', 'planting_id', 'id')
+            ->withPivot(['id', 'planted_by', 'planted_at', 'planting_method', 'notes'])
+            ->withTimestamps();
+    }
+
+    public function photos()
+    {
+        return $this->belongsToMany(Photo::class, 'planting_events_photos', 'planting_id', 'photo_id')->withTimestamps();
     }
 
     public static function getPlantingEventStatusOptions(): array

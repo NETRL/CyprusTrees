@@ -160,12 +160,13 @@ Route::middleware('auth', '2fa')->group(function () {
     Route::resource('plantingEvents', PlantingEventController::class)->except(['create', 'edit']);
     Route::post('/plantingEvents/mass-destroy', [PlantingEventController::class, 'massDestroy'])->name('plantingEvents.massDestroy');
 
-    Route::prefix('planting-events/{plantingEvent}')
+    Route::prefix('plantingEvents/{plantingEvent}')
         ->group(function () {
             Route::post('/trees', [PlantingEventTreeController::class, 'store'])->name('plantingEventTrees.store');
+            Route::post('/photos', [PlantingEventController::class, 'storePhoto'])->name('plantingEvents.photos.store');
         });
-    Route::patch('/planting-event-trees/{plantingEventTree}', [PlantingEventTreeController::class, 'update'])->name('plantingEventTrees.update');
-    Route::delete('/planting-event-trees/{plantingEventTree}', [PlantingEventTreeController::class, 'destroy'])->name('plantingEventTrees.destroy');
+    Route::patch('/plantingEventTrees/{plantingEventTree}', [PlantingEventTreeController::class, 'update'])->name('plantingEventTrees.update');
+    Route::delete('/plantingEventTrees/{plantingEventTree}', [PlantingEventTreeController::class, 'destroy'])->name('plantingEventTrees.destroy');
 
 
 

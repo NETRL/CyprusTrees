@@ -86,12 +86,11 @@ class PlantingEventTree extends Model
 
     public function tree()
     {
-        return $this->belongsTo(Tree::class);
+        return $this->belongsTo(Tree::class, 'tree_id', 'id');
     }
 
     public function plantedBy()
     {
-        // planted_by -> users.user_id
         return $this->belongsTo(User::class, 'planted_by', 'id');
     }
 }

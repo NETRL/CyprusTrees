@@ -462,7 +462,7 @@ class PhotoController extends Controller
 
         //  Success
         return redirect()
-            ->route('photos.index', ['tree_id' => $treeId])
+            ->back()
             ->with('message', [
                 'type' => 'success',
                 'message' => __('Photo has been deleted.'),

@@ -20,7 +20,8 @@
                     <span class="text-[10px] font-mono text-gray-400 dark:text-gray-500 p-auto">
                         ID: {{ activeTree.id }}
                     </span>
-                    <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" @click="emit('clearSelection')">
+                    <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        @click="emit('clearSelection')">
                         ✕
                     </button>
                 </div>
@@ -320,13 +321,127 @@
                     {{ speciesData.notes }}
                 </div>
             </div>
-            <!-- Report Issue Button -->
+            <!-- Action Buttons -->
+             <span>sdsadasddas
+                 planting_id: {{ activePlantingEventId }}
+                 id
+                {{ selected?.planting_id }}
+                 {{ plantingRecord?.planting_id }}
+                </span>
             <div v-if="isSelected" :class="[
                 'pt-2 grid gap-2',
                 (can('trees.edit') ? 'grid-cols-1 sm:grid-cols-1' : 'grid-cols-1')
             ]">
+                <!-- Add Image (Planting mode only) -->
+                <div v-if="isPlantingMode && (selected?.planting_id == activePlantingEventId)" class="space-y-2">
+                    <h4 class="text-sm font-semibold flex items-center gap-2"
+                        :class="hasPhoto ? 'text-gray-700 dark:text-gray-300' : 'text-gray-700 dark:text-gray-300'">
+                        <CheckCircle class="w-4 h-4" />
+                        <span>
+                            Tree Photo ({{ hasPhoto ? 'Done' : 'Required' }})
+                        </span>
+                    </h4>
+
+                    <div class="rounded-lg p-3 border" :class="hasPhoto
+                        ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
+                        : 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800'
+                        ">
+                        <div class="text-xs" :class="hasPhoto
+                            ? 'text-yellow-800 dark:text-yellow-300'
+                            : 'text-emerald-800 dark:text-emerald-300'
+                            ">
+                            {{ hasPhoto
+                                ? 'You have already added a photo for the selected tree.'
+                                : 'Field officer must attach at least one photo for the selected tree.'
+                            }}
+                        </div>
+                    </div>
+
+                    <div
+                        class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:border-emerald-500 dark:hover:border-emerald-500 transition-colors">
+                        <!-- Hidden inputs -->
+                        <input type="file" accept="image/*" class="hidden" ref="treeFileInput"
+                            @change="handleTreePhotoUpload" />
+                        <input type="file" accept="image/*" capture="environment" class="hidden" ref="treeCameraInput"
+                            @change="handleTreePhotoUpload" />
+
+                        <!-- Preview -->
+                        <div v-if="treePhotoPreview" class="relative inline-block">
+                            <img :src="treePhotoPreview"
+                                class="max-h-44 rounded-lg border border-gray-200 dark:border-gray-700" />
+                            <button type="button" @click="removeTreePhoto"
+                                class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1.5 hover:bg-red-700 transition-colors shadow-lg"
+                                title="Remove photo">
+                                ✕
+                            </button>
+                        </div>
+
+                        <!-- Actions -->
+                        <div v-else class="space-y-2">
+                            <div class="text-xs text-gray-600 dark:text-gray-400">
+                                JPG/PNG up to 15MB
+                            </div>
+
+                            <div v-if="isMobile" class="space-y-2">
+                                <button type="button" @click="treeCameraInput?.click()"
+                                    class="w-full px-4 py-2 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2">
+                                    <span>Take Photo</span>
+                                </button>
+
+                                <button type="button" @click="treeFileInput?.click()"
+                                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                    <span>Choose from Gallery</span>
+                                </button>
+                            </div>
+
+                            <div v-else>
+                                <button type="button" @click="treeFileInput?.click()"
+                                    class="text-sm text-emerald-700 dark:text-emerald-300 hover:text-emerald-800 dark:hover:text-emerald-200 font-semibold">
+                                    Click to upload a photo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p v-if="treePhotoForm.errors.photos" class="text-xs text-red-600 dark:text-red-400">
+                        {{ treePhotoForm.errors.photos }}
+                    </p>
+                    <p v-if="treePhotoForm.errors['photos.0']" class="text-xs text-red-600 dark:text-red-400">
+                        {{ treePhotoForm.errors['photos.0'] }}
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <button type="button" @click="submitTreePhoto"
+                            class="w-full bg-linear-to-r from-emerald-600 to-teal-600 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                            :disabled="treePhotoForm.processing || !treePhotoForm.photos?.length || !activeTree?.id">
+                            <Clock v-if="treePhotoForm.processing" class="w-4 h-4 animate-spin" />
+                            <CheckCircle v-else class="w-4 h-4" />
+                            {{ treePhotoForm.processing ? 'Uploading...' : 'Upload Photo' }}
+                        </button>
+
+                        <button type="button" @click="removeTreePhoto"
+                            class="w-full border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold py-3 px-4 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 disabled:opacity-50"
+                            :disabled="treePhotoForm.processing || (!treePhotoForm.photos?.length && !treePhotoPreview)">
+                            Remove
+                        </button>
+                    </div>
+
+                    <!-- Optional: show existing photos if backend returns them -->
+                    <div v-if="Array.isArray(activeTree?.photos) && activeTree.photos.length" class="space-y-2">
+                        <div class="text-xs font-semibold text-gray-600 dark:text-gray-400">Existing Photos</div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <a v-for="p in activeTree.photos.slice(0, 6)" :key="p.id || p.url" :href="p.url"
+                                target="_blank" rel="noopener" class="block">
+                                <img :src="p.thumb_url || p.url"
+                                    class="h-20 w-full object-cover rounded-lg border border-gray-200 dark:border-gray-700" />
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+
                 <!-- Report Issue -->
-                <div>
+                <div v-if="!isPlantingMode">
                     <div v-if="userHasActiveReports"
                         class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-2">
                         <div class="flex items-center gap-2 text-sm text-yellow-800 dark:text-yellow-300">
@@ -351,7 +466,6 @@
                     Edit Tree Info
                 </button>
             </div>
-
         </div>
         <TreeReportCard @closeModal="toggleReportModal" @submitted="handleSubmitted" :showModal="showModal"
             :tree="selected" />
@@ -367,24 +481,10 @@ import TreeReportCard from '@/Components/Map/Partials/TreeReportCard.vue';
 import { safeJsonParse } from '@/Composables/safeJsonParser';
 import { usePage } from '@inertiajs/vue3';
 import { fetchTreeDetails } from '@/Lib/Map/DataLayers';
-
-const emit = defineEmits(['update:selected', 'editClick', 'clearSelection'])
-
-const formatRelativeTime = (date) => {
-    const now = new Date();
-    const reportDate = new Date(date);
-    const diffInHours = Math.floor((now - reportDate) / (1000 * 60 * 60));
-
-    if (diffInHours < 1) return 'Just now';
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    if (diffInHours < 48) return 'Yesterday';
-    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`;
-    return formatDate(date);
-};
+import { useForm } from '@inertiajs/vue3'
+import { onMounted, onBeforeUnmount } from 'vue'
 
 const page = usePage();
-
-const can = inject('can')
 
 const props = defineProps({
     hovered: { type: Object, default: null },
@@ -393,15 +493,37 @@ const props = defineProps({
     isSelected: { type: Boolean, required: true }
 });
 
-const reportTypes = inject('reportTypes');
+const emit = defineEmits(['update:selected', 'editClick', 'clearSelection'])
 
-const isPlantingMode = inject('isPlantingMode')
+const can = inject('can')
+const reportTypes = inject('reportTypes');
+const isPlantingMode = inject('isPlantingMode', false)
 const lastCreatedTree = inject('lastCreatedTree')
+const activePlantingEventId = inject('activePlantingEventId', null)
+
+const showModal = ref(false)
+const treeOverride = ref(null)
+
+// --- Planting mode: Tree photo upload ---
+const treeFileInput = ref(null)
+const treeCameraInput = ref(null)
+const treePhotoPreview = ref(null)
+const isMobile = ref(false)
 
 const userId = computed(() => page.props.auth.user?.id);
 
-const userHasActiveReports = computed(() => {
+const neighborhoodData = computed(() => {
+    if (!activeTree.value.neighborhood) return null;
+    try {
+        return typeof activeTree.value.neighborhood === 'string'
+            ? JSON.parse(activeTree.value.neighborhood)
+            : activeTree.value.neighborhood;
+    } catch {
+        return null;
+    }
+});
 
+const userHasActiveReports = computed(() => {
     const reports = reportData.value;
     if (!reports || reports.length === 0) {
         return false;
@@ -417,20 +539,10 @@ const userHasActiveReports = computed(() => {
     );
 })
 
-const showModal = ref(false)
 
-const treeOverride = ref(null)
 // Active tree is selected if available, otherwise hovered
 const activeTree = computed(() => treeOverride.value || props.selected || props.hovered || {});
-
-watch(
-    () => props.selected?.id,
-    () => {
-        // whenever selection changes from outside, drop override
-        treeOverride.value = null
-    }
-)
-
+const hasPhoto = computed(() => props.selected.has_planting_photos)
 // Parse JSON strings from data
 const speciesData = computed(() => {
     return safeJsonParse(activeTree.value?.species, null)
@@ -469,6 +581,28 @@ const reportsWithNames = computed(() => {
     });
 });
 
+watch(
+    () => props.selected?.id,
+    () => {
+        // whenever selection changes from outside, drop override
+        treeOverride.value = null
+    }
+)
+
+
+const formatRelativeTime = (date) => {
+    const now = new Date();
+    const reportDate = new Date(date);
+    const diffInHours = Math.floor((now - reportDate) / (1000 * 60 * 60));
+
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInHours < 48) return 'Yesterday';
+    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`;
+    return formatDate(date);
+};
+
+
 const toggleReportModal = () => {
     showModal.value = !showModal.value
 }
@@ -484,18 +618,6 @@ const handleSubmitted = () => {
         }
     )
 }
-
-
-const neighborhoodData = computed(() => {
-    if (!activeTree.value.neighborhood) return null;
-    try {
-        return typeof activeTree.value.neighborhood === 'string'
-            ? JSON.parse(activeTree.value.neighborhood)
-            : activeTree.value.neighborhood;
-    } catch {
-        return null;
-    }
-});
 
 // Helper functions
 function copySelected() {
@@ -561,4 +683,90 @@ const formatDate = (dateString) => {
         day: 'numeric'
     });
 };
+
+
+const syncIsMobile = () => {
+    isMobile.value =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        window.innerWidth < 768
+}
+
+onMounted(() => {
+    syncIsMobile()
+    window.addEventListener('resize', syncIsMobile)
+})
+
+onBeforeUnmount(() => {
+    window.removeEventListener('resize', syncIsMobile)
+})
+
+const treePhotoForm = useForm({
+    tree_id: computed(() => activeTree.value?.id),
+    caption: null,
+    source: null,     // 'camera' | 'upload'
+    photos: [],       // REQUIRED by backend
+})
+
+// Handle file upload
+const handleTreePhotoUpload = (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const isCamera = !!event.target?.getAttribute?.('capture')
+    treePhotoForm.source = isCamera ? 'camera' : 'upload'
+
+    if (file.size > 15 * 1024 * 1024) {
+        alert('File size must be less than 15MB')
+        event.target.value = ''
+        return
+    }
+    if (!file.type.startsWith('image/')) {
+        alert('Please upload an image file')
+        event.target.value = ''
+        return
+    }
+
+    treePhotoForm.photos = [file]
+
+    const reader = new FileReader()
+    reader.onload = (e) => (treePhotoPreview.value = e.target.result)
+    reader.readAsDataURL(file)
+}
+
+// Remove photo
+const removeTreePhoto = () => {
+    treePhotoForm.photos = []
+    treePhotoPreview.value = null
+    if (treeFileInput.value) treeFileInput.value.value = ''
+    if (treeCameraInput.value) treeCameraInput.value.value = ''
+}
+
+// Submit upload
+const submitTreePhoto = () => {
+    const plantingId = activePlantingEventId?.value
+
+    if (!plantingId) {
+        console.error('Missing plantingEventId for photo upload')
+        return
+    }
+
+    if (!activeTree.value?.id || !treePhotoForm.photos?.length) return
+
+    treePhotoForm.post(route('plantingEvents.photos.store', plantingId), {
+        preserveScroll: true,
+        onSuccess: () => {
+            removeTreePhoto()
+
+            fetchTreeDetails(activeTree.value.id, {
+                onDataLoaded: (data) => {
+                    treeOverride.value = data
+                },
+            })
+        },
+        onError: (errors) => {
+            console.error('Tree photo upload errors:', errors)
+        },
+    })
+}
+
 </script>

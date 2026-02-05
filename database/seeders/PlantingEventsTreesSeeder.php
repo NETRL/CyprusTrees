@@ -3,12 +3,14 @@
 namespace Database\Seeders;
 
 use App\Enums\PlantingEventStatus;
+use App\Models\Photo;
 use App\Models\PlantingEvent;
 use App\Models\PlantingEventTree;
 use App\Models\Tree;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class PlantingEventsTreesSeeder extends Seeder
 {
@@ -39,7 +41,6 @@ class PlantingEventsTreesSeeder extends Seeder
 
             $target = (int) ($event->target_tree_count ?? rand(5, 30));
 
-            // How many items we want to create for this status
             $desiredCount = match ($status) {
                 PlantingEventStatus::DRAFT       => rand(0, 2),
                 PlantingEventStatus::SCHEDULED   => rand(0, (int) floor($target / 3)),
@@ -52,27 +53,29 @@ class PlantingEventsTreesSeeder extends Seeder
                 continue;
             }
 
-            // Candidate selection rules:
+            $isActual = in_array($status, [PlantingEventStatus::IN_PROGRESS, PlantingEventStatus::COMPLETED], true);
+
+            // Candidate selection rules
             $treeQuery = Tree::query();
 
             if (!empty($event->neighborhood_id)) {
                 $treeQuery->where('neighborhood_id', $event->neighborhood_id);
             }
 
-            // For "actual planting", prefer trees that are not already planted
-            if (in_array($status, [PlantingEventStatus::IN_PROGRESS, PlantingEventStatus::COMPLETED], true)) {
-                $treeQuery->whereNull('planted_at');
-
-                // Usually you want real map points
+            // Prefer “real” points for actual planting
+            if ($isActual) {
                 $treeQuery->whereNotNull('lat')->whereNotNull('lon');
             }
 
-            // Avoid trees already linked to this event (unique safeguard)
-            $treeQuery->whereDoesntHave('plantingEventTrees', function ($q) use ($event) {
-                $q->where('planting_id', $event->getKey());
-            });
+            /**
+             * IMPORTANT CHANGE (unique(tree_id)):
+             * Exclude ANY tree already linked to ANY planting event.
+             * This must be global, not filtered by planting_id.
+             *
+             * Requires Tree::plantingRecord() hasOne(PlantingEventTree...)
+             */
+            $treeQuery->whereDoesntHave('plantingRecord');
 
-            // If not enough candidates exist, shrink count
             $available = (clone $treeQuery)->count();
             if ($available <= 0) {
                 continue;
@@ -83,21 +86,20 @@ class PlantingEventsTreesSeeder extends Seeder
             $trees = $treeQuery->inRandomOrder()->limit($count)->get();
 
             foreach ($trees as $tree) {
-                // extra safety for unique(planting_id, tree_id)
-                $exists = PlantingEventTree::query()
-                    ->where('planting_id', $event->getKey())
+                // Extra safety: should never happen due to whereDoesntHave + unique(tree_id)
+                $alreadyLinked = PlantingEventTree::query()
                     ->where('tree_id', $tree->getKey())
                     ->exists();
 
-                if ($exists) continue;
-
-                $isActual = in_array($status, [PlantingEventStatus::IN_PROGRESS, PlantingEventStatus::COMPLETED], true);
+                if ($alreadyLinked) {
+                    continue;
+                }
 
                 $plantedBy = $isActual ? $users->random() : null;
                 $plantedAt = $isActual ? $this->computePlantedAtForActual($status, $event) : null;
 
                 PlantingEventTree::query()->create([
-                    'planting_id'     => $event->getKey(),
+                    'planting_id'     => $event->getKey(),      // uses PlantingEvent PK (planting_id)
                     'tree_id'         => $tree->getKey(),
                     'planted_by'      => $plantedBy?->getKey(),
                     'planted_at'      => $plantedAt,
@@ -105,9 +107,19 @@ class PlantingEventsTreesSeeder extends Seeder
                     'notes'           => $this->makeItemNotes($status),
                 ]);
 
-                // Backfill the tree.planted_at for actual planted trees
+                // Backfill trees.planted_at if you keep it there for completed plantings
                 if ($status === PlantingEventStatus::COMPLETED && $plantedAt && empty($tree->planted_at)) {
                     $tree->forceFill(['planted_at' => Carbon::parse($plantedAt)->toDateString()])->save();
+                }
+
+                /**
+                 * OPTIONAL (recommended): seed at least 1 photo for actual planting events,
+                 * and attach it to the planting event via planting_events_photos.
+                 *
+                 * This assumes PlantingEvent::photos() belongsToMany is set up.
+                 */
+                if ($isActual) {
+                    $this->seedPlantingPhotos($event, $tree, $plantedAt);
                 }
             }
         }
@@ -149,5 +161,38 @@ class PlantingEventsTreesSeeder extends Seeder
             PlantingEventStatus::CANCELLED =>
                 "Event cancelled; no planting performed.",
         };
+    }
+
+    private function seedPlantingPhotos(PlantingEvent $event, Tree $tree, ?Carbon $capturedAt): void
+    {
+        // If you want “required”, make it always >= 1. Keep small to avoid heavy seed.
+        $photoCount = rand(1, 3);
+
+        // If your UI expects processing pipeline, you can set status='ready' and provide a URL.
+        // This avoids having to store files & run jobs during seeding.
+        $photos = [];
+
+        for ($i = 0; $i < $photoCount; $i++) {
+            $photos[] = Photo::query()->create([
+                'tree_id'     => $tree->getKey(),
+                'caption'     => 'Planting documentation',
+                'url'         => $this->fakeImageUrl($tree->getKey(), $event->getKey(), $i),
+                'captured_at' => $capturedAt ?? now(),
+                'source'      => 'upload',
+                'path'        => null,
+                'status'      => 'ready',
+            ]);
+        }
+
+        // Attach to event via pivot (planting_events_photos)
+        // Requires PlantingEvent::photos() relationship
+        $event->photos()->syncWithoutDetaching(collect($photos)->pluck('id')->all());
+    }
+
+    private function fakeImageUrl(int $treeId, int $plantingId, int $index): string
+    {
+        // Stable-ish placeholder. Replace with your own CDN/static assets if you prefer.
+        $seed = Str::slug("tree{$treeId}-planting{$plantingId}-{$index}");
+        return "https://picsum.photos/seed/{$seed}/800/600";
     }
 }

@@ -26,7 +26,7 @@ return new class extends Migration
 
             $table->timestamps();
 
-            $table->unique(['planting_id', 'tree_id']);
+            $table->unique(['tree_id']);
         });
     }
 

@@ -43,4 +43,9 @@ class Photo extends Model
     {
         return $this->hasMany(CitizenReport::class);
     }
+
+    public function plantingEvents()
+    {
+        return $this->belongsToMany(PlantingEvent::class, 'planting_events_photos', 'photo_id', 'planting_id')->withTimestamps();
+    }
 }

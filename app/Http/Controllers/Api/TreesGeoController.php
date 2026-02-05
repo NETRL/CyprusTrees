@@ -13,7 +13,7 @@ class TreesGeoController extends Controller
 {
     public function index(): JsonResponse
     {
-        $rows = Tree::with(['species', 'tags:id,name', 'neighborhood:id,name,city,district', 'citizenReports'])
+        $rows = Tree::with(['species', 'tags:id,name', 'neighborhood:id,name,city,district', 'citizenReports', 'plantingRecord'])
             ->select([
                 '*',
                 DB::raw('ST_AsGeoJSON(geom) as geom_point'),
@@ -23,11 +23,16 @@ class TreesGeoController extends Controller
 
         $features = [];
 
+
         foreach ($rows as $row) {
             if (! $row->geom_point) {
                 continue;
             }
 
+            // if($row->id === 409){
+            //     dd($row->plantingRecord->planting_id);
+            // }
+            $row['has_planting_photos'] = $row->has_planting_photos;
             $geometry = json_decode($row->geom_point, true);
 
             $features[] = [
@@ -65,6 +70,10 @@ class TreesGeoController extends Controller
 
     private function mapTreeToProperties(Tree $row): array
     {
+        $planting_id = null;
+        if($row->plantingRecord){
+            $planting_id = $row->plantingRecord->planting_id;
+        }
 
         return [
             'id'                     => $row->id,
@@ -93,6 +102,8 @@ class TreesGeoController extends Controller
                 ? TreeHelper::calculateIAPS($row->species['opals_score'], $row->sex)
                 : null,
             'citizenReports'         => $row->citizenReports,
+            'has_planting_photos' => $row->has_planting_photos,
+            'planting_id' => $planting_id,
         ];
     }
 }

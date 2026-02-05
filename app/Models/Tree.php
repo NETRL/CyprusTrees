@@ -8,6 +8,7 @@ use App\Enums\TreeSex;
 use App\Enums\TreeStatus;
 use App\Models\Traits\BaseModelTrait;
 use App\Models\Traits\Paginatable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -102,7 +103,7 @@ class Tree extends Model
             'species',
             'neighborhood',
             'maintenanceEvents',
-            'plantingEventTree',
+            // 'plantingEventTree',
             // 'healthAssessments',
             'citizenReports',
             'photos',
@@ -119,11 +120,6 @@ class Tree extends Model
     public function neighborhood()
     {
         return $this->belongsTo(Neighborhood::class);
-    }
-
-    public function plantingEventTree()
-    {
-        return $this->belongsTo(PlantingEventTree::class);
     }
 
     public function maintenanceEvents()
@@ -151,9 +147,30 @@ class Tree extends Model
         return $this->belongsToMany(Tag::class, 'tree_tags', 'tree_id', 'tag_id')->withTimestamps();
     }
 
-    public function plantingEventTrees()
+    public function plantingRecord()
     {
-        return $this->hasMany(PlantingEventTree::class, 'tree_id', 'id');
+        return $this->hasOne(PlantingEventTree::class, 'tree_id', 'id');
+    }
+
+    public function plantingEvent()
+    {
+        return $this->hasOneThrough(
+            PlantingEvent::class,
+            PlantingEventTree::class,
+            'tree_id',
+            'planting_id',
+            'id',
+            'planting_id'
+        );
+    }
+
+    protected function hasPlantingPhotos(): Attribute
+    {
+        return Attribute::get(fn () =>
+            $this->plantingEvent()
+                ->whereHas('photos')
+                ->exists()
+        );
     }
 
     public function getSpeciesLabelAttribute()

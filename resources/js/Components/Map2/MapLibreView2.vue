@@ -61,7 +61,7 @@
 
     <TreeCard :hovered="hoveredData" :selected="selectedData" :markerLatLng="markerLatLng"
         :selectedNeighborhood="selectedNeighborhood" :neighborhoodStats="neighborhoodStats" :pinClickFlag="pinClickFlag"
-        @update:selected="selectedData = $event" @cancelCreate="onCancelCreate" @clearSelection="onClearSelection"/>
+        @update:selected="selectedData = $event" @cancelCreate="onCancelCreate" @clearSelection="onClearSelection" />
     <MapLoadingOverlay :isLoading="isLoading" />
 
     <Modal v-if="showAuthPrompt" @close="showAuthPrompt = false">
@@ -136,6 +136,8 @@ provide('can', can)
 const mapBus = mitt()
 provide('mapBus', mapBus)
 
+
+
 const mapContainer = ref(null)
 const map = ref(null)
 
@@ -164,6 +166,9 @@ const { STATUS_COLORS, WATER_USE_COLORS, SHADE_COLORS, ORIGIN_COLORS, POLLEN_RIS
 const isEventMode = computed(() => props.mode !== 'default' && !!props.eventId)
 const isPlantingMode = computed(() => props.mode === 'planting' && !!props.eventId)
 provide('isPlantingMode', isPlantingMode)
+
+const activePlantingEventId = computed(() => props.mode === 'planting' ? props.eventId : null)
+provide('activePlantingEventId', activePlantingEventId)
 
 // --- event state ---
 const activeEvent = ref(null)
@@ -552,7 +557,7 @@ let lastPaintMode = null
 const paintByMode = {
     status: () => ['match', ['get', 'status'], ...STATUS_COLORS],
     origin: () => ['match', ['get', 'species_origin'], ...ORIGIN_COLORS],
-    pollen_risk: () => ['step', ['get', 'calculated_pollen_risk'],'#4A5568', ...POLLEN_RISK_COLORS],
+    pollen_risk: () => ['step', ['get', 'calculated_pollen_risk'], '#4A5568', ...POLLEN_RISK_COLORS],
     water_use: () => ['match', ['get', 'species_drought_tolerance'], ...WATER_USE_COLORS],
     shade: () => ['match', ['get', 'species_canopy_class'], ...SHADE_COLORS],
 }
@@ -616,8 +621,8 @@ function onToggleCategory({ mode, key }) {
 // -------- CRUD hooks ----------
 function onClearSelection() {
     console.log('onClearSelection')
-     treeLayerApi?.clearSelection?.()
-     neighLayerApi?.clearSelection?.()
+    treeLayerApi?.clearSelection?.()
+    neighLayerApi?.clearSelection?.()
 }
 
 function onCancelCreate() {
