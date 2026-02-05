@@ -93,7 +93,7 @@
                             </div>
 
                             <div
-                                class="sm:hidden flex gap-1 justify-center flex-wrap content-center h-full max-h-[60%]">
+                                class="sm:hidden flex gap-1 justify-center flex-wrap content-center h-full max-h-[60%] mt-0.5">
                                 <div v-for="event in day.events.slice(0, 4)" :key="event.id"
                                     class="w-1.5 h-1.5 rounded-full ring-1 ring-white dark:ring-slate-900"
                                     :class="[eventBulletColors(event)]">

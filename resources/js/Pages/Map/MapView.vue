@@ -11,10 +11,10 @@
 
         <main class="flex-1 relative overflow-hidden">
             <MapFilterProvider>
-                <MapLibreView2 v-if="isMap2" :initialTreeId="initialTreeId" :initialLocation="initialLocation"
+                <MapLibreView2  :initialTreeId="initialTreeId" :initialLocation="initialLocation"
                     :mode="mode" :eventId="eventId" />
-                <MapLibreView v-else :initialTreeId="initialTreeId" :initialLocation="initialLocation" :mode="mode"
-                    :eventId="eventId" />
+                <!-- <MapLibreView v-else :initialTreeId="initialTreeId" :initialLocation="initialLocation" :mode="mode"
+                    :eventId="eventId" /> -->
             </MapFilterProvider>
         </main>
     </div>

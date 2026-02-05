@@ -20,7 +20,7 @@
             </button>
 
             <!-- Scrollable content -->
-            <div class="py-4 flex-1 overflow-y-auto select-none flex justify-center">
+            <div class="pt-4 flex-1 overflow-y-auto select-none flex justify-center">
                 <slot />
             </div>
         </div>

@@ -10,7 +10,7 @@
     ]">
         <MapTreeForm v-if="isCreating || isEditing" v-model:visible="formVisible" routeResource="trees"
             :action="formAction" :markerLatLng="markerLatLng" :dataRow="props.selected" />
-        <NeighborhoodCardContent v-if="isNeighborhood" :activeNeighborhood="selectedNeighborhood"
+        <NeighborhoodCardContent v-if="isNeighborhood && (!isCreating && !isEditing)" :activeNeighborhood="selectedNeighborhood"
             :stats="neighborhoodStats || {}" @clearSelection="emit('clearSelection')"/>
         <TreeCardContent v-if="(isSelected || isHovered) && (!isCreating && !isEditing)" :hovered="props.hovered" :selected="props.selected"
             :isHovered="isHovered" :isSelected="isSelected" @editClick="onEditClick" @clearSelection="emit('clearSelection')"/>
@@ -18,10 +18,10 @@
 
     <!-- Mobile Bottom Sheet -->
     <BottomSheet v-model:state="treeSheetState" :showFab="false" :showBackdrop="false" :heightRatio="0.75">
-        <div class="flex flex-col h-full px-5 pt-4 pb-6 w-full sm:items-center">
+        <div class="flex flex-col h-full px-5 pt-4 pb-1 w-full sm:items-center">
             <MapTreeForm v-if="isCreating || isEditing" v-model:visible="formVisible" routeResource="trees"
                 :action="formAction" :markerLatLng="markerLatLng" :dataRow="props.selected" />
-            <NeighborhoodCardContent v-if="isNeighborhood" :activeNeighborhood="selectedNeighborhood"
+            <NeighborhoodCardContent v-if="isNeighborhood && (!isCreating && !isEditing)" :activeNeighborhood="selectedNeighborhood"
                 :stats="neighborhoodStats || {}" @clearSelection="emit('clearSelection')"/>
             <TreeCardContent v-if="(isSelected || isHovered) && (!isCreating && !isEditing)" :hovered="props.hovered" :selected="props.selected"
                 :isHovered="isHovered" :isSelected="isSelected" @editClick="onEditClick" @clearSelection="emit('clearSelection')"/>

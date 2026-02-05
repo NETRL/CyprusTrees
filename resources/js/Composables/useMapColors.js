@@ -52,7 +52,7 @@ export function useMapColors() {
     7,  '#F59E0B', // Amber
     8,  '#F97316', // Orange
     9,  '#EF4444', // Red
-    10, '#DC2626'  // Dark Red
+    10, '#DC2626',  // Dark Red
   ];
 
   return {

@@ -552,7 +552,7 @@ let lastPaintMode = null
 const paintByMode = {
     status: () => ['match', ['get', 'status'], ...STATUS_COLORS],
     origin: () => ['match', ['get', 'species_origin'], ...ORIGIN_COLORS],
-    pollen_risk: () => ['step', ['get', 'calculated_pollen_risk'], ...POLLEN_RISK_COLORS],
+    pollen_risk: () => ['step', ['get', 'calculated_pollen_risk'],'#4A5568', ...POLLEN_RISK_COLORS],
     water_use: () => ['match', ['get', 'species_drought_tolerance'], ...WATER_USE_COLORS],
     shade: () => ['match', ['get', 'species_canopy_class'], ...SHADE_COLORS],
 }
@@ -561,7 +561,7 @@ function visualiseTreeData(mode) {
     if (mode === lastPaintMode) return
     lastPaintMode = mode
 
-    const DEFAULT_COLOR = '#16a34a'
+    const DEFAULT_COLOR = '#4A5568'
     const expr = paintByMode[mode]?.()
 
     const m = map.value

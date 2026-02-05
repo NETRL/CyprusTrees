@@ -71,11 +71,13 @@ Route::get('/map2', function (Request $request) {
     $requestedLat = $request->filled('lat') ? (float) $request->input('lat') : null;
     $requestedLon = $request->filled('lon') ? (float) $request->input('lon') : null;
 
+    $mode = $request->string('mode')->toString() ?: 'default';
+    $eventId = $request->filled('event_id') ? (int) $request->input('event_id') : null;
+
     $initialLocation = [
         'lat' => $requestedLat,
         'lon' => $requestedLon,
     ];
-
 
     return Inertia::render('Map/MapView', [
         'reportTypes' => ReportType::all(),
@@ -89,6 +91,8 @@ Route::get('/map2', function (Request $request) {
         'ownerType' => Tree::getOwnerTypeOptions(),
         'initialTreeId' => $initialTreeId,
         'initialLocation' => $initialLocation,
+        'mode' => $mode,
+        'eventId' => $eventId,
     ]);
 })->name('/map2');
 
