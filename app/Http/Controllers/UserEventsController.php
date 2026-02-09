@@ -136,7 +136,6 @@ class UserEventsController extends Controller
 
     private function getMaintenanceEventsForUser(int $userId, Carbon $now)
     {
-        // Maintenance schema has performed_at; we treat it as the event datetime.
         $items = MaintenanceEvent::query()
             ->with([
                 'tree:id,species_id,neighborhood_id,lat,lon,address',
@@ -145,11 +144,17 @@ class UserEventsController extends Controller
                 'type:type_id,name',
             ])
             ->where('performed_by', $userId)
-            ->orderBy('performed_at')
+            ->orderByRaw("COALESCE(performed_at, created_at) ASC")
             ->get();
 
         return $items->map(function (MaintenanceEvent $m) use ($now) {
-            $performedAt = $m->performed_at ? Carbon::parse($m->performed_at) : null;
+            // planned start (similar to planting's started_at/created_at fallback)
+            $start = $m->performed_at
+                ? Carbon::parse($m->performed_at)
+                : Carbon::parse($m->created_at);
+
+            // completion moment
+            $end = $m->completed_at ? Carbon::parse($m->completed_at) : null;
 
             $species = $m->tree?->species;
             $treeLabel = $species
@@ -157,21 +162,18 @@ class UserEventsController extends Controller
                 : 'Tree #' . $m->tree_id;
 
             $typeName = $m->type?->name ?? 'Maintenance';
-
             $title = $typeName . ' – ' . $treeLabel;
 
-            $whenText = $performedAt ? $this->formatPoint($performedAt) : null;
+            $whenText = $this->formatRange($start, $end);
 
             $locationText = $m->tree?->neighborhood?->name
                 ?? $m->tree?->address
                 ?? null;
 
-            // Infer maintenance "status"
-            $status = $performedAt
-                ? ($performedAt->lessThanOrEqualTo($now) ? 'completed' : 'scheduled')
-                : 'scheduled';
+            // Status derived from workflow, not from time
+            $status = $end ? 'completed' : 'scheduled';
 
-            $tab = $this->tabForMaintenance($status, $performedAt, $now);
+            $tab = $this->tabForMaintenance($status, $start, $end, $now);
 
             return [
                 'key' => 'maintenance:' . $m->event_id,
@@ -183,8 +185,8 @@ class UserEventsController extends Controller
                 'status' => $status,
                 'statusLabel' => $status === 'completed' ? 'Completed' : 'Scheduled',
 
-                'start' => $performedAt?->toIso8601String(),
-                'end' => null,
+                'start' => $start?->toIso8601String(),
+                'end' => $end?->toIso8601String(),
 
                 'whenText' => $whenText,
                 'locationText' => $locationText,
@@ -194,7 +196,7 @@ class UserEventsController extends Controller
 
                 'progressText' => null,
 
-                'isToday' => $performedAt ? $performedAt->isSameDay($now) : false,
+                'isToday' => $start ? $start->isSameDay($now) : false,
                 'isOverdue' => $tab === 'overdue',
 
                 'tab' => $tab,
@@ -211,7 +213,9 @@ class UserEventsController extends Controller
                     'search' => $m->event_id,
                 ]),
 
-                'actions' => [],
+                'actions' => ['complete'],
+                'completeUrl' => route('maintenanceEvents.complete', $m->event_id,),
+
 
                 'meta' => [
                     'event_id' => $m->event_id,
@@ -221,6 +225,7 @@ class UserEventsController extends Controller
             ];
         });
     }
+
 
     private function tabForPlanting(string $status, Carbon $start, ?Carbon $end, Carbon $now): string
     {
@@ -262,18 +267,17 @@ class UserEventsController extends Controller
         };
     }
 
-    private function tabForMaintenance(string $status, ?Carbon $at, Carbon $now): string
+    private function tabForMaintenance(string $status, Carbon $start, ?Carbon $end, Carbon $now): string
     {
-        if ($status === 'completed') return 'completed';
+        if ($status === 'completed' || $end) return 'completed';
 
-        if (!$at) return 'upcoming';
+        if ($start->isSameDay($now)) return 'today';
 
-        if ($at->isSameDay($now)) return 'today';
-
-        if ($at->lessThan($now->copy()->startOfDay())) return 'overdue';
+        if ($start->lessThan($now->copy()->startOfDay())) return 'overdue';
 
         return 'upcoming';
     }
+
 
     private function formatRange(Carbon $start, ?Carbon $end): string
     {

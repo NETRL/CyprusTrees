@@ -22,6 +22,7 @@ return new class extends Migration
             $table->foreignIdFor(User::class, 'performed_by')->nullable()->constrained();
 
             $table->timestamp('performed_at')->nullable();
+            $table->timestamp('completed_at')->nullable();
             $table->decimal('quantity', 10, 2)->nullable();
             $table->decimal('cost', 10, 2)->nullable();
             $table->text('notes')->nullable();

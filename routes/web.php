@@ -170,10 +170,9 @@ Route::middleware('auth', '2fa')->group(function () {
     Route::patch('/plantingEventTrees/{plantingEventTree}', [PlantingEventTreeController::class, 'update'])->name('plantingEventTrees.update');
     Route::delete('/plantingEventTrees/{plantingEventTree}', [PlantingEventTreeController::class, 'destroy'])->name('plantingEventTrees.destroy');
 
-
-
     Route::resource('maintenanceEvents', MaintenanceEventsController::class)->except(['create', 'edit']);
     Route::post('/maintenanceEvents/mass-destroy', [MaintenanceEventsController::class, 'massDestroy'])->name('maintenanceEvents.massDestroy');
+    Route::post('/maintenanceEvents/{maintenanceEvent}/complete', [MaintenanceEventsController::class, 'complete'])->name('maintenanceEvents.complete');
 
     Route::resource('maintenanceTypes', MaintenanceTypesController::class)->except(['create', 'edit']);
     Route::post('/maintenanceTypes/mass-destroy', [MaintenanceTypesController::class, 'massDestroy'])->name('maintenanceTypes.massDestroy');

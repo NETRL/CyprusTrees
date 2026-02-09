@@ -80,6 +80,7 @@ class MaintenanceEventsController extends Controller
             "type_id"       => 'required|integer|exists:maintenance_types,type_id',
             "performed_by"  => 'nullable|integer|exists:users,id',
             "performed_at"  => 'nullable|date',
+            "completed_at"  => 'nullable|date',
             "quantity"      => 'nullable|numeric|min:0',
             "cost"          => 'nullable|numeric|min:0',
             "notes"          => 'nullable|string|max:5000',
@@ -109,6 +110,7 @@ class MaintenanceEventsController extends Controller
             "type_id"       => 'required|integer|exists:maintenance_types,type_id',
             "performed_by"  => 'nullable|integer|exists:users,id',
             "performed_at"  => 'nullable|date',
+            "completed_at"  => 'nullable|date',
             "quantity"      => 'nullable|numeric|min:0',
             "cost"          => 'nullable|numeric|min:0',
             "notes"          => 'nullable|string|max:5000',
@@ -191,5 +193,17 @@ class MaintenanceEventsController extends Controller
         ]);
 
         return redirect()->route('maintenanceEvents.index');
+    }
+
+    public function complete(Request $request, MaintenanceEvent $maintenanceEvent)
+    {
+        $maintenanceEvent->update([
+            'completed_at' => now(),
+        ]);
+
+        return redirect()->back()->with('message', [
+            'type' => 'success',
+            'message' => __('Event has been completed.'),
+        ]);
     }
 }

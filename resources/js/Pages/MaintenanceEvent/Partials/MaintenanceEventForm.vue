@@ -14,7 +14,7 @@
                     label="Type" name="type_id" :options="typeOptions" optionLabel="label" optionValue="value" />
             </div>
             <!-- Performed By -->
-            <div class="col-span-6">
+            <div class="col-span-12">
                 <FormField component="Dropdown" filter v-model="formData.performed_by" :displayErrors="displayErrors"
                     label="Performed By" name="performed_by" :options="userOptions" optionLabel="label"
                     optionValue="value" />
@@ -23,6 +23,11 @@
             <div class="col-span-6">
                 <FormField component="Calendar" v-model="formData.performed_at" :displayErrors="displayErrors"
                     label="Performed At" name="performed_at" />
+            </div>
+            <!-- Completed At -->
+            <div class="col-span-6">
+                <FormField component="Calendar" v-model="formData.completed_at" :displayErrors="displayErrors"
+                    label="Completed At" name="completed_at" />
             </div>
             <!-- Quantity -->
             <div class="col-span-12">
@@ -128,6 +133,7 @@ const formData = reactive({
     type_id: null,
     performed_by: null,
     performed_at: new Date(),
+    completed_at: null,
     quantity: '',
     cost: '',
     notes: '',
@@ -150,6 +156,7 @@ const initForm = () => {
     formData.type_id = row?.type_id ?? null
     formData.performed_by = row?.performed_by ?? null
     formData.performed_at = parseDate(row?.performed_at)
+    formData.completed_at = parseDate(row?.completed_at)
     formData.quantity = row?.quantity ?? ''
     formData.cost = row?.cost ?? ''
     formData.notes = row?.notes ?? ''

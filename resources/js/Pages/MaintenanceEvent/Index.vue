@@ -47,6 +47,12 @@
             {{ formatDate(data.performed_at) }}
           </template>
         </Column>
+        <!-- Completed At-->
+        <Column v-if="isColumnVisible('completed_at')" field="completed_at" header="Completed At" sortable>
+          <template #body="{ data }">
+            {{ formatDate(data.completed_at) }}
+          </template>
+        </Column>
         <!-- Quantity-->
         <Column v-if="isColumnVisible('quantity')" field="quantity" header="Quantity" sortable>
           <template #body="{ data }">

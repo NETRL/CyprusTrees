@@ -21,6 +21,7 @@ class MaintenanceEvent extends Model
         'type_id',
         'performed_by',
         'performed_at',
+        'completed_at',
         'quantity',
         'cost',
         'notes',
@@ -33,6 +34,7 @@ class MaintenanceEvent extends Model
         'type_id',
         'performed_by',
         'performed_at',
+        'completed_at',
         'quantity',
         'cost',
         'notes',
@@ -62,6 +64,7 @@ class MaintenanceEvent extends Model
         'type_id',
         'performed_by',
         'performed_at',
+        'completed_at',
         'quantity',
         'cost',
         'notes',
@@ -70,6 +73,7 @@ class MaintenanceEvent extends Model
 
     protected array $dateFilterable = [
         'performed_at',
+        'completed_at',
     ];
 
     public static function relationships(): array
@@ -83,6 +87,7 @@ class MaintenanceEvent extends Model
 
     protected $casts = [
         'performed_at' => 'datetime',
+        'completed_at' => 'datetime',
         'quantity'     => 'float',
         'cost'         => 'float',
     ];
