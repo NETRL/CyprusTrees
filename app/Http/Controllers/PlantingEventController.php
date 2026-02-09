@@ -228,7 +228,34 @@ class PlantingEventController extends Controller
             'message' => __('Planting Events have been deleted.'),
         ]);
 
-        return redirect()->route('plantingEvents.index');
+        return redirect()->back();
+    }
+
+    public function start(Request $request, PlantingEvent $plantingEvent)
+    {
+        $plantingEvent->update([
+            'started_at' => now(),
+            'status' => 'in_progress',
+        ]);
+
+        return redirect()->back()->with('message', [
+            'type' => 'success',
+            'message' => __('Event has been stared.'),
+        ]);
+    }
+
+
+    public function complete(Request $request, PlantingEvent $plantingEvent)
+    {
+        $plantingEvent->update([
+            'completed_at' => now(),
+            'status' => 'completed',
+        ]);
+
+        return redirect()->back()->with('message', [
+            'type' => 'success',
+            'message' => __('Event has been completed.'),
+        ]);
     }
 
 

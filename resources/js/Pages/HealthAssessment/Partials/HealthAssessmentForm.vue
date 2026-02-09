@@ -6,7 +6,7 @@
             <!-- Tree -->
             <div class="col-span-12">
                 <FormField component="Dropdown" filter v-model="formData.tree_id" :displayErrors="displayErrors"
-                    label="Name" name="tree_id" :options="treeOptions" optionLabel="label" optionValue="value" />
+                    label="Tree" name="tree_id" :options="treeOptions" optionLabel="label" optionValue="value" />
             </div>
             <!-- Assessed By -->
             <div class="col-span-6">

@@ -164,6 +164,8 @@ Route::middleware('auth', '2fa')->group(function () {
         ->group(function () {
             Route::post('/trees', [PlantingEventTreeController::class, 'store'])->name('plantingEventTrees.store');
             Route::post('/photos', [PlantingEventController::class, 'storePhoto'])->name('plantingEvents.photos.store');
+            Route::post('/complete', [PlantingEventController::class, 'complete'])->name('plantingEvents.complete');
+            Route::post('/start', [PlantingEventController::class, 'start'])->name('plantingEvents.start');
         });
     Route::patch('/plantingEventTrees/{plantingEventTree}', [PlantingEventTreeController::class, 'update'])->name('plantingEventTrees.update');
     Route::delete('/plantingEventTrees/{plantingEventTree}', [PlantingEventTreeController::class, 'destroy'])->name('plantingEventTrees.destroy');

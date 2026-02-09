@@ -107,7 +107,6 @@ class UserEventsController extends Controller
 
                 'tab' => $tab,
 
-                // Open map in Event Mode TODO// (finalize param names)
                 'mapUrl' => route('/', [
                     'mode' => 'planting',
                     'event_id' => $e->planting_id,
@@ -122,9 +121,8 @@ class UserEventsController extends Controller
 
                 'actions' => $actions,
 
-                // TODO implement endpoints later??
-                // 'startUrl' => route('plantingEvents.start', $e->planting_id),
-                // 'completeUrl' => route('plantingEvents.complete', $e->planting_id),
+                'startUrl' => route('plantingEvents.start', $e->planting_id),
+                'completeUrl' => route('plantingEvents.complete', $e->planting_id,),
 
                 'meta' => [
                     'planting_id' => $e->planting_id,

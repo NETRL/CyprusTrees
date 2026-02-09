@@ -241,7 +241,6 @@ function openMap(ev) {
     return;
   }
 
-  // last fallback: just go home
   router.visit(route("/"));
 }
 
