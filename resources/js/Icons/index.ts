@@ -67,7 +67,8 @@ import HealthAssessmentIcon from "./HealthAssessmentIcon.vue";
 import ReportsIcon from "./ReportsIcon.vue";
 import ReportTypeIcon from "./ReportTypeIcon.vue";
 import CitizenReportIcon from "./CitizenReportIcon.vue";
-
+import OrganizationIcon from "./OrganizationIcon.vue";
+import LayerIcon from "./LayerIcon.vue";
 
 
 
@@ -141,4 +142,6 @@ export {
   CitizenReportIcon,
   ReportTypeIcon,
   ReportsIcon,
+  OrganizationIcon,
+  LayerIcon,
 };

@@ -80,7 +80,7 @@
                 <Button v-if="activeFiltersCount > 0" label="Clear" icon="pi pi-filter-slash" text severity="secondary"
                   outlined size="small" @click="clearFilters" />
 
-                <Button icon="pi pi-filter" severity="secondary" outlined @click="toggleFilters"
+                <Button v-if="showDateFilter" icon="pi pi-filter" severity="secondary" outlined @click="toggleFilters"
                   :badge="activeFiltersCount > 0 ? String(activeFiltersCount) : null" badgeClass="p-badge-secondary" />
               </div>
             </div>
@@ -92,7 +92,7 @@
             </div> -->
 
             <Transition name="p-connected-overlay">
-              <div v-if="showFilters"
+              <div v-if="showFilters && showDateFilter"
                 class="rounded-xl border border-slate-200 bg-slate-50/50 p-4 dark:border-gray-800 dark:bg-white/1">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
 

@@ -681,6 +681,42 @@ class RolePermissionSeeder extends Seeder
             'description' => 'Can delete reportTypes.',
             'parent_id'   => $reportTypes->id
         ]);
+        
+        $gisLayers = Permission::firstOrCreate([
+            'name'       => 'gisLayers',
+            'group_name' => 'gisLayers'
+        ]);
+
+        Permission::firstOrCreate([
+            'name'        => 'gisLayers.view',
+            'group_name'  => 'gisLayers',
+            'description' => 'Can view gisLayers.',
+            'parent_id'   => $gisLayers->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'gisLayers.edit',
+            'group_name'  => 'gisLayers',
+            'description' => 'Can edit existing gisLayers.',
+            'parent_id'   => $gisLayers->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'gisLayers.create',
+            'group_name'  => 'gisLayers',
+            'description' => 'Can create new gisLayers.',
+            'parent_id'   => $gisLayers->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'gisLayers.delete',
+            'group_name'  => 'gisLayers',
+            'description' => 'Can delete gisLayers.',
+            'parent_id'   => $gisLayers->id
+        ]);
+        Permission::firstOrCreate([
+            'name'        => 'gisLayers.import',
+            'group_name'  => 'gisLayers',
+            'description' => 'Can import gisLayers.',
+            'parent_id'   => $gisLayers->id
+        ]);
 
         // // log permissions
         // $logs = Permission::firstOrCreate([
@@ -715,6 +751,8 @@ class RolePermissionSeeder extends Seeder
         $admin->givePermissionTo([$maintenanceEvents->children]);
         $admin->givePermissionTo([$maintenanceTypes->children]);
         $admin->givePermissionTo([$calendar->children]);
+        $admin->givePermissionTo([$administration->children]);
+        $admin->givePermissionTo([$gisLayers->children]);
 
 
         app()[PermissionRegistrar::class]->forgetCachedPermissions();

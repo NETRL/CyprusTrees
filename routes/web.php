@@ -7,6 +7,9 @@ use App\Http\Controllers\Dashboard\PermissionController;
 use App\Http\Controllers\Dashboard\RoleController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Gis\GisLayersCrudController;
+use App\Http\Controllers\Gis\GisLayersController;
+use App\Http\Controllers\Gis\GisRevisionsController;
 use App\Http\Controllers\HealthAssessmentController;
 use App\Http\Controllers\MaintenanceEventsController;
 use App\Http\Controllers\MaintenanceTypesController;
@@ -189,6 +192,24 @@ Route::middleware('auth', '2fa')->group(function () {
     Route::resource('calendar', CalendarController::class)->except(['create', 'edit', 'show']);
     Route::get('/calendar/events', [CalendarController::class, 'getEvents'])
         ->name('calendar.events');
+
+    Route::prefix('gisLayers')->name('gisLayers.')->group(function () {
+        // Crud
+        Route::get('/', [GisLayersCrudController::class, 'index'])->name('index');
+        // Route::get('/create', [GisLayersCrudController::class, 'create'])->name('create');
+        Route::post('/', [GisLayersCrudController::class, 'store'])->name('store');
+        // Route::get('/{layer}/edit', [GisLayersCrudController::class, 'edit'])->name('edit');
+        Route::patch('/{layer}', [GisLayersCrudController::class, 'update'])->name('update');
+        Route::delete('/{layer}', [GisLayersCrudController::class, 'destroy'])->name('destroy');
+
+        // Data Import
+        Route::get('/data', [GisLayersController::class, 'index'])->name('data.index');
+        Route::post('/{layer}/revisions', [GisRevisionsController::class, 'store'])->name('revisions.store');
+        Route::patch('/{layer}/revisions/{revision}/included', [GisRevisionsController::class, 'toggleIncluded'])->name('revisions.included');
+        Route::post('/{layer}/revisions/{revision}/activate-replace', [GisRevisionsController::class, 'activateReplace'])->name('revisions.activateReplace');
+        Route::post('/{layer}/revisions/{revision}/archive', [GisRevisionsController::class, 'archive'])->name('revisions.archive');
+        Route::delete('/{layer}/revisions/{revision}', [GisRevisionsController::class, 'purge'])->name('revisions.purge');
+    });
 });
 
 require __DIR__ . '/auth.php';

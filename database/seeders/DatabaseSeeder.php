@@ -45,5 +45,7 @@ class DatabaseSeeder extends Seeder
             MaintenanceEventsTableSeeder::class,
             HealthAssessmentsTableSeeder::class,
         ]);
+        
+        $this->call(GisLayersSeeder::class);
     }
 }

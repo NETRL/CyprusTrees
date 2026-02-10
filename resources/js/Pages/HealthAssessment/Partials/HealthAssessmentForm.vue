@@ -59,34 +59,13 @@ import { useTreeOptions } from '@/Composables/useTreeOptions'
 
 // props & emits
 const props = defineProps({
-    visible: {
-        type: Boolean,
-        default: false,
-    },
-    dataRow: {
-        type: Object,
-        default: null,
-    },
-    action: {
-        type: String,
-        default: '',
-    },
-    routeResource: {
-        type: String,
-        required: true,
-    },
-    trees: {
-        type: Array,
-        default: () => [],
-    },
-    users: {
-        type: Array,
-        default: () => [],
-    },
-    healthStatus: {
-        type: Array,
-        default: () => []
-    },
+    visible: { type: Boolean, default: false, },
+    dataRow: { type: Object, default: null, },
+    action: { type: String, default: '', },
+    routeResource: { type: String, required: true, },
+    trees: { type: Array, default: () => [], },
+    users: { type: Array, default: () => [], },
+    healthStatus: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['update:visible'])

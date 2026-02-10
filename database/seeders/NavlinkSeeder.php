@@ -257,7 +257,34 @@ class NavlinkSeeder extends Seeder
                 'route_name'  => 'reportTypes.index'
             ]
         );
-
+        $infrastructure = $this->createOrUpdateNavlink(
+            ['key' => 'infrastructure'],
+            [
+                'name'        => 'Infrastructure',
+                'permissions' => 'gisLayers.view',
+                'icon'        => 'OrganizationIcon',
+            ]
+        );
+        $this->createOrUpdateNavlink(
+            ['key' => 'infrastructure-gisLayers'],
+            [
+                'name'        => 'Data import',
+                'permissions' => 'gisLayers.import',
+                'icon'        => 'pi pi-file-import',
+                'parent_id'   => $infrastructure->id,
+                'route_name'  => 'gisLayers.data.index'
+            ]
+        );
+        $this->createOrUpdateNavlink(
+            ['key' => 'infrastructure-manageLayers'],
+            [
+                'name'        => 'Manage Layers',
+                'permissions' => 'gisLayers.view',
+                'icon'        => 'LayerIcon',
+                'parent_id'   => $infrastructure->id,
+                'route_name'  => 'gisLayers.index'
+            ]
+        );
 
 
         // $this->createOrUpdateNavlink([
