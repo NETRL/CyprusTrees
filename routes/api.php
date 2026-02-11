@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\GisLayerApiController;
 use App\Http\Controllers\Api\NeighborhoodGeoController;
 use App\Http\Controllers\Api\TreesGeoController;
 use App\Http\Controllers\EventsGeoController;
@@ -26,3 +27,8 @@ Route::middleware('throttle:60,1')->get('/geocode/reverse', [GeocodeController::
 Route::get('/geocode/search', [GeocodeController::class, 'search'])->middleware('throttle:30,1')->name('api.geocode.search');
 
 Route::get('events/planting/{planting_id}', [EventsGeoController::class, 'showPlanting']);
+
+Route::prefix('gis-map')->group(function () {
+    Route::get('/layers', [GisLayerApiController::class, 'layers']); // list layers for map control
+    Route::get('/layers/{key}/features', [GisLayerApiController::class, 'features']); // geojson for a layer
+});

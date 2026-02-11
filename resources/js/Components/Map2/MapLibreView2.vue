@@ -31,7 +31,7 @@
                         <span v-if="activeEvent">
                             Trees: {{ activeEvent.event_trees_count ?? 0 }}
                             <template v-if="activeEvent.target_tree_count">/ {{ activeEvent.target_tree_count
-                                }}</template>
+                            }}</template>
                         </span>
                         <span v-if="activeEvent?.neighborhood?.name"> • {{ activeEvent.neighborhood.name }}</span>
                         <span v-if="activeEvent?.campaign?.name"> • {{ activeEvent.campaign.name }}</span>
@@ -118,6 +118,7 @@ import { useRealTimePosition } from '@/Lib/Map/useRealTimePosition'
 import { LocateFixed, Crosshair, Loader2 } from 'lucide-vue-next'
 import { storeNewTree } from '@/Lib/Map/LongClickFunctions'
 import { usePermissions } from '@/Composables/usePermissions'
+import { GisDataLayerManager } from '@/Lib/Map/GisDataLayerManager'
 
 import mitt from 'mitt'
 import { router } from '@inertiajs/vue3'
@@ -159,6 +160,7 @@ const pinClickFlag = ref(0)
 let longPressCtl = null
 let treeLayerApi = null
 let neighLayerApi = null
+let gisMgr = null
 
 const { selectedFilter } = useMapFilter()
 const { STATUS_COLORS, WATER_USE_COLORS, SHADE_COLORS, ORIGIN_COLORS, POLLEN_RISK_COLORS } = useMapColors()
@@ -296,6 +298,16 @@ onMounted(async () => {
             vectorStyles: CUSTOM_VECTOR_STYLES,
         })
 
+        gisMgr = new GisDataLayerManager(m, {
+            baseUrl: "/api/gis-map",
+            controlPosition: "top-right",
+            defaultVisibleKeys: [],     // optionally: ["irrigation_lines"]
+            fetchBbox: true,
+            reloadOnMoveEnd: false,     // turn on if you want dynamic refetch
+        })
+
+        await gisMgr.init()
+
         const [neighApi, treesApi] = await Promise.all([
             loadNeighborhoodsLayer(m, {
                 onDataLoaded: (data) => { neighborhoodData.value = data },
@@ -322,6 +334,7 @@ onMounted(async () => {
         if (props.initialTreeId) {
             treesApi.selectTreeById(props.initialTreeId)
         }
+
 
         // centered state initial
         isCentered.value = computeCentered()
@@ -553,11 +566,33 @@ function distanceMeters([lng1, lat1], [lng2, lat2]) {
 
 // -------- VISUALIZATION / FILTERING ----------
 let lastPaintMode = null
+const DEFAULT_COLOR = '#4A5568';
+const TREE_POINT_LAYERS = [
+    'trees-pin-bg',
+    'trees-selection-pulse',
+    'trees-selection-ring',
+    'trees-hover-ring',
+    'trees-circle-halo',
+    'trees-circle',
+];
+
+function setTreePointFilter(m, extraFilter /* can be null */) {
+    // base condition: only non-cluster points
+    const base = ['!', ['has', 'point_count']];
+
+    // combine base + optional extra
+    const combined = extraFilter ? ['all', base, extraFilter] : base;
+
+    for (const id of TREE_POINT_LAYERS) {
+        if (m.getLayer(id)) m.setFilter(id, combined);
+    }
+}
+
 
 const paintByMode = {
     status: () => ['match', ['get', 'status'], ...STATUS_COLORS],
     origin: () => ['match', ['get', 'species_origin'], ...ORIGIN_COLORS],
-    pollen_risk: () => ['step', ['get', 'calculated_pollen_risk'], '#4A5568', ...POLLEN_RISK_COLORS],
+    pollen_risk: () => ['step', ['get', 'calculated_pollen_risk'], ...POLLEN_RISK_COLORS],
     water_use: () => ['match', ['get', 'species_drought_tolerance'], ...WATER_USE_COLORS],
     shade: () => ['match', ['get', 'species_canopy_class'], ...SHADE_COLORS],
 }
@@ -566,7 +601,6 @@ function visualiseTreeData(mode) {
     if (mode === lastPaintMode) return
     lastPaintMode = mode
 
-    const DEFAULT_COLOR = '#4A5568'
     const expr = paintByMode[mode]?.()
 
     const m = map.value
@@ -575,48 +609,87 @@ function visualiseTreeData(mode) {
 }
 
 // small cache to avoid re-allocating identical filters for same hidden set
-const filterCache = new Map()
+const filterCache = new Map();
 
 function applyVisibility(mode = selectedFilter.value) {
-    const m = map.value
-    if (!m || !hasTreesLayer(m)) return
+    const m = map.value;
+    if (!m || !hasTreesLayer(m)) return;
 
-    const propName = modeToPropName[mode]
-    if (!propName) return m.setFilter('trees-circle', null)
+    const propName = modeToPropName[mode];
 
-    const set = hiddenCategories.value[mode]
-    const hidden = set ? Array.from(set) : []
-    if (!hidden.length) return m.setFilter('trees-circle', null)
-
-    hidden.sort()
-    const cacheKey = `${mode}:${hidden.join('|')}`
-    let filter = filterCache.get(cacheKey)
-    if (!filter) {
-        filter = ['!', ['in', ['get', propName], ['literal', hidden]]]
-        filterCache.set(cacheKey, filter)
+    // If mode has no prop mapping, show all points (still non-cluster)
+    if (!propName) {
+        setTreePointFilter(m, null);
+        return;
     }
-    m.setFilter('trees-circle', filter)
+
+    const set = hiddenCategories.value[mode];
+    const predicate = makePredicateFromHidden(mode, set, modeToPropName);
+    treeLayerApi?.setTreesDataFiltered(predicate);
+    const hidden = set ? Array.from(set) : [];
+
+    // Nothing hidden => show all points
+    if (!hidden.length) {
+        setTreePointFilter(m, null);
+        return;
+    }
+
+    hidden.sort();
+    const cacheKey = `${mode}:${hidden.join('|')}`;
+
+    let extra = filterCache.get(cacheKey);
+    if (!extra) {
+        // Keep features that:
+        // - do NOT have the property (don’t accidentally hide “unknowns”), OR
+        // - have the property and it is NOT in the hidden list
+        extra = [
+            'any',
+            ['!', ['has', propName]],
+            ['!', ['in', ['get', propName], ['literal', hidden]]],
+        ];
+        filterCache.set(cacheKey, extra);
+    }
+
+    setTreePointFilter(m, extra);
 }
+
 
 function onToggleCategory({ mode, key }) {
-    const hc = hiddenCategories.value
-    const currentSet = hc[mode] ?? (hc[mode] = new Set())
+    const hc = hiddenCategories.value ?? {};
+    const currentSet = hc[mode] instanceof Set ? hc[mode] : new Set();
 
     if (key === 'all') {
-        const allKeys = CATEGORY_KEYS[mode] || []
-        const anyHidden = currentSet.size > 0
-        const next = new Set()
-        if (!anyHidden) allKeys.forEach(k => next.add(k))
-        hc[mode] = next
-        applyVisibility(mode)
-        return
+        const allKeys = CATEGORY_KEYS[mode] || [];
+        const anyHidden = currentSet.size > 0;
+
+        const next = new Set();
+        if (!anyHidden) allKeys.forEach(k => next.add(k));
+
+        hiddenCategories.value = { ...hc, [mode]: next };
+        applyVisibility(mode);
+        return;
     }
 
-    const next = new Set(currentSet)
-    next.has(key) ? next.delete(key) : next.add(key)
-    hc[mode] = next
-    applyVisibility(mode)
+    const next = new Set(currentSet);
+    next.has(key) ? next.delete(key) : next.add(key);
+
+    hiddenCategories.value = { ...hc, [mode]: next };
+    applyVisibility(mode);
 }
+
+function makePredicateFromHidden(mode, hiddenSet, modeToPropName) {
+    const prop = modeToPropName[mode];
+    if (!prop || !hiddenSet || hiddenSet.size === 0) return () => true;
+
+    return (f) => {
+        const v = f?.properties?.[prop];
+        // keep “unknown/missing” unless you explicitly want to hide it
+        if (v == null) return true;
+        return !hiddenSet.has(v);
+    };
+}
+
+
 
 // -------- CRUD hooks ----------
 function onClearSelection() {

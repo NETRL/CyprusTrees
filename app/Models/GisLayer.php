@@ -82,7 +82,9 @@ class GisLayer extends Model
         return $this->revisions()
             ->where('status', 'completed')
             ->where('is_included', true)
-            ->whereNull('deleted_at');
+            ->where('features_imported', '>', 0)
+            ->orderByDesc('revision_no')
+            ->orderByDesc('id');
     }
 
     public function activeRevision(): BelongsTo

@@ -751,7 +751,6 @@ class RolePermissionSeeder extends Seeder
         $admin->givePermissionTo([$maintenanceEvents->children]);
         $admin->givePermissionTo([$maintenanceTypes->children]);
         $admin->givePermissionTo([$calendar->children]);
-        $admin->givePermissionTo([$administration->children]);
         $admin->givePermissionTo([$gisLayers->children]);
 
 

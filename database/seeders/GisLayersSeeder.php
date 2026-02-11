@@ -20,22 +20,7 @@ class GisLayersSeeder extends Seeder
                 'is_editable' => false,
                 'is_active' => true,
                 'metadata' => [
-                    'style' => [
-                        'type' => 'line',
-                        'paint' => [
-                            'line-width' => 2,
-                            'line-opacity' => 0.9,
-                        ],
-                        'layout' => [
-                            'line-cap' => 'round',
-                            'line-join' => 'round',
-                        ],
-                    ],
-                    'popup' => [
-                        'titleField' => 'name',
-                        'fields' => ['type', 'diameter', 'material', 'status'],
-                    ],
-                    'notes' => 'Imported from field surveys; append new surveys over time.',
+                    'color' => "#1E88E5",
                 ],
             ],
             [
@@ -48,17 +33,7 @@ class GisLayersSeeder extends Seeder
                 'is_editable' => false,
                 'is_active' => true,
                 'metadata' => [
-                    'style' => [
-                        'type' => 'circle',
-                        'paint' => [
-                            'circle-radius' => 5,
-                            'circle-opacity' => 0.9,
-                        ],
-                    ],
-                    'popup' => [
-                        'titleField' => 'name',
-                        'fields' => ['type', 'status'],
-                    ],
+                    'color' => "#1565C0",
                 ],
             ],
             [
@@ -71,17 +46,7 @@ class GisLayersSeeder extends Seeder
                 'is_editable' => false,
                 'is_active' => true,
                 'metadata' => [
-                    'style' => [
-                        'type' => 'fill',
-                        'paint' => [
-                            'fill-opacity' => 0.35,
-                        ],
-                    ],
-                    'popup' => [
-                        'titleField' => 'name',
-                        'fields' => ['type', 'area_m2'],
-                    ],
-                    'notes' => 'Usually maintained as a snapshot (replace) when official boundaries are updated.',
+                    'color' => "#66BB6A",
                 ],
             ],
             [
@@ -94,16 +59,7 @@ class GisLayersSeeder extends Seeder
                 'is_editable' => false,
                 'is_active' => true,
                 'metadata' => [
-                    'style' => [
-                        'type' => 'fill',
-                        'paint' => [
-                            'fill-opacity' => 0.35,
-                        ],
-                    ],
-                    'popup' => [
-                        'titleField' => 'name',
-                        'fields' => ['type', 'surface', 'status'],
-                    ],
+                    'color' => "#FFA726",
                 ],
             ],
             [
@@ -116,16 +72,7 @@ class GisLayersSeeder extends Seeder
                 'is_editable' => false,
                 'is_active' => true,
                 'metadata' => [
-                    'style' => [
-                        'type' => 'fill',
-                        'paint' => [
-                            'fill-opacity' => 0.25,
-                        ],
-                    ],
-                    'popup' => [
-                        'titleField' => 'name',
-                        'fields' => ['type', 'area_m2'],
-                    ],
+                    'color' => "#2E7D32",
                 ],
             ],
             [
@@ -138,21 +85,7 @@ class GisLayersSeeder extends Seeder
                 'is_editable' => false,
                 'is_active' => true,
                 'metadata' => [
-                    'style' => [
-                        'type' => 'line',
-                        'paint' => [
-                            'line-width' => 2,
-                            'line-opacity' => 0.8,
-                        ],
-                        'layout' => [
-                            'line-cap' => 'round',
-                            'line-join' => 'round',
-                        ],
-                    ],
-                    'popup' => [
-                        'titleField' => 'name',
-                        'fields' => ['type', 'surface', 'status'],
-                    ],
+                    'color' => "#8D6E63",
                 ],
             ],
         ];

@@ -68,11 +68,6 @@ function preprocessTreesGeojson(data) {
   return data;
 }
 
-// Store the raster size as a constant so offsets can reference it
-const PIN_RASTER_SIZE = 56;
-const PIN_COLOR = '#000'
-const PIN_HOVER_COLOR = '#009966'
-const PIN_SELECT_COLOR = '#009966'
 
 export async function loadTreesLayer(mapInstance, {
   onDataLoaded,
@@ -90,18 +85,31 @@ export async function loadTreesLayer(mapInstance, {
   const data = preprocessTreesGeojson(dataRaw);
   let currentData = data;
 
-  // await loadSvgAsSdfImage(mapInstance, 'pin-bg', '/icons/pin-bg.svg', PIN_RASTER_SIZE);
-  // await loadSvgAsSdfImage(mapInstance, 'tree-foliage', '/icons/tree-foliage.svg', PIN_RASTER_SIZE);
-
   const interactionsAllowed = () => (isInteractionEnabled ? !!isInteractionEnabled() : true);
 
   onDataLoaded?.(data);
 
   function setTreesData(newData) {
-    currentData = preprocessTreesGeojson(newData);
+    data = preprocessTreesGeojson(newData);
+    currentData = data
     const src = mapInstance.getSource('trees');
     if (src) src.setData(currentData);
     clearSelection(); // feature-state ids may become invalid after refresh
+  }
+
+  function setTreesDataFiltered(predicateFn) {
+    // predicateFn(feature) => true to keep
+    const filtered = {
+      ...data,
+      features: (data.features || []).filter(predicateFn),
+    };
+
+    currentData = filtered;
+
+    const src = mapInstance.getSource('trees');
+    if (src) src.setData(currentData);
+
+    clearSelection();
   }
 
   // If source exists, just update and return controls
@@ -633,6 +641,7 @@ export async function loadTreesLayer(mapInstance, {
     selectTreeById,
     clearSelection,
     setTreesData,
+    setTreesDataFiltered,
   };
 }
 
