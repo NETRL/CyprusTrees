@@ -13,7 +13,7 @@ export class BaseMapControl {
         this._map = map;
 
         const container = document.createElement("div");
-        container.className = "maplibregl-ctrl";
+        container.className = "maplibregl-ctrl z-40";
         container.style.position = "relative";
 
         const previewBox = document.createElement("button");
@@ -22,7 +22,7 @@ export class BaseMapControl {
             "basemap-preview relative w-16 h-16 rounded-xl overflow-hidden cursor-pointer " +
             "border-2 border-white dark:border-brand-700 " +
             "shadow-md hover:shadow-xl hover:scale-105 transition-all duration-100 ease-out " +
-            "focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900";
+            "focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 z-50";
 
         previewBox.setAttribute("aria-label", "Change map style");
 

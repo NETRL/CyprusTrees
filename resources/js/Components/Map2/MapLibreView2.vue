@@ -31,7 +31,7 @@
                         <span v-if="activeEvent">
                             Trees: {{ activeEvent.event_trees_count ?? 0 }}
                             <template v-if="activeEvent.target_tree_count">/ {{ activeEvent.target_tree_count
-                            }}</template>
+                                }}</template>
                         </span>
                         <span v-if="activeEvent?.neighborhood?.name"> • {{ activeEvent.neighborhood.name }}</span>
                         <span v-if="activeEvent?.campaign?.name"> • {{ activeEvent.campaign.name }}</span>
@@ -293,11 +293,6 @@ onMounted(async () => {
             onPinClick: () => { pinClickFlag.value++ },
         })
 
-        setupBaseLayers(m, {
-            maptilerKey: MAPTILER_KEY,
-            vectorStyles: CUSTOM_VECTOR_STYLES,
-        })
-
         gisMgr = new GisDataLayerManager(m, {
             baseUrl: "/api/gis-map",
             controlPosition: "top-right",
@@ -307,6 +302,13 @@ onMounted(async () => {
         })
 
         await gisMgr.init()
+
+        setupBaseLayers(m, {
+            maptilerKey: MAPTILER_KEY,
+            vectorStyles: CUSTOM_VECTOR_STYLES,
+        })
+
+
 
         const [neighApi, treesApi] = await Promise.all([
             loadNeighborhoodsLayer(m, {

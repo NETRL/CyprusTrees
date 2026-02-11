@@ -1,4 +1,4 @@
-import { BaseMapControl } from '@/Lib/Map/BaseMapControl'
+import { BaseMapControl } from '@/Lib/Map/Controls/BaseMapControl'
 
 export async function setupBaseLayers(map, { maptilerKey, vectorStyles = [] }) {
 
