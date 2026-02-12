@@ -156,7 +156,7 @@ export class GisLayersControl {
                   type="checkbox" 
                   data-layer-key="${l.key}" 
                   ${checked} 
-                  class="peer h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  class="peer h-4 w-4 rounded bg-white! dark:bg-white! border-gray-300 text-brand-600 focus:ring-brand-500 cursor-pointer"
                 />
               </div>
 

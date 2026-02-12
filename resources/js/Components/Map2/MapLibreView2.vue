@@ -298,7 +298,7 @@ onMounted(async () => {
             controlPosition: "top-right",
             defaultVisibleKeys: [],     // optionally: ["irrigation_lines"]
             fetchBbox: true,
-            reloadOnMoveEnd: false,     // turn on if you want dynamic refetch
+            reloadOnMoveEnd: false,     // turn on for dynamic refetch
         })
 
         await gisMgr.init()

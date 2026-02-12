@@ -21,7 +21,7 @@ export class BaseMapControl {
         previewBox.type = "button";
         previewBox.className =
             "basemap-preview relative w-14 h-14 rounded-xl overflow-hidden cursor-pointer " +
-            "border-2 border-white dark:border-gray-800 shadow-lg " +
+            "border-2 border-white dark:border-brand-700 shadow-lg " +
             "hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 ease-out " +
             "focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900";
         previewBox.setAttribute("aria-label", "Change map style");

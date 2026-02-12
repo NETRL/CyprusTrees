@@ -129,9 +129,9 @@ export async function loadTreesLayer(mapInstance, {
     clusterMaxZoom: 15
   });
 
-  mapInstance.on('zoom', () => {
-    console.log('Zoom:', mapInstance.getZoom().toFixed(2));
-  });
+  // mapInstance.on('zoom', () => {
+  //   console.log('Zoom:', mapInstance.getZoom().toFixed(2));
+  // });
 
   mapInstance.addLayer({
     id: 'trees-cluster-shadow',
@@ -161,7 +161,7 @@ export async function loadTreesLayer(mapInstance, {
     filter: ['has', 'point_count'],
     paint: {
       'circle-color': '#2D3748',
-      'circle-opacity': 0.85,
+      'circle-opacity': 0.85, //0.85
       'circle-radius': [
         'step',
         ['get', 'point_count'],
