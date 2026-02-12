@@ -27,7 +27,7 @@
 
         <!-- FAB Toggle Button -->
         <button v-if="showFab && currentState === 'closed'" @click="goMid"
-            class="fixed right-2 bottom-20 z-30 grid h-8.5 w-8.5 place-items-center rounded-md bg-white/90 hover:bg-gray-100 shadow ring-1 ring-slate-200 backdrop-blur dark:bg-slate-900/90 dark:ring-slate-700 transition-colors group">
+            class="fixed right-2 bottom-18 z-30 grid h-8.5 w-8.5 place-items-center rounded-md bg-white/90 hover:bg-gray-100 shadow ring-1 ring-slate-200 backdrop-blur dark:bg-slate-900/90 dark:ring-slate-700 transition-colors group">
             <i :class="[' group-hover:rotate-25 transition-all duration-300 ease-in-out', fabIcon]"></i>
         </button>
     </div>

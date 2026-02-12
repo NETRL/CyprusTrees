@@ -1,4 +1,4 @@
-import { onBeforeUnmount, ref } from 'vue'
+import { onBeforeUnmount, ref, watch } from 'vue'
 
 export function useRealTimePosition(mapRef, opts = {}) {
   const options = {
@@ -27,7 +27,7 @@ export function useRealTimePosition(mapRef, opts = {}) {
     headingSmoothing: 0.15, // 0..1 (higher = more responsive)
     autoAddLayers: true,
     recenterOnFirstFix: true,
-    recenterZoom: null, // keep current zoom if null
+    recenterZoom: null,
 
     ...opts,
   }
@@ -43,39 +43,39 @@ export function useRealTimePosition(mapRef, opts = {}) {
   let orientationListening = false
   let recentered = false
   let currentHeadingSmoothed = null
+  let styleLoadBound = false
+
+  // Keep FC as the source of truth (no private src._data reads).
+  const fcRef = ref(makeInitialFC())
 
   function getMap() {
     return mapRef?.value ?? mapRef
   }
 
-  function ensureSourceAndLayers() {
+  function isStyleReady(map) {
+    // MapLibre has isStyleLoaded(); if not, be conservative.
+    return !!map && (typeof map.isStyleLoaded !== 'function' || map.isStyleLoaded())
+  }
+
+  function safeEnsureSourceAndLayers() {
     const map = getMap()
     if (!map) return
+    if (!isStyleReady(map)) return
 
-    // If style reloads, sources/layers are lost. This must be re-run on 'style.load'.
+    // Source
     if (!map.getSource(options.sourceId)) {
       map.addSource(options.sourceId, {
         type: 'geojson',
-        data: {
-          type: 'FeatureCollection',
-          features: [
-            {
-              type: 'Feature',
-              properties: { kind: options.posKind, acc: 0 },
-              geometry: { type: 'Point', coordinates: [0, 0] },
-            },
-            {
-              type: 'Feature',
-              properties: { kind: options.coneKind },
-              geometry: { type: 'Polygon', coordinates: [[[0, 0], [0, 0], [0, 0], [0, 0]]] },
-            },
-          ],
-        },
+        data: fcRef.value,
       })
+    } else {
+      // Make sure the map's source has the latest FC after style swaps.
+      map.getSource(options.sourceId).setData(fcRef.value)
     }
 
     if (!options.autoAddLayers) return
 
+    // Accuracy circle
     if (!map.getLayer(options.accuracyLayerId)) {
       map.addLayer({
         id: options.accuracyLayerId,
@@ -84,7 +84,6 @@ export function useRealTimePosition(mapRef, opts = {}) {
         filter: ['==', ['get', 'kind'], options.posKind],
         paint: {
           'circle-opacity': options.accuracyOpacity,
-          // simple zoom-aware visualization of accuracy (not meter-perfect)
           'circle-radius': [
             'interpolate',
             ['linear'],
@@ -98,6 +97,7 @@ export function useRealTimePosition(mapRef, opts = {}) {
       })
     }
 
+    // Dot
     if (!map.getLayer(options.dotLayerId)) {
       map.addLayer({
         id: options.dotLayerId,
@@ -112,6 +112,7 @@ export function useRealTimePosition(mapRef, opts = {}) {
       })
     }
 
+    // Heading cone
     if (!map.getLayer(options.coneLayerId)) {
       map.addLayer({
         id: options.coneLayerId,
@@ -123,36 +124,34 @@ export function useRealTimePosition(mapRef, opts = {}) {
     }
   }
 
-  function getSourceData() {
+  function syncSourceData() {
     const map = getMap()
-    const src = map?.getSource(options.sourceId)
-    if (!src) return null
-
-    // MapLibre stores the geojson on a private field; different versions differ slightly.
-    // We keep it robust by reading from known fields and falling back safely.
-    return src._data ?? src._options?.data ?? null
-  }
-
-  function setSourceData(fc) {
-    const map = getMap()
-    const src = map?.getSource(options.sourceId)
+    const src = map?.getSource?.(options.sourceId)
     if (!src) return
-    src.setData(fc)
+    src.setData(fcRef.value)
   }
 
-  function cloneGeoJSON(data) {
-    // Use JSON parse/stringify instead of structuredClone to avoid proxy cloning issues
-    return JSON.parse(JSON.stringify(data))
+  function makeInitialFC() {
+    return {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          properties: { kind: options.posKind, acc: 0 },
+          geometry: { type: 'Point', coordinates: [0, 0] },
+        },
+        {
+          type: 'Feature',
+          properties: { kind: options.coneKind },
+          geometry: { type: 'Polygon', coordinates: [[[0, 0], [0, 0], [0, 0], [0, 0]]] },
+        },
+      ],
+    }
   }
 
   function updateUserPosition([lng, lat], accuracyM = 0) {
-    const map = getMap()
-    if (!map?.getSource(options.sourceId)) return
-
-    const data = getSourceData()
-    if (!data) return
-
-    const fc = cloneGeoJSON(data)
+    // Update our FC
+    const fc = fcRef.value
 
     const posFeature = fc.features.find((f) => f?.properties?.kind === options.posKind)
     if (posFeature) {
@@ -162,7 +161,7 @@ export function useRealTimePosition(mapRef, opts = {}) {
 
     const coneFeature = fc.features.find((f) => f?.properties?.kind === options.coneKind)
     if (coneFeature) {
-      // keep cone anchored even before heading exists
+      // Keep cone anchored at user position even before heading exists
       const ring = coneFeature.geometry.coordinates[0]
       for (const p of ring) {
         p[0] = lng
@@ -170,11 +169,12 @@ export function useRealTimePosition(mapRef, opts = {}) {
       }
     }
 
-    setSourceData(fc)
-
     hasFix.value = true
     lastLngLat.value = [lng, lat]
     lastAccuracyM.value = accuracyM
+
+    // Push to map source if present
+    syncSourceData()
 
     if (options.recenterOnFirstFix && !recentered) {
       recenterOnce()
@@ -182,8 +182,7 @@ export function useRealTimePosition(mapRef, opts = {}) {
   }
 
   function updateHeading(deg) {
-    const map = getMap()
-    if (!map?.getSource(options.sourceId)) return
+    if (!lastLngLat.value) return // no fix -> nowhere to draw the cone
 
     if (options.smoothHeading) {
       if (currentHeadingSmoothed == null) currentHeadingSmoothed = deg
@@ -194,10 +193,7 @@ export function useRealTimePosition(mapRef, opts = {}) {
       deg = currentHeadingSmoothed
     }
 
-    const data = getSourceData()
-    if (!data) return
-
-    const fc = cloneGeoJSON(data)
+    const fc = fcRef.value
     const pos = fc.features.find((f) => f?.properties?.kind === options.posKind)?.geometry?.coordinates
     if (!pos) return
 
@@ -207,9 +203,8 @@ export function useRealTimePosition(mapRef, opts = {}) {
     const polyRing = makeConePolygon(pos, deg, options.coneLengthM, options.coneHalfAngleDeg)
     cone.geometry.coordinates = [polyRing]
 
-    setSourceData(fc)
-
     lastHeading.value = deg
+    syncSourceData()
   }
 
   function makeConePolygon([lng, lat], headingDeg, lengthM, halfAngleDeg) {
@@ -244,7 +239,6 @@ export function useRealTimePosition(mapRef, opts = {}) {
   }
 
   function handleOrientation(e) {
-    // iOS: webkitCompassHeading is most reliable when present.
     const heading =
       typeof e.webkitCompassHeading === 'number'
         ? e.webkitCompassHeading
@@ -259,7 +253,6 @@ export function useRealTimePosition(mapRef, opts = {}) {
   async function startOrientation() {
     if (orientationListening) return
 
-    // iOS permission gate
     if (
       typeof DeviceOrientationEvent !== 'undefined' &&
       typeof DeviceOrientationEvent.requestPermission === 'function'
@@ -289,7 +282,6 @@ export function useRealTimePosition(mapRef, opts = {}) {
         const acc = pos.coords.accuracy ?? 0
         updateUserPosition([lng, lat], acc)
 
-        // course heading when moving can be better than compass (when available)
         const course = pos.coords.heading
         if (typeof course === 'number' && !Number.isNaN(course)) {
           updateHeading(course)
@@ -313,9 +305,31 @@ export function useRealTimePosition(mapRef, opts = {}) {
     watchId = null
   }
 
+  function bindStyleLoad() {
+    const map = getMap()
+    if (!map?.on || styleLoadBound) return
+
+    // On style reload: re-add source/layers and re-push latest known data.
+    map.on('style.load', onStyleLoad)
+    styleLoadBound = true
+  }
+
+  function unbindStyleLoad() {
+    const map = getMap()
+    if (!map?.off || !styleLoadBound) return
+    map.off('style.load', onStyleLoad)
+    styleLoadBound = false
+  }
+
+  function onStyleLoad() {
+    // If tracking is active, restore visuals immediately
+    safeEnsureSourceAndLayers()
+    syncSourceData()
+  }
+
   /**
-   * Call start() from a user gesture (button tap).
-   * call it after map is ready.
+   * Call start() from user gesture.
+   * Works even if map becomes available shortly after, because we also watch mapRef.
    */
   async function start() {
     error.value = null
@@ -323,12 +337,11 @@ export function useRealTimePosition(mapRef, opts = {}) {
     const map = getMap()
     if (!map) throw new Error('Map ref is not ready')
 
-    ensureSourceAndLayers()
+    // Ensure style exists before adding sources/layers.
+    // If style isn't ready yet, the watcher below will handle it.
+    safeEnsureSourceAndLayers()
 
-    // Re-add user layers after style changes (switching MapTiler style etc.)
-    // Avoid stacking handlers by removing before adding.
-    map.off?.('style.load', ensureSourceAndLayers)
-    map.on?.('style.load', ensureSourceAndLayers)
+    bindStyleLoad()
 
     startGeolocation()
     await startOrientation()
@@ -337,8 +350,7 @@ export function useRealTimePosition(mapRef, opts = {}) {
   }
 
   function stop() {
-    const map = getMap()
-    if (map?.off) map.off('style.load', ensureSourceAndLayers)
+    unbindStyleLoad()
 
     stopGeolocation()
     stopOrientation()
@@ -355,9 +367,26 @@ export function useRealTimePosition(mapRef, opts = {}) {
     recentered = true
   }
 
-  onBeforeUnmount(() => {
-    stop()
-  })
+  // If map instance changes (initial null -> real map, or re-init), rebind and rehydrate.
+  watch(
+    () => (mapRef?.value ?? mapRef),
+    (m, prev) => {
+      if (prev?.off && styleLoadBound) prev.off('style.load', onStyleLoad)
+      styleLoadBound = false
+
+      if (!m) return
+
+      // If we are currently active, ensure we restore visuals on the new map.
+      if (isActive.value) {
+        safeEnsureSourceAndLayers()
+        bindStyleLoad()
+        syncSourceData()
+      }
+    },
+    { immediate: true }
+  )
+
+  onBeforeUnmount(() => stop())
 
   return {
     isActive,
@@ -367,13 +396,12 @@ export function useRealTimePosition(mapRef, opts = {}) {
     lastHeading,
     error,
 
-    // controls
     start,
     stop,
     recenterOnce,
 
-    // low-level (optional)
-    ensureSourceAndLayers,
+    // optional
+    ensureSourceAndLayers: safeEnsureSourceAndLayers,
     updateUserPosition,
     updateHeading,
   }

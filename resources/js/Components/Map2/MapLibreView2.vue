@@ -2,62 +2,14 @@
     <MapSidebar :treeData="treeData" :neighborhoodData="neighborhoodData" :selectedData="selectedData"
         :hiddenCategories="hiddenCategories" :currentMode="selectedFilter" @toggleCategory="onToggleCategory" />
 
+
     <!-- Event Mode Top Bar -->
-    <div v-if="isPlantingMode" class="absolute top-3 left-3 right-3 z-40">
-        <div class="rounded-2xl border border-gray-200 bg-white/90 backdrop-blur px-4 py-3 shadow
-              dark:border-gray-800 dark:bg-slate-900/85">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-                <div class="min-w-0">
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                            Planting Event #{{ props.eventId }}
-                        </span>
-
-                        <span v-if="activeEvent?.status" class="rounded-md px-2 py-0.5 text-xs font-medium"
-                            :class="statusPill(activeEvent.status)">
-                            {{ activeEvent.status }}
-                        </span>
-
-                        <span v-if="eventLoading" class="text-xs text-gray-500 dark:text-gray-400">
-                            Loading…
-                        </span>
-
-                        <span v-if="eventError" class="text-xs text-red-600 dark:text-red-300">
-                            {{ eventError }}
-                        </span>
-                    </div>
-
-                    <div class="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                        <span v-if="activeEvent">
-                            Trees: {{ activeEvent.event_trees_count ?? 0 }}
-                            <template v-if="activeEvent.target_tree_count">/ {{ activeEvent.target_tree_count
-                                }}</template>
-                        </span>
-                        <span v-if="activeEvent?.neighborhood?.name"> • {{ activeEvent.neighborhood.name }}</span>
-                        <span v-if="activeEvent?.campaign?.name"> • {{ activeEvent.campaign.name }}</span>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <!-- Exit event mode -->
-                    <button type="button" class="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium
-                 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-white/5" @click="exitEventMode">
-                        Exit
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <EventModeTopBar :isPlantingMode="isPlantingMode" :eventId="props.eventId" :activeEvent="activeEvent"
+        :eventLoading="eventLoading" :eventError="eventError" />
 
     <div ref="mapContainer" class="map-container w-full h-full"></div>
 
-    <button v-if="shouldShowButton" type="button"
-        class="absolute right-2 bottom-7 z-30 grid h-8.5 w-8.5 place-items-center rounded-md bg-white/90 shadow ring-1 ring-slate-200 backdrop-blur dark:bg-slate-900/90 dark:ring-slate-700 transition-colors"
-        :disabled="position.isActive && !position.hasFix" @click="onFloatingButtonClick" aria-label="Locate / Recenter"
-        title="Locate / Recenter">
-        <component :is="iconComponent" class="h-5 w-5" :class="iconClass" />
-    </button>
+    <LocateControl :mapRef="map"/>
 
     <TreeCard :hovered="hoveredData" :selected="selectedData" :markerLatLng="markerLatLng"
         :selectedNeighborhood="selectedNeighborhood" :neighborhoodStats="neighborhoodStats" :pinClickFlag="pinClickFlag"
@@ -114,8 +66,6 @@ import { setupBaseLayers } from '@/Lib/Map/SetupBaseLayers'
 import { loadTreesLayer, loadNeighborhoodsLayer, fetchTreeDetails, loadNeighborhoodStats } from '@/Lib/Map/DataLayers2'
 import { useMapFilter } from '@/Composables/useMapFilter'
 import { useMapColors } from '@/Composables/useMapColors'
-import { useRealTimePosition } from '@/Lib/Map/useRealTimePosition'
-import { LocateFixed, Crosshair, Loader2 } from 'lucide-vue-next'
 import { storeNewTree } from '@/Lib/Map/LongClickFunctions'
 import { usePermissions } from '@/Composables/usePermissions'
 import { GisDataLayerManager } from '@/Lib/Map/GisDataLayerManager'
@@ -123,6 +73,8 @@ import { GisDataLayerManager } from '@/Lib/Map/GisDataLayerManager'
 import mitt from 'mitt'
 import { router } from '@inertiajs/vue3'
 import { useSidebar } from '@/Composables/useSidebar'
+import EventModeTopBar from '@/Components/Map/Partials/EventModeTopBar.vue'
+import LocateControl from '../Map/Partials/LocateControl.vue'
 
 const props = defineProps({
     initialTreeId: { type: Number, default: null },
@@ -282,11 +234,6 @@ onMounted(async () => {
 
         map.value = m
 
-        // move/zoom/rotate tracking
-        m.on('moveend', onMapMoveEnd)
-        m.on('zoomend', onMapMoveEnd)
-        m.on('rotateend', onMapMoveEnd)
-
         longPressCtl = storeNewTree(m, {
             onLatLng: (latLng) => { markerLatLng.value = latLng },
             requiresAuth: (v) => { showAuthPrompt.value = v },
@@ -307,8 +254,6 @@ onMounted(async () => {
             maptilerKey: MAPTILER_KEY,
             vectorStyles: CUSTOM_VECTOR_STYLES,
         })
-
-
 
         const [neighApi, treesApi] = await Promise.all([
             loadNeighborhoodsLayer(m, {
@@ -336,10 +281,7 @@ onMounted(async () => {
         if (props.initialTreeId) {
             treesApi.selectTreeById(props.initialTreeId)
         }
-
-
-        // centered state initial
-        isCentered.value = computeCentered()
+        
     } catch (e) {
         console.error(e)
     } finally {
@@ -457,113 +399,10 @@ function recenterToEventIfPossible() {
     })
 }
 
-
 async function fetchPlantingEvent(id) {
     const res = await fetch(`/api/events/planting/${id}`)
     if (!res.ok) throw new Error(`Failed to load planting event ${id}: ${res.status}`)
     return await res.json()
-}
-
-
-function statusPill(status) {
-    switch (status) {
-        case 'draft': return 'bg-stone-100 text-stone-800 dark:bg-white/10 dark:text-stone-200'
-        case 'scheduled': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/15 dark:text-indigo-200'
-        case 'in_progress': return 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200'
-        case 'completed': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200'
-        case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-200'
-        default: return 'bg-gray-100 text-gray-800 dark:bg-white/10 dark:text-gray-200'
-    }
-}
-
-function exitEventMode() {
-    // just navigate to the map's route.
-    router.visit(route('/'), { preserveState: true, preserveScroll: true })
-}
-
-// -------- REAL TIME POSITION ----------
-const position = useRealTimePosition(map, { recenterOnFirstFix: true, })
-const isCentered = ref(false)
-
-const shouldShowButton = computed(() => {
-    // show when inactive (so user can start)
-    if (!position.isActive.value) return true
-    // while waiting for first fix: show (but disabled)
-    if (!position.hasFix.value) return true
-    // active + has fix: only show if NOT centered
-    return !isCentered.value
-})
-
-const iconComponent = computed(() => {
-    if (!position.isActive.value) return LocateFixed
-    if (!position.hasFix.value) return Loader2
-    return Crosshair
-})
-
-const iconClass = computed(() => {
-    if (position.isActive.value && !position.hasFix.value) return 'animate-spin'
-    return ''
-})
-
-function computeCentered() {
-    if (!map.value || !position.lastLngLat.value) return false
-    const c = map.value.getCenter()
-    const [uLng, uLat] = position.lastLngLat.value
-    const thresholdM = 35
-    return distanceMeters([c.lng, c.lat], [uLng, uLat]) <= thresholdM
-}
-
-function onMapMoveEnd() {
-    // when user pans/zooms, reevaluate whether we’re centered
-    isCentered.value = computeCentered()
-}
-
-const onFloatingButtonClick = async () => {
-    // First click -> request permissions + start tracking
-    if (!position.isActive.value) {
-        try {
-            await position.start()
-        } catch (e) {
-            console.warn(e)
-        }
-        return
-    }
-
-    // While active but no fix yet, ignore
-    if (!position.hasFix.value) return
-
-    // Recenter
-    position.recenterOnce()
-
-    await nextTick()
-    window.setTimeout(() => {
-        isCentered.value = computeCentered()
-    }, 250)
-}
-
-// Update centered when we receive the first GPS fix or when user moves
-watch(
-    () => position.lastLngLat.value,
-    () => {
-        // if the map exists, compute centered as soon as we have a fix
-        if (!map.value) return
-        isCentered.value = computeCentered()
-    }
-)
-
-function distanceMeters([lng1, lat1], [lng2, lat2]) {
-    const R = 6378137
-    const toRad = (d) => (d * Math.PI) / 180
-    const dLat = toRad(lat2 - lat1)
-    const dLng = toRad(lng2 - lng1)
-
-    const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-        Math.sin(dLng / 2) * Math.sin(dLng / 2)
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-    return R * c
 }
 
 // -------- VISUALIZATION / FILTERING ----------
@@ -819,14 +658,9 @@ function upsertTreeFeature(featureCollection, treeProps) {
 onBeforeUnmount(() => {
     const m = map.value
     if (m) {
-        m.off('moveend', onMapMoveEnd)
-        m.off('zoomend', onMapMoveEnd)
-        m.off('rotateend', onMapMoveEnd)
         m.remove()
     }
     map.value = null
-
-    position.stop?.()
 
     longPressCtl?.cleanup?.()
     longPressCtl?.remove?.()
