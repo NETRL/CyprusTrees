@@ -53,7 +53,7 @@
     <div ref="mapContainer" class="map-container w-full h-full"></div>
 
     <button v-if="shouldShowButton" type="button"
-        class="absolute right-4 bottom-7 z-30 grid h-11 w-11 place-items-center rounded-xl bg-white/90 shadow ring-1 ring-slate-200 backdrop-blur dark:bg-slate-900/90 dark:ring-slate-700 transition-colors"
+        class="absolute right-2 bottom-7 z-30 grid h-8.5 w-8.5 place-items-center rounded-md bg-white/90 shadow ring-1 ring-slate-200 backdrop-blur dark:bg-slate-900/90 dark:ring-slate-700 transition-colors"
         :disabled="position.isActive && !position.hasFix" @click="onFloatingButtonClick" aria-label="Locate / Recenter"
         title="Locate / Recenter">
         <component :is="iconComponent" class="h-5 w-5" :class="iconClass" />

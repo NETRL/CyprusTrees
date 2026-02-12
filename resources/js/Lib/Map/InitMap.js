@@ -25,7 +25,13 @@ export async function initMap(container, { center, zoom, styleUrl }) {
     }),
     'bottom-left'
   )
-  map.addControl(new maplibregl.NavigationControl())
+  map.addControl(new maplibregl.NavigationControl({
+    visualizePitch: true,
+    visualizeRoll: true,
+    showZoom: false,
+    showCompass: true
+
+  }))
 
   // Wait for load once, return a promise
   await new Promise(resolve => map.once('load', resolve))

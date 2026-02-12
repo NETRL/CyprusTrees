@@ -19,7 +19,7 @@ export class GisLayersControl {
 
     // 1. Main Container (Positioning wrapper)
     const container = document.createElement("div");
-    container.className = "maplibregl-ctrl relative font-sans pointer-events-auto z-50";
+    container.className = "maplibregl-ctrl relative font-sans pointer-events-auto z-50 w-8 h-8";
     
     // Hidden initially, will be shown in render() if layers exist
     container.classList.add("hidden");
@@ -28,8 +28,8 @@ export class GisLayersControl {
     const toggleBtn = document.createElement("button");
     toggleBtn.type = "button";
     toggleBtn.className = 
-      "w-10 h-10 bg-white rounded-xl shadow-md cursor-pointer " +
-      "border-2 border-white hover:border-gray-200 " +
+      "w-8.5 h-8.5 bg-white rounded-md shadow-md cursor-pointer " +
+      "border-2 border-black/15 hover:bg-gray-100! " +
       "flex items-center justify-center text-gray-600 hover:text-black " +
       "hover:shadow-xl hover:scale-105 transition-all duration-200 ease-out " +
       "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2";
@@ -37,7 +37,7 @@ export class GisLayersControl {
     
     // Icon
     toggleBtn.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
       </svg>
     `;

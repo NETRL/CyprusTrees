@@ -14,14 +14,14 @@ export class BaseMapControl {
 
         // 1. Container
         const container = document.createElement("div");
-        container.className = "maplibregl-ctrl relative z-40 font-sans";
+        container.className = "maplibregl-ctrl relative z-40 font-sans w-8 h-8";
 
         // 2. Preview Box (The Toggle)
         const previewBox = document.createElement("button");
         previewBox.type = "button";
         previewBox.className =
-            "basemap-preview relative w-14 h-14 rounded-xl overflow-hidden cursor-pointer " +
-            "border-2 border-white dark:border-brand-700 shadow-lg " +
+            "basemap-preview relative w-8.5 h-8.5 rounded-md overflow-hidden cursor-pointer " +
+            "border-2 border-gray-200 dark:border-brand-700 shadow-lg " +
             "hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 ease-out " +
             "focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900";
         previewBox.setAttribute("aria-label", "Change map style");
