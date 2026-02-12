@@ -37,10 +37,6 @@ const props = defineProps({
         type: Object,
         default: () => null,
     },
-    hiddenCategories: {
-        type: Object,
-        default: () => null,
-    },
     currentMode: {
         type: String,
         default: '',

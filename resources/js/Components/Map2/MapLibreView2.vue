@@ -1,6 +1,6 @@
 <template>
     <MapSidebar :treeData="treeData" :neighborhoodData="neighborhoodData" :selectedData="selectedData"
-        :hiddenCategories="hiddenCategories" :currentMode="selectedFilter" @toggleCategory="onToggleCategory" />
+        :currentMode="selectedFilter" @toggleCategory="toggleCategory" />
 
 
     <!-- Event Mode Top Bar -->
@@ -9,57 +9,26 @@
 
     <div ref="mapContainer" class="map-container w-full h-full"></div>
 
-    <LocateControl :mapRef="map"/>
+    <LocateControl :mapRef="map" />
 
     <TreeCard :hovered="hoveredData" :selected="selectedData" :markerLatLng="markerLatLng"
         :selectedNeighborhood="selectedNeighborhood" :neighborhoodStats="neighborhoodStats" :pinClickFlag="pinClickFlag"
         @update:selected="selectedData = $event" @cancelCreate="onCancelCreate" @clearSelection="onClearSelection" />
     <MapLoadingOverlay :isLoading="isLoading" />
 
-    <Modal v-if="showAuthPrompt" @close="showAuthPrompt = false">
-        <template #body>
-            <div
-                class="no-scrollbar relative w-auto h-auto overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
-                <!-- close btn -->
-                <button @click="showAuthPrompt = false"
-                    class="transition-color absolute right-5 top-5 z-999 flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:bg-gray-700 dark:bg-white/[0.05] dark:text-gray-400 dark:hover:bg-white/[0.07] dark:hover:text-gray-300">
-                    <svg class="fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd"
-                            d="M6.04289 16.5418C5.65237 16.9323 5.65237 17.5655 6.04289 17.956C6.43342 18.3465 7.06658 18.3465 7.45711 17.956L11.9987 13.4144L16.5408 17.9565C16.9313 18.347 17.5645 18.347 17.955 17.9565C18.3455 17.566 18.3455 16.9328 17.955 16.5423L13.4129 12.0002L17.955 7.45808C18.3455 7.06756 18.3455 6.43439 17.955 6.04387C17.5645 5.65335 16.9313 5.65335 16.5408 6.04387L11.9987 10.586L7.45711 6.04439C7.06658 5.65386 6.43342 5.65386 6.04289 6.04439C5.65237 6.43491 5.65237 7.06808 6.04289 7.4586L10.5845 12.0002L6.04289 16.5418Z"
-                            fill="" />
-                    </svg>
-                </button>
-                <div class="px-2 pr-14">
-                    <h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-                        Login is Required
-                    </h4>
-                    <p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-                        To access this feature you need to be logged in!
-                    </p>
-                </div>
+    <AuthPromptModal :open="showAuthPrompt" @close="showAuthPrompt = false" />
 
-                <div class="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-                    <button @click="showAuthPrompt = false" type="button"
-                        class="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 sm:w-auto">
-                        Close
-                    </button>
-                    <Link :href="route('login')"
-                        class="flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto">
-                    Click to Login
-                    </Link>
-                </div>
-            </div>
-        </template>
-    </Modal>
+
 </template>
 
 <script setup>
-import { onMounted, ref, onBeforeUnmount, watch, computed, nextTick, provide } from 'vue'
+import { onMounted, ref, onBeforeUnmount, watch, computed, nextTick, provide, readonly } from 'vue'
 import MapSidebar from '@/Components/Map/Partials/MapSidebar.vue'
 import MapLoadingOverlay from '@/Components/Map/Partials/MapLoadingOverlay.vue'
 import TreeCard from '@/Components/Map/Partials/TreeCard.vue'
-import Modal from '@/Components/Modal.vue'
+import AuthPromptModal from '@/Components/Map/Partials/AuthPromptModal.vue'
+import LocateControl from '@/Components/Map/Controls/LocateControl.vue'
+import EventModeTopBar from '@/Components/Map/Controls/EventModeTopBar.vue'
 
 import { initMap } from '@/Lib/Map/InitMap'
 import { setupBaseLayers } from '@/Lib/Map/SetupBaseLayers'
@@ -73,8 +42,7 @@ import { GisDataLayerManager } from '@/Lib/Map/GisDataLayerManager'
 import mitt from 'mitt'
 import { router } from '@inertiajs/vue3'
 import { useSidebar } from '@/Composables/useSidebar'
-import EventModeTopBar from '@/Components/Map/Partials/EventModeTopBar.vue'
-import LocateControl from '../Map/Partials/LocateControl.vue'
+import { useTreeVisualization } from '@/Lib/Map/useTreeVisualization'
 
 const props = defineProps({
     initialTreeId: { type: Number, default: null },
@@ -88,8 +56,6 @@ provide('can', can)
 
 const mapBus = mitt()
 provide('mapBus', mapBus)
-
-
 
 const mapContainer = ref(null)
 const map = ref(null)
@@ -115,7 +81,7 @@ let neighLayerApi = null
 let gisMgr = null
 
 const { selectedFilter } = useMapFilter()
-const { STATUS_COLORS, WATER_USE_COLORS, SHADE_COLORS, ORIGIN_COLORS, POLLEN_RISK_COLORS } = useMapColors()
+// const { STATUS_COLORS, WATER_USE_COLORS, SHADE_COLORS, ORIGIN_COLORS, POLLEN_RISK_COLORS } = useMapColors()
 
 const isEventMode = computed(() => props.mode !== 'default' && !!props.eventId)
 const isPlantingMode = computed(() => props.mode === 'planting' && !!props.eventId)
@@ -133,28 +99,10 @@ const lastCreatedTree = ref(null)
 provide('lastCreatedTree', lastCreatedTree)
 
 // --- visibility state ---
-const hiddenCategories = ref({
-    status: new Set(),
-    origin: new Set(),
-    water_use: new Set(),
-    shade: new Set(),
-    pollen_risk: new Set(),
-})
 
-const CATEGORY_KEYS = {
-    status: STATUS_COLORS.filter((_, i) => i % 2 === 0),
-    origin: ORIGIN_COLORS.filter((_, i) => i % 2 === 0),
-    water_use: WATER_USE_COLORS.filter((_, i) => i % 2 === 0),
-    shade: SHADE_COLORS.filter((_, i) => i % 2 === 0),
-}
-
-const modeToPropName = {
-    status: 'status',
-    origin: 'species_origin',
-    pollen_risk: 'calculated_pollen_risk',
-    water_use: 'species_drought_tolerance',
-    shade: 'species_canopy_class',
-}
+const hiddenCategories = ref(null)
+provide('hiddenCategories', readonly(hiddenCategories));
+let treeVisualizationApi = null
 
 // --- helpers ---
 function whenLayerReady(layerId, fn) {
@@ -178,9 +126,7 @@ function whenLayerReady(layerId, fn) {
 }
 
 
-function hasTreesLayer(m) {
-    return !!m?.getLayer?.('trees-circle')
-}
+
 
 // --- init ---
 const center = [33.37, 35.17]
@@ -234,6 +180,7 @@ onMounted(async () => {
 
         map.value = m
 
+
         longPressCtl = storeNewTree(m, {
             onLatLng: (latLng) => { markerLatLng.value = latLng },
             requiresAuth: (v) => { showAuthPrompt.value = v },
@@ -255,33 +202,37 @@ onMounted(async () => {
             vectorStyles: CUSTOM_VECTOR_STYLES,
         })
 
-        const [neighApi, treesApi] = await Promise.all([
-            loadNeighborhoodsLayer(m, {
-                onDataLoaded: (data) => { neighborhoodData.value = data },
-                onNeighborhoodSelected: (id) => { selectedNeighborhoodId.value = id },
-                isInteractionEnabled: () => markerLatLng.value == null,
-            }),
-            loadTreesLayer(m, {
-                onDataLoaded: (data) => { treeData.value = data },
-                onTreeSelected: (props) => { selectedData.value = props },
-                onTreeHovered: (props) => { hoveredData.value = props },
-                setInitialFilter: (val) => { selectedFilter.value = val },
-                isInteractionEnabled: () => markerLatLng.value == null,
-            }),
-        ])
+        const isInteractionEnabled = () => markerLatLng.value == null
 
-        treeLayerApi = treesApi
-        neighLayerApi = neighApi
+            ;[neighLayerApi, treeLayerApi] = await Promise.all([
+                loadNeighborhoodsLayer(m, {
+                    onDataLoaded: data => { neighborhoodData.value = data },
+                    onNeighborhoodSelected: id => { selectedNeighborhoodId.value = id },
+                    isInteractionEnabled,
+                }),
+                loadTreesLayer(m, {
+                    onDataLoaded: data => { treeData.value = data },
+                    onTreeSelected: props => { selectedData.value = props },
+                    onTreeHovered: props => { hoveredData.value = props },
+                    setInitialFilter: val => { selectedFilter.value = val },
+                    isInteractionEnabled,
+                }),
+            ])
+
+        treeVisualizationApi = useTreeVisualization(m, {
+            onHiddenCategories: (set) => { hiddenCategories.value = set },
+            onPredicateSet: (p) => { treeLayerApi?.setTreesDataFiltered(p) }
+        })
 
         // initial styling/filtering once layer is ready
         whenLayerReady('trees-circle', (m) => {
-            visualiseTreeData(selectedFilter.value ?? 'status')
-            applyVisibility(selectedFilter.value ?? 'status')
+            treeVisualizationApi.visualiseTreeData(selectedFilter.value ?? 'status')
+            treeVisualizationApi.applyVisibility(selectedFilter.value ?? 'status')
         })
         if (props.initialTreeId) {
-            treesApi.selectTreeById(props.initialTreeId)
+            treeLayerApi.selectTreeById(props.initialTreeId)
         }
-        
+
     } catch (e) {
         console.error(e)
     } finally {
@@ -343,8 +294,8 @@ watch(
     (mode) => {
         whenLayerReady('trees-circle', () => {
             // if (!hasTreesLayer(map)) return
-            visualiseTreeData(mode)
-            applyVisibility(mode)
+            treeVisualizationApi?.visualiseTreeData(mode)
+            treeVisualizationApi?.applyVisibility(mode)
         })
     },
     { immediate: true }
@@ -406,131 +357,10 @@ async function fetchPlantingEvent(id) {
 }
 
 // -------- VISUALIZATION / FILTERING ----------
-let lastPaintMode = null
-const DEFAULT_COLOR = '#4A5568';
-const TREE_POINT_LAYERS = [
-    'trees-pin-bg',
-    'trees-selection-pulse',
-    'trees-selection-ring',
-    'trees-hover-ring',
-    'trees-circle-halo',
-    'trees-circle',
-];
 
-function setTreePointFilter(m, extraFilter /* can be null */) {
-    // base condition: only non-cluster points
-    const base = ['!', ['has', 'point_count']];
-
-    // combine base + optional extra
-    const combined = extraFilter ? ['all', base, extraFilter] : base;
-
-    for (const id of TREE_POINT_LAYERS) {
-        if (m.getLayer(id)) m.setFilter(id, combined);
-    }
+function toggleCategory(payload) {
+    treeVisualizationApi?.onToggleCategory(payload)
 }
-
-
-const paintByMode = {
-    status: () => ['match', ['get', 'status'], ...STATUS_COLORS],
-    origin: () => ['match', ['get', 'species_origin'], ...ORIGIN_COLORS],
-    pollen_risk: () => ['step', ['get', 'calculated_pollen_risk'], ...POLLEN_RISK_COLORS],
-    water_use: () => ['match', ['get', 'species_drought_tolerance'], ...WATER_USE_COLORS],
-    shade: () => ['match', ['get', 'species_canopy_class'], ...SHADE_COLORS],
-}
-
-function visualiseTreeData(mode) {
-    if (mode === lastPaintMode) return
-    lastPaintMode = mode
-
-    const expr = paintByMode[mode]?.()
-
-    const m = map.value
-    if (!m || !hasTreesLayer(m)) return
-    m.setPaintProperty('trees-circle', 'circle-color', expr ?? DEFAULT_COLOR)
-}
-
-// small cache to avoid re-allocating identical filters for same hidden set
-const filterCache = new Map();
-
-function applyVisibility(mode = selectedFilter.value) {
-    const m = map.value;
-    if (!m || !hasTreesLayer(m)) return;
-
-    const propName = modeToPropName[mode];
-
-    // If mode has no prop mapping, show all points (still non-cluster)
-    if (!propName) {
-        setTreePointFilter(m, null);
-        return;
-    }
-
-    const set = hiddenCategories.value[mode];
-    const predicate = makePredicateFromHidden(mode, set, modeToPropName);
-    treeLayerApi?.setTreesDataFiltered(predicate);
-    const hidden = set ? Array.from(set) : [];
-
-    // Nothing hidden => show all points
-    if (!hidden.length) {
-        setTreePointFilter(m, null);
-        return;
-    }
-
-    hidden.sort();
-    const cacheKey = `${mode}:${hidden.join('|')}`;
-
-    let extra = filterCache.get(cacheKey);
-    if (!extra) {
-        // Keep features that:
-        // - do NOT have the property (don’t accidentally hide “unknowns”), OR
-        // - have the property and it is NOT in the hidden list
-        extra = [
-            'any',
-            ['!', ['has', propName]],
-            ['!', ['in', ['get', propName], ['literal', hidden]]],
-        ];
-        filterCache.set(cacheKey, extra);
-    }
-
-    setTreePointFilter(m, extra);
-}
-
-
-function onToggleCategory({ mode, key }) {
-    const hc = hiddenCategories.value ?? {};
-    const currentSet = hc[mode] instanceof Set ? hc[mode] : new Set();
-
-    if (key === 'all') {
-        const allKeys = CATEGORY_KEYS[mode] || [];
-        const anyHidden = currentSet.size > 0;
-
-        const next = new Set();
-        if (!anyHidden) allKeys.forEach(k => next.add(k));
-
-        hiddenCategories.value = { ...hc, [mode]: next };
-        applyVisibility(mode);
-        return;
-    }
-
-    const next = new Set(currentSet);
-    next.has(key) ? next.delete(key) : next.add(key);
-
-    hiddenCategories.value = { ...hc, [mode]: next };
-    applyVisibility(mode);
-}
-
-function makePredicateFromHidden(mode, hiddenSet, modeToPropName) {
-    const prop = modeToPropName[mode];
-    if (!prop || !hiddenSet || hiddenSet.size === 0) return () => true;
-
-    return (f) => {
-        const v = f?.properties?.[prop];
-        // keep “unknown/missing” unless you explicitly want to hide it
-        if (v == null) return true;
-        return !hiddenSet.has(v);
-    };
-}
-
-
 
 // -------- CRUD hooks ----------
 function onClearSelection() {

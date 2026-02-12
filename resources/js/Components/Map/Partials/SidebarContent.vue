@@ -145,7 +145,7 @@
 </template>
 
 <script setup>
-import { computed, watch } from 'vue';
+import { computed, inject, watch } from 'vue';
 import CompactFilter from '@/Components/Map/Partials/CompactFilter.vue';
 import LegendItem from '@/Components/Map/Partials/LegentItem.vue';
 import { useMapColors } from '@/Composables/useMapColors';
@@ -165,14 +165,11 @@ const props = defineProps({
         type: Object,
         default: () => null
     },
-    hiddenCategories: {
-        type: Object,
-        default: () => ({}), // { status: Set(), origin: Set(), ... }
-    },
 })
 
 const emit = defineEmits(['toggleCategory']);
 
+const hiddenCategories = inject('hiddenCategories') // read only
 // --- Reactive State ---
 const { selectedFilter } = useMapFilter();
 
@@ -282,8 +279,8 @@ const statusLegend = computed(() => {
 
     const counts = statusCounts.value;
     const hiddenSet =
-        props.hiddenCategories?.status instanceof Set
-            ? props.hiddenCategories.status
+        hiddenCategories.value?.status instanceof Set
+            ? hiddenCategories.value.status
             : new Set();
 
     const anyHidden = hiddenSet.size > 0;
@@ -325,8 +322,8 @@ const originLegend = computed(() => {
     const base = getLegendData(ORIGIN_COLORS, originLabels);
     const counts = originCounts.value;
     const hiddenSet =
-        props.hiddenCategories?.origin instanceof Set
-            ? props.hiddenCategories.origin
+        hiddenCategories.value?.origin instanceof Set
+            ? hiddenCategories.value.origin
             : new Set();
 
     return base.map((item) => {
@@ -345,8 +342,8 @@ const waterUseLegend = computed(() => {
     const base = getLegendData(WATER_USE_COLORS, waterUseLabels);
     const counts = waterUseCounts.value;
     const hiddenSet =
-        props.hiddenCategories?.water_use instanceof Set
-            ? props.hiddenCategories.water_use
+        hiddenCategories.value?.water_use instanceof Set
+            ? hiddenCategories.value.water_use
             : new Set();
 
     return base.map((item) => {
@@ -365,8 +362,8 @@ const shadeLegend = computed(() => {
     const base = getLegendData(SHADE_COLORS, shadeLabels);
     const counts = shadeCounts.value;
     const hiddenSet =
-        props.hiddenCategories?.shade instanceof Set
-            ? props.hiddenCategories.shade
+        hiddenCategories.value?.shade instanceof Set
+            ? hiddenCategories.value.shade
             : new Set();
 
     return base.map((item) => {
