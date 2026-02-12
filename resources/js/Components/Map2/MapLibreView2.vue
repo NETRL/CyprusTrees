@@ -34,7 +34,6 @@ import { initMap } from '@/Lib/Map/InitMap'
 import { setupBaseLayers } from '@/Lib/Map/SetupBaseLayers'
 import { loadTreesLayer, loadNeighborhoodsLayer, fetchTreeDetails, loadNeighborhoodStats } from '@/Lib/Map/DataLayers2'
 import { useMapFilter } from '@/Composables/useMapFilter'
-import { useMapColors } from '@/Composables/useMapColors'
 import { storeNewTree } from '@/Lib/Map/LongClickFunctions'
 import { usePermissions } from '@/Composables/usePermissions'
 import { GisDataLayerManager } from '@/Lib/Map/GisDataLayerManager'
@@ -81,7 +80,6 @@ let neighLayerApi = null
 let gisMgr = null
 
 const { selectedFilter } = useMapFilter()
-// const { STATUS_COLORS, WATER_USE_COLORS, SHADE_COLORS, ORIGIN_COLORS, POLLEN_RISK_COLORS } = useMapColors()
 
 const isEventMode = computed(() => props.mode !== 'default' && !!props.eventId)
 const isPlantingMode = computed(() => props.mode === 'planting' && !!props.eventId)
@@ -126,46 +124,11 @@ function whenLayerReady(layerId, fn) {
 }
 
 
-
-
 // --- init ---
 const center = [33.37, 35.17]
 const zoom = 12
 
 const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY
-const CUSTOM_VECTOR_STYLES = [
-    {
-        id: 'darkGreen',
-        name: 'Dark Green',
-        styleUrl: `https://api.maptiler.com/maps/019abffb-04c2-7927-8c58-ff64512e9321/style.json?key=${MAPTILER_KEY}`,
-        preview: '/storage/images/map-custom.png',
-    },
-    // {
-    //     id: 'landcapeDark',
-    //     name: 'Landscape Dark',
-    //     styleUrl: `https://api.maptiler.com/maps/019ac206-7965-7795-8035-d9b24b5c8815/style.json?key=${MAPTILER_KEY}`,
-    //     preview: '/storage/images/map-custom.png',
-    // },
-    {
-        id: 'satellite',
-        name: 'Satellite View',
-        styleUrl: `https://api.maptiler.com/maps/hybrid/style.json?key=${MAPTILER_KEY}`,
-        preview: '/storage/images/map-default.png',
-    },
-    {
-        id: 'street',
-        name: 'Street View',
-        styleUrl: `https://api.maptiler.com/maps/019c27fc-f979-75a2-8a6b-bbe7e6ce558b/style.json?key=${MAPTILER_KEY}`,
-        preview: '/storage/images/map-default.png',
-    },
-    {
-        id: 'pastel',
-        name: 'Pastel View',
-        styleUrl: `https://api.maptiler.com/maps/019ac201-8ff9-76ea-b752-4b2b1e4ed570/style.json?key=${MAPTILER_KEY}`,
-        preview: '/storage/images/map-default.png',
-    },
-]
-
 // --- bus ---
 mapBus.on('tree:saved', onTreeSaved)
 
@@ -175,11 +138,10 @@ onMounted(async () => {
         const { map: m } = await initMap(mapContainer.value, {
             center,
             zoom,
-            styleUrl: CUSTOM_VECTOR_STYLES[0].styleUrl,
+            maptilerKey: MAPTILER_KEY,
         })
 
         map.value = m
-
 
         longPressCtl = storeNewTree(m, {
             onLatLng: (latLng) => { markerLatLng.value = latLng },
@@ -197,10 +159,7 @@ onMounted(async () => {
 
         await gisMgr.init()
 
-        setupBaseLayers(m, {
-            maptilerKey: MAPTILER_KEY,
-            vectorStyles: CUSTOM_VECTOR_STYLES,
-        })
+        setupBaseLayers(m, MAPTILER_KEY)
 
         const isInteractionEnabled = () => markerLatLng.value == null
 

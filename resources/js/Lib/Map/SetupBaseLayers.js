@@ -1,50 +1,12 @@
 import { BaseMapControl } from '@/Lib/Map/Controls/BaseMapControl'
+import { getRasterLayers, getVectorLayers } from '@/Lib/Map/BaseMapStyles'
 
-export async function setupBaseLayers(map, { maptilerKey, vectorStyles = [] }) {
+export async function setupBaseLayers(map, maptilerKey) {
 
+  const vectorLayers = getVectorLayers(maptilerKey)
+  const rasterLayers = getRasterLayers(maptilerKey)
 
-  const layersConfig = [
-    {
-      source: 'osmStandard',
-      id: 'osmStandardLayer',
-      name: 'Standard',
-      type: 'raster',
-      preview: '/storage/images/map-default.png',
-      tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
-      tileSize: 256,
-    },
-    {
-      source: 'maptilerDark',
-      id: 'maptilerDarkLayer',
-      name: 'Dark',
-      type: 'raster',
-      preview: '/storage/images/map-dark.png',
-      tiles: [`https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}@2x.png?key=${maptilerKey}`],
-      tileSize: 256,
-    },
-    {
-      source: 'cartoLight',
-      id: 'cartoLightLayer',
-      name: 'Carto',
-      type: 'raster',
-      preview: '/storage/images/map-default.png',
-      tiles: ['https://s.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'],
-      tileSize: 256,
-
-    },
-    {
-      source: 'satellite2',
-      id: 'satellite2',
-      name: 'Satellite View2',
-      type: 'raster',
-      preview: '/storage/images/map-default.png',
-      tiles: [`https://api.maptiler.com/maps/hybrid/256/{z}/{x}/{y}.jpg?key=${maptilerKey}`],
-      tileSize: 256,
-
-    },
-  ]
-
-  layersConfig.forEach(layer => {
+  rasterLayers.forEach(layer => {
     map.addSource(layer.source, {
       type: layer.type,
       tiles: layer.tiles,
@@ -61,13 +23,13 @@ export async function setupBaseLayers(map, { maptilerKey, vectorStyles = [] }) {
   })
 
   // Multiple custom MapTiler vector styles
-  for (const styleDef of vectorStyles) {
+  for (const styleDef of vectorLayers) {
     const styleJson = await fetch(styleDef.styleUrl).then(res => res.json())
 
     const styleLayerIds = addVectorStyleAsNamespace(map, styleJson, styleDef.id)
 
     if (styleLayerIds.length) {
-      layersConfig.push({
+      rasterLayers.push({
         id: styleDef.id,
         name: styleDef.name,
         type: 'vector',
@@ -83,9 +45,9 @@ export async function setupBaseLayers(map, { maptilerKey, vectorStyles = [] }) {
   // } 
 
   const baseMapControl = new BaseMapControl({
-    // defaultLayerId: layersConfig[0].id,
+    // defaultLayerId: rasterLayers[0].id,
     defaultLayerId: defaultMap,
-    layers: layersConfig,
+    layers: rasterLayers,
     map,
   })
 

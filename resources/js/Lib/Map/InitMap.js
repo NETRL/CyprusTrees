@@ -1,17 +1,11 @@
 import maplibregl from 'maplibre-gl'
 
-export async function initMap(container, { center, zoom, styleUrl }) {
-  const styleJson = await fetch(styleUrl).then(res => res.json())
+export async function initMap(container, { center, zoom, maptilerKey }) {
+  const styleJson = await fetch(`https://api.maptiler.com/maps/streets-v2/style.json?key=${maptilerKey}`).then(res => res.json())
 
   const map = new maplibregl.Map({
     container,
-    style: {
-      version: 8,
-      glyphs: styleJson.glyphs,
-      sprite: styleJson.sprite,
-      sources: {},
-      layers: [],
-    },
+    style: styleJson,
     attributionControl: false,
     center,
     zoom,
@@ -26,8 +20,8 @@ export async function initMap(container, { center, zoom, styleUrl }) {
     'bottom-left'
   )
   map.addControl(new maplibregl.NavigationControl({
-    visualizePitch: true,
-    visualizeRoll: true,
+    // visualizePitch: true,
+    // visualizeRoll: true,
     showZoom: false,
     showCompass: true
 
