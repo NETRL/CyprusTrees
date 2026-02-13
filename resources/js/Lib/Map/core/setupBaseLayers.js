@@ -1,5 +1,5 @@
-import { BaseMapControl } from '@/Lib/Map/Controls/BaseMapControl'
-import { getRasterLayers, getVectorLayers } from '@/Lib/Map/BaseMapStyles'
+import { BaseMapControl } from '@/Lib/Map/controls/BaseMapControl'
+import { getRasterLayers, getVectorLayers } from '@/Lib/Map/core/baseMapStyles'
 
 export async function setupBaseLayers(map, maptilerKey) {
 
@@ -40,9 +40,6 @@ export async function setupBaseLayers(map, maptilerKey) {
   }
 
   let defaultMap = "cartoLightLayer"
-  // if( window.location.pathname.startsWith('/map2')){
-  //   defaultMap = "osmStandardLayer"
-  // } 
 
   const baseMapControl = new BaseMapControl({
     // defaultLayerId: rasterLayers[0].id,

@@ -1,4 +1,4 @@
-import { loadNeighborhoodStats as defaultLoadNeighborhoodStats } from "@/Lib/Map/DataLayers2"
+import { loadNeighborhoodStats as defaultLoadNeighborhoodStats } from "@/Lib/Map/layers/neighborhoods/neighborhoodsLayer"
 import { ref, watch } from "vue";
 
 export function useNeighborhoodSelection({

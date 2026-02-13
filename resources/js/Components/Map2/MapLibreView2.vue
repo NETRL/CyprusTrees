@@ -2,7 +2,6 @@
     <MapSidebar :treeData="treeData" :neighborhoodData="neighborhoodData" :selectedData="selectedData"
         :currentMode="selectedFilter" @toggleCategory="toggleCategory" />
 
-
     <!-- Event Mode Top Bar -->
     <EventModeTopBar :isPlantingMode="isPlantingMode" :eventId="props.eventId" :activeEvent="activeEvent"
         :eventLoading="eventLoading" :eventError="eventError" />
@@ -30,8 +29,8 @@ import AuthPromptModal from '@/Components/Map/Partials/AuthPromptModal.vue'
 import LocateControl from '@/Components/Map/Controls/LocateControl.vue'
 import EventModeTopBar from '@/Components/Map/Controls/EventModeTopBar.vue'
 
-import { initMap } from '@/Lib/Map/InitMap'
-import { setupBaseLayers } from '@/Lib/Map/SetupBaseLayers'
+import { initMap } from '@/Lib/Map/core/initMap'
+import { setupBaseLayers } from '@/Lib/Map/core/setupBaseLayers'
 import { useMapFilter } from '@/Composables/useMapFilter'
 import { usePermissions } from '@/Composables/usePermissions'
 
@@ -40,7 +39,7 @@ import { router } from '@inertiajs/vue3'
 import { useSidebar } from '@/Composables/useSidebar'
 import { useTreeVisualization } from '@/Lib/Map/useTreeVisualization'
 import { useMapLayers } from '@/Lib/Map/useMapLayers'
-import { whenLayerReady } from '@/Lib/Map/useWhenLayerReady'
+import { whenLayerReady } from '@/Lib/Map/core/useWhenLayerReady'
 import { useNeighborhoodSelection } from '@/Lib/Map/useNeighborhoodSelection'
 import { useTreeCreateMarker } from '@/Lib/Map/useTreeCreateMarker'
 import { useEventMode } from '@/Lib/Map/useEventMode'
@@ -138,7 +137,6 @@ const { onTreeSaved, onTreeUpdated } = useTreeMutatorHandler({
 // --- bus ---
 mapBus.on('tree:saved', onTreeSaved)
 mapBus.on('tree:updated', onTreeUpdated)
-
 
 // -------- MAP INIT ----------
 onMounted(async () => {

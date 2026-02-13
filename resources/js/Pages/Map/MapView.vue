@@ -11,10 +11,8 @@
 
         <main class="flex-1 relative overflow-hidden">
             <MapFilterProvider>
-                <MapLibreView2  :initialTreeId="initialTreeId" :initialLocation="initialLocation"
+                <MapLibreView  :initialTreeId="initialTreeId" :initialLocation="initialLocation"
                     :mode="mode" :eventId="eventId" />
-                <!-- <MapLibreView v-else :initialTreeId="initialTreeId" :initialLocation="initialLocation" :mode="mode"
-                    :eventId="eventId" /> -->
             </MapFilterProvider>
         </main>
     </div>
@@ -23,7 +21,6 @@
 <script setup>
 import AppHeader from '@/Layouts/AppHeader.vue';
 import MapLibreView from '@/Components/Map/MapLibreView.vue';
-import MapLibreView2 from '@/Components/Map2/MapLibreView2.vue';
 import HeaderLogo from '@/Components/Layout/Header/HeaderLogo.vue';
 import MapFilterProvider from '@/Components/Map/Partials/MapFilterProvider.vue';
 import { provide } from 'vue';
@@ -43,8 +40,6 @@ const props = defineProps({
     mode:               { type: String, default: 'default' },
     eventId:            { type: Number, default: null },
 })
-
-const isMap2 = window.location.pathname.startsWith('/map2')
 
 useCustomToast();
 

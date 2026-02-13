@@ -474,7 +474,7 @@ import { computed, inject, ref, watch } from 'vue';
 import TreeReportCard from '@/Components/Map/Partials/TreeReportCard.vue';
 import { safeJsonParse } from '@/Composables/safeJsonParser';
 import { usePage } from '@inertiajs/vue3';
-import { fetchTreeDetails } from '@/Lib/Map/DataLayers';
+import { fetchTreeDetails } from '@/Lib/Map/layers/trees/treesLayer';
 import { useForm } from '@inertiajs/vue3'
 import { onMounted, onBeforeUnmount } from 'vue'
 

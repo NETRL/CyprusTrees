@@ -1,4 +1,4 @@
-import { GisLayersControl } from "@/Lib/Map/Controls/GisLayerControl"
+import { GisLayersControl } from "@/Lib/Map/controls/GisLayerControl"
 
 export class GisDataLayerManager {
     constructor(map, {

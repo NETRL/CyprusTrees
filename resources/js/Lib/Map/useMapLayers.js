@@ -1,6 +1,7 @@
 import { isRef, ref } from "vue";
-import { GisDataLayerManager } from "./GisDataLayerManager";
-import { loadNeighborhoodsLayer, loadTreesLayer } from "./DataLayers2";
+import { GisDataLayerManager } from "@/Lib/Map/layers/gis/GisDataLayerManager";
+import { loadNeighborhoodsLayer} from "@/Lib/Map/layers/neighborhoods/neighborhoodsLayer";
+import { loadTreesLayer } from "@/Lib/Map/layers/trees/treesLayer";
 
 export function useMapLayers(map, options = {}) {
 

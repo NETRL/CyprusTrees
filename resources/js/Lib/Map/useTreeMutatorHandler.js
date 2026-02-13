@@ -1,4 +1,4 @@
-import { fetchTreeDetails } from '@/Lib/Map/DataLayers2'
+import { fetchTreeDetails } from '@/Lib/Map/layers/trees/treesLayer'
 import { router } from '@inertiajs/vue3'
 
 export function useTreeMutatorHandler({
