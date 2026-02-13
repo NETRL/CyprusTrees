@@ -79,7 +79,6 @@ class TreeController extends Controller
 
     public function store(StoreTreeRequest $request): RedirectResponse
     {
-
         $data = $request->validated();
 
         $tagIdsPresent  = array_key_exists('tag_ids', $data);
@@ -132,7 +131,12 @@ class TreeController extends Controller
             'message' => __('Tree has been updated.'),
         ]);
 
-        return redirect()->back();
+        return redirect()->back()->with('flash_event', [
+            'type' => 'tree.updated',
+            'payload' => [
+                'id' => $tree->id,
+            ],
+        ]);
     }
 
 

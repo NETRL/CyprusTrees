@@ -322,11 +322,6 @@
                 </div>
             </div>
             <!-- Action Buttons -->
-             <span>sdsadasddas
-                 planting_id: {{ activePlantingEventId }}
-                 id
-                {{ selected?.planting_id }}
-                </span>
             <div v-if="isSelected" :class="[
                 'pt-2 grid gap-2',
                 (can('trees.edit') ? 'grid-cols-1 sm:grid-cols-1' : 'grid-cols-1')

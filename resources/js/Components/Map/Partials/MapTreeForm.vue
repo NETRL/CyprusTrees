@@ -3,13 +3,14 @@
         <!-- Header -->
         <div class="sticky flex items-center justify-between px-4 py-3 border-b dark:border-gray-700">
             <div class="flex items-center gap-2">
-                <h2 class="text-lg font-semibold">Tree Details</h2>
+                <h2 class="text-lg font-semibold">{{ action === 'Create' ? 'Enter tree details' : 'Edit tree details' }}
+                </h2>
 
                 <!-- Only in CREATE mode -->
                 <div v-if="action === 'Create' && markerLatLng" class="flex items-center gap-2">
                     <button type="button" class="px-2.5 py-1 text-xs rounded-md border border-gray-200 hover:bg-gray-50
-               dark:border-gray-700 dark:hover:bg-white/5 disabled:opacity-50" 
-                        @click="copyLast" title="Copy values from the last saved tree">
+               dark:border-gray-700 dark:hover:bg-white/5 disabled:opacity-50" @click="copyLast"
+                        title="Copy values from the last saved tree">
                         Copy last
                     </button>
                 </div>
@@ -367,7 +368,10 @@ const submit = () => {
             preserveScroll: true,
             onSuccess: () => {
                 closeForm()
-                mapBus?.emit('tree:saved', { id: formData.id })
+                const event = page?.props?.flash?.event
+                if (event?.type === 'tree.updated') {
+                    mapBus?.emit('tree:updated', { id: formData.id })
+                }
             },
             onError: () => {
                 displayErrors.value = true

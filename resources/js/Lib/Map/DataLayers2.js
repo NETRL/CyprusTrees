@@ -323,7 +323,7 @@ export async function loadTreesLayer(mapInstance, {
 
 
   // ============================================================================
-  // ENHANCED ANIMATION FUNCTIONS
+  // ANIMATION FUNCTIONS
   // ============================================================================
 
   let hoveredId = null;
@@ -401,7 +401,7 @@ export async function loadTreesLayer(mapInstance, {
     }
   }
 
-  // --- INTERACTION HANDLERS (Updated) ---
+  // --- INTERACTION HANDLERS  ---
 
   mapInstance.on('click', 'trees-pin-bg', (e) => {
     if (!interactionsAllowed()) return;
