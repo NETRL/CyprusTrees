@@ -1,7 +1,7 @@
 <template>
     <!-- Desktop Card -->
     <aside :class="[
-        'max-lg:hidden absolute right-0 top-0 m-4 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-2xl transition-all duration-300 ease-in-out z-50',
+        'max-lg:hidden absolute right-0 top-0 my-4 mx-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-2xl transition-all duration-300 ease-in-out z-50',
         'max-h-[calc(100vh-7rem)] overflow-hidden w-[420px] flex flex-col',
         {
             'opacity-100 translate-x-0 pointer-events-auto': shouldShowPanel,

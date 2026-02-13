@@ -42,6 +42,7 @@ import mitt from 'mitt'
 import { router } from '@inertiajs/vue3'
 import { useSidebar } from '@/Composables/useSidebar'
 import { useTreeVisualization } from '@/Lib/Map/useTreeVisualization'
+import { useMapLayers } from '@/Lib/Map/useMapLayers'
 
 const props = defineProps({
     initialTreeId: { type: Number, default: null },
@@ -77,7 +78,7 @@ const pinClickFlag = ref(0)
 let longPressCtl = null
 let treeLayerApi = null
 let neighLayerApi = null
-let gisMgr = null
+let gisLayerApi = null
 
 const { selectedFilter } = useMapFilter()
 
@@ -149,35 +150,27 @@ onMounted(async () => {
             onPinClick: () => { pinClickFlag.value++ },
         })
 
-        gisMgr = new GisDataLayerManager(m, {
-            baseUrl: "/api/gis-map",
-            controlPosition: "top-right",
-            defaultVisibleKeys: [],     // optionally: ["irrigation_lines"]
-            fetchBbox: true,
-            reloadOnMoveEnd: false,     // turn on for dynamic refetch
-        })
-
-        await gisMgr.init()
-
         setupBaseLayers(m, MAPTILER_KEY)
 
-        const isInteractionEnabled = () => markerLatLng.value == null
+        const layersComposable = useMapLayers(m, {
+            isInteractionEnabled: () => markerLatLng.value == null,
 
-            ;[neighLayerApi, treeLayerApi] = await Promise.all([
-                loadNeighborhoodsLayer(m, {
-                    onDataLoaded: data => { neighborhoodData.value = data },
-                    onNeighborhoodSelected: id => { selectedNeighborhoodId.value = id },
-                    isInteractionEnabled,
-                }),
-                loadTreesLayer(m, {
-                    onDataLoaded: data => { treeData.value = data },
-                    onTreeSelected: props => { selectedData.value = props },
-                    onTreeHovered: props => { hoveredData.value = props },
-                    setInitialFilter: val => { selectedFilter.value = val },
-                    isInteractionEnabled,
-                }),
-            ])
+            onNeighborhoodData: neighborhoodData,
+            onNeighborhoodSelected: selectedNeighborhoodId,
 
+            onTreeData: treeData,
+            onTreeSelected: selectedData,
+            onTreeHovered: hoveredData,
+
+            onInitialFilter: selectedFilter,
+        })
+
+        const { treeLayerApi: tApi, neighLayerApi: nApi, gisLayerApi: gApi } = await layersComposable.initializeLayers()
+        treeLayerApi = tApi
+        neighLayerApi = nApi
+        gisLayerApi = gApi
+
+        
         treeVisualizationApi = useTreeVisualization(m, {
             onHiddenCategories: (set) => { hiddenCategories.value = set },
             onPredicateSet: (p) => { treeLayerApi?.setTreesDataFiltered(p) }
