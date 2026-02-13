@@ -32,17 +32,18 @@ import EventModeTopBar from '@/Components/Map/Controls/EventModeTopBar.vue'
 
 import { initMap } from '@/Lib/Map/InitMap'
 import { setupBaseLayers } from '@/Lib/Map/SetupBaseLayers'
-import { loadTreesLayer, loadNeighborhoodsLayer, fetchTreeDetails, loadNeighborhoodStats } from '@/Lib/Map/DataLayers2'
+import { fetchTreeDetails, loadNeighborhoodStats } from '@/Lib/Map/DataLayers2'
 import { useMapFilter } from '@/Composables/useMapFilter'
 import { storeNewTree } from '@/Lib/Map/LongClickFunctions'
 import { usePermissions } from '@/Composables/usePermissions'
-import { GisDataLayerManager } from '@/Lib/Map/GisDataLayerManager'
 
 import mitt from 'mitt'
 import { router } from '@inertiajs/vue3'
 import { useSidebar } from '@/Composables/useSidebar'
 import { useTreeVisualization } from '@/Lib/Map/useTreeVisualization'
 import { useMapLayers } from '@/Lib/Map/useMapLayers'
+import { whenLayerReady } from '@/Lib/Map/useWhenLayerReady'
+import { useNeighborhoodSelection } from '@/Lib/Map/useNeighborhoodSelection'
 
 const props = defineProps({
     initialTreeId: { type: Number, default: null },
@@ -63,22 +64,34 @@ const map = ref(null)
 const isLoading = ref(true)
 
 const treeData = ref([])
+// const selectedNeighborhood = ref(null)
+
 const neighborhoodData = ref([])
 const selectedData = ref(null)
 const hoveredData = ref(null)
 
-const neighborhoodStats = ref({});
+// const neighborhoodStats = ref({});
 const selectedNeighborhoodId = ref(null)
-const selectedNeighborhood = ref(null)
 
 const markerLatLng = ref(null)
 const showAuthPrompt = ref(false)
 const pinClickFlag = ref(0)
 
 let longPressCtl = null
+
+// --- event state ---
+const activeEvent = ref(null)
+const eventLoading = ref(false)
+const eventError = ref(null)
+
 let treeLayerApi = null
 let neighLayerApi = null
 let gisLayerApi = null
+
+const { selectedNeighborhood, neighborhoodStats } = useNeighborhoodSelection({
+  neighborhoodData,
+  selectedNeighborhoodId,
+})
 
 const { selectedFilter } = useMapFilter()
 
@@ -89,10 +102,7 @@ provide('isPlantingMode', isPlantingMode)
 const activePlantingEventId = computed(() => props.mode === 'planting' ? props.eventId : null)
 provide('activePlantingEventId', activePlantingEventId)
 
-// --- event state ---
-const activeEvent = ref(null)
-const eventLoading = ref(false)
-const eventError = ref(null)
+
 
 const lastCreatedTree = ref(null)
 provide('lastCreatedTree', lastCreatedTree)
@@ -102,28 +112,6 @@ provide('lastCreatedTree', lastCreatedTree)
 const hiddenCategories = ref(null)
 provide('hiddenCategories', readonly(hiddenCategories));
 let treeVisualizationApi = null
-
-// --- helpers ---
-function whenLayerReady(layerId, fn) {
-    const m = map.value
-    if (!m) return
-
-    // Fast path: layer already exists
-    if (m.getLayer(layerId)) {
-        fn(m)
-        return
-    }
-
-    // Otherwise wait until style updates include the layer
-    const onStyleData = () => {
-        if (!m.getLayer(layerId)) return
-        m.off('styledata', onStyleData)
-        fn(m)
-    }
-
-    m.on('styledata', onStyleData)
-}
-
 
 // --- init ---
 const center = [33.37, 35.17]
@@ -170,14 +158,14 @@ onMounted(async () => {
         neighLayerApi = nApi
         gisLayerApi = gApi
 
-        
+
         treeVisualizationApi = useTreeVisualization(m, {
             onHiddenCategories: (set) => { hiddenCategories.value = set },
             onPredicateSet: (p) => { treeLayerApi?.setTreesDataFiltered(p) }
         })
 
         // initial styling/filtering once layer is ready
-        whenLayerReady('trees-circle', (m) => {
+        whenLayerReady(map.value, 'trees-circle', (m) => {
             treeVisualizationApi.visualiseTreeData(selectedFilter.value ?? 'status')
             treeVisualizationApi.applyVisibility(selectedFilter.value ?? 'status')
         })
@@ -193,37 +181,37 @@ onMounted(async () => {
 })
 
 // -------- Neighborhood stats (stale-safe) ----------
-let statsReq = 0
-watch(
-    selectedNeighborhoodId,
-    async (v) => {
-        const reqId = ++statsReq
-        if (!v) {
-            selectedNeighborhood.value = null
-            neighborhoodStats.value = null
-            return
-        }
+// let statsReq = 0
+// watch(
+//     selectedNeighborhoodId,
+//     async (v) => {
+//         const reqId = ++statsReq
+//         if (!v) {
+//             selectedNeighborhood.value = null
+//             neighborhoodStats.value = null
+//             return
+//         }
 
-        const fc = neighborhoodData.value
-        if (!fc?.features?.length) return
+//         const fc = neighborhoodData.value
+//         if (!fc?.features?.length) return
 
-        const feature = fc.features.find(f => Number(f.id) === Number(v))
-        if (!feature) return
+//         const feature = fc.features.find(f => Number(f.id) === Number(v))
+//         if (!feature) return
 
-        selectedNeighborhood.value = feature.properties
+//         selectedNeighborhood.value = feature.properties
 
-        try {
-            neighborhoodStats.value = null
-            const stats = await loadNeighborhoodStats(v)
-            if (reqId !== statsReq) return
-            neighborhoodStats.value = stats
-        } catch (err) {
-            console.error(err)
-            if (reqId === statsReq) neighborhoodStats.value = null
-        }
-    },
-    { immediate: true }
-)
+//         try {
+//             neighborhoodStats.value = null
+//             const stats = await loadNeighborhoodStats(v)
+//             if (reqId !== statsReq) return
+//             neighborhoodStats.value = stats
+//         } catch (err) {
+//             console.error(err)
+//             if (reqId === statsReq) neighborhoodStats.value = null
+//         }
+//     },
+//     { immediate: true }
+// )
 
 // -------- marker create state ----------
 watch(
@@ -244,7 +232,7 @@ watch(
 watch(
     selectedFilter,
     (mode) => {
-        whenLayerReady('trees-circle', () => {
+        whenLayerReady(map.value, 'trees-circle', () => {
             // if (!hasTreesLayer(map)) return
             treeVisualizationApi?.visualiseTreeData(mode)
             treeVisualizationApi?.applyVisibility(mode)
