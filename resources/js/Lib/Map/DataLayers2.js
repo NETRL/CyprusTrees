@@ -82,7 +82,7 @@ export async function loadTreesLayer(mapInstance, {
   }
 
   const dataRaw = await res.json();
-  const data = preprocessTreesGeojson(dataRaw);
+  let data = preprocessTreesGeojson(dataRaw);
   let currentData = data;
 
   const interactionsAllowed = () => (isInteractionEnabled ? !!isInteractionEnabled() : true);

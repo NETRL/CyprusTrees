@@ -326,7 +326,6 @@
                  planting_id: {{ activePlantingEventId }}
                  id
                 {{ selected?.planting_id }}
-                 {{ plantingRecord?.planting_id }}
                 </span>
             <div v-if="isSelected" :class="[
                 'pt-2 grid gap-2',

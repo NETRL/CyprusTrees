@@ -1,7 +1,7 @@
 import { useAuth } from '@/Composables/useAuth'
 import maplibregl from 'maplibre-gl'
 
-export function storeNewTree(mapInstance, { onLatLng, requiresAuth, onPinClick, delay = 500, moveTolerancePx = 8 } = {}) {
+export function attachLongPressPin(mapInstance, { onLatLng, requiresAuth, onPinClick, delay = 500, moveTolerancePx = 8 } = {}) {
   let longPressTimeout = null
   let pinMarker = null
 

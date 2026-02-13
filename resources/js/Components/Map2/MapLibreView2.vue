@@ -34,7 +34,6 @@ import { initMap } from '@/Lib/Map/InitMap'
 import { setupBaseLayers } from '@/Lib/Map/SetupBaseLayers'
 import { fetchTreeDetails, loadNeighborhoodStats } from '@/Lib/Map/DataLayers2'
 import { useMapFilter } from '@/Composables/useMapFilter'
-import { storeNewTree } from '@/Lib/Map/LongClickFunctions'
 import { usePermissions } from '@/Composables/usePermissions'
 
 import mitt from 'mitt'
@@ -44,6 +43,7 @@ import { useTreeVisualization } from '@/Lib/Map/useTreeVisualization'
 import { useMapLayers } from '@/Lib/Map/useMapLayers'
 import { whenLayerReady } from '@/Lib/Map/useWhenLayerReady'
 import { useNeighborhoodSelection } from '@/Lib/Map/useNeighborhoodSelection'
+import { useTreeCreateMarker } from '@/Lib/Map/useTreeCreateMarker'
 
 const props = defineProps({
     initialTreeId: { type: Number, default: null },
@@ -64,20 +64,12 @@ const map = ref(null)
 const isLoading = ref(true)
 
 const treeData = ref([])
-// const selectedNeighborhood = ref(null)
 
 const neighborhoodData = ref([])
 const selectedData = ref(null)
 const hoveredData = ref(null)
 
-// const neighborhoodStats = ref({});
 const selectedNeighborhoodId = ref(null)
-
-const markerLatLng = ref(null)
-const showAuthPrompt = ref(false)
-const pinClickFlag = ref(0)
-
-let longPressCtl = null
 
 // --- event state ---
 const activeEvent = ref(null)
@@ -88,9 +80,16 @@ let treeLayerApi = null
 let neighLayerApi = null
 let gisLayerApi = null
 
+const treeCreate = useTreeCreateMarker(map, {
+    onClearSelection: clearMapSelection,
+})
+
+
+const { markerLatLng, showAuthPrompt, pinClickFlag, isInteractionEnabled } = treeCreate
+
 const { selectedNeighborhood, neighborhoodStats } = useNeighborhoodSelection({
-  neighborhoodData,
-  selectedNeighborhoodId,
+    neighborhoodData,
+    selectedNeighborhoodId,
 })
 
 const { selectedFilter } = useMapFilter()
@@ -132,16 +131,12 @@ onMounted(async () => {
 
         map.value = m
 
-        longPressCtl = storeNewTree(m, {
-            onLatLng: (latLng) => { markerLatLng.value = latLng },
-            requiresAuth: (v) => { showAuthPrompt.value = v },
-            onPinClick: () => { pinClickFlag.value++ },
-        })
+        treeCreate.attach()
 
         setupBaseLayers(m, MAPTILER_KEY)
 
         const layersComposable = useMapLayers(m, {
-            isInteractionEnabled: () => markerLatLng.value == null,
+            isInteractionEnabled: () => isInteractionEnabled.value,
 
             onNeighborhoodData: neighborhoodData,
             onNeighborhoodSelected: selectedNeighborhoodId,
@@ -180,53 +175,12 @@ onMounted(async () => {
     }
 })
 
-// -------- Neighborhood stats (stale-safe) ----------
-// let statsReq = 0
-// watch(
-//     selectedNeighborhoodId,
-//     async (v) => {
-//         const reqId = ++statsReq
-//         if (!v) {
-//             selectedNeighborhood.value = null
-//             neighborhoodStats.value = null
-//             return
-//         }
-
-//         const fc = neighborhoodData.value
-//         if (!fc?.features?.length) return
-
-//         const feature = fc.features.find(f => Number(f.id) === Number(v))
-//         if (!feature) return
-
-//         selectedNeighborhood.value = feature.properties
-
-//         try {
-//             neighborhoodStats.value = null
-//             const stats = await loadNeighborhoodStats(v)
-//             if (reqId !== statsReq) return
-//             neighborhoodStats.value = stats
-//         } catch (err) {
-//             console.error(err)
-//             if (reqId === statsReq) neighborhoodStats.value = null
-//         }
-//     },
-//     { immediate: true }
-// )
-
-// -------- marker create state ----------
-watch(
-    markerLatLng,
-    (v) => {
-        if (v == null) return
-        treeLayerApi?.clearSelection?.()
-        hoveredData.value = null
-        selectedData.value = null
-        const c = map.value?.getCanvas?.()
-        if (c) c.style.cursor = ''
-    },
-    { flush: 'post' }
-)
-
+function clearMapSelection() {
+    treeLayerApi?.clearSelection?.()
+    neighLayerApi?.clearSelection?.()
+    hoveredData.value = null
+    selectedData.value = null
+}
 
 // -------- FILTER + VISIBILITY (single watcher) ----------
 watch(
@@ -304,20 +258,15 @@ function toggleCategory(payload) {
 
 // -------- CRUD hooks ----------
 function onClearSelection() {
-    console.log('onClearSelection')
-    treeLayerApi?.clearSelection?.()
-    neighLayerApi?.clearSelection?.()
+    clearMapSelection()
 }
 
 function onCancelCreate() {
-    treeLayerApi?.clearSelection?.()
-    markerLatLng.value = null
-    longPressCtl?.hide?.()
+    treeCreate.cancelCreate()
 }
 
 function onCreateSuccess() {
-    markerLatLng.value = null
-    longPressCtl?.remove()
+    treeCreate.createSuccessCleanup()
 }
 
 async function onTreeSaved(payload) {
@@ -431,11 +380,7 @@ onBeforeUnmount(() => {
         m.remove()
     }
     map.value = null
-
-    longPressCtl?.cleanup?.()
-    longPressCtl?.remove?.()
-    longPressCtl = null
-
+    
     treeLayerApi = null
 
     mapBus.off('tree:saved', onTreeSaved)

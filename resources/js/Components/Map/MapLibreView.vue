@@ -116,7 +116,7 @@ import { useMapFilter } from '@/Composables/useMapFilter'
 import { useMapColors } from '@/Composables/useMapColors'
 import { useRealTimePosition } from '@/Lib/Map/useRealTimePosition'
 import { LocateFixed, Crosshair, Loader2 } from 'lucide-vue-next'
-import { storeNewTree } from '@/Lib/Map/LongClickFunctions'
+import { attachLongPressPin } from '@/Lib/Map/useMapLongPressPin'
 import { usePermissions } from '@/Composables/usePermissions'
 
 import mitt from 'mitt'
@@ -280,7 +280,7 @@ onMounted(async () => {
         m.on('zoomend', onMapMoveEnd)
         m.on('rotateend', onMapMoveEnd)
 
-        longPressCtl = storeNewTree(m, {
+        longPressCtl = attachLongPressPin(m, {
             onLatLng: (latLng) => { markerLatLng.value = latLng },
             requiresAuth: (v) => { showAuthPrompt.value = v },
             onPinClick: () => { pinClickFlag.value++ },
