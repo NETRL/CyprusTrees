@@ -35,11 +35,10 @@ import { useMapFilter } from '@/Composables/useMapFilter'
 import { usePermissions } from '@/Composables/usePermissions'
 
 import mitt from 'mitt'
-import { router } from '@inertiajs/vue3'
 import { useSidebar } from '@/Composables/useSidebar'
 import { useTreeVisualization } from '@/Lib/Map/useTreeVisualization'
 import { useMapLayers } from '@/Lib/Map/useMapLayers'
-import { whenLayerReady } from '@/Lib/Map/core/useWhenLayerReady'
+import { whenLayerReady } from '@/Lib/Map/core/useLayerChecks'
 import { useNeighborhoodSelection } from '@/Lib/Map/useNeighborhoodSelection'
 import { useTreeCreateMarker } from '@/Lib/Map/useTreeCreateMarker'
 import { useEventMode } from '@/Lib/Map/useEventMode'
@@ -174,14 +173,10 @@ onMounted(async () => {
 
         treeVisualizationApi = useTreeVisualization(m, {
             onHiddenCategories: (set) => { hiddenCategories.value = set },
-            onPredicateSet: (p) => { treeLayerApi?.setTreesDataFiltered(p) }
+            onPredicateSet: (p) => { treeLayerApi?.setTreesDataFiltered(p) },
+            selectedFilterRef: selectedFilter,
         })
 
-        // initial styling/filtering once layer is ready
-        whenLayerReady(map.value, 'trees-circle', (m) => {
-            treeVisualizationApi.visualiseTreeData(selectedFilter.value ?? 'status')
-            treeVisualizationApi.applyVisibility(selectedFilter.value ?? 'status')
-        })
         if (props.initialTreeId) {
             treeLayerApi?.selectTreeById(props.initialTreeId)
         }
@@ -199,18 +194,6 @@ function clearMapSelection() {
     hoveredData.value = null
     selectedData.value = null
 }
-
-// -------- FILTER + VISIBILITY (single watcher) ----------
-watch(
-    selectedFilter,
-    (mode) => {
-        whenLayerReady(map.value, 'trees-circle', () => {
-            treeVisualizationApi?.visualiseTreeData(mode)
-            treeVisualizationApi?.applyVisibility(mode)
-        })
-    },
-    { immediate: true }
-)
 
 // -------- VISUALIZATION / FILTERING ----------
 

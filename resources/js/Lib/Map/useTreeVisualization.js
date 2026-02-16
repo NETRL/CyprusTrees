@@ -1,7 +1,8 @@
 import { useMapColors } from "@/Composables/useMapColors";
-import { ref, shallowRef, unref, watch } from "vue";
+import { ref, watch } from "vue";
+import { hasLayer, whenLayerReady } from "@/Lib/Map/core/useLayerChecks";
 
-export function useTreeVisualization(mapRef, { onHiddenCategories, onPredicateSet } = {}) {
+export function useTreeVisualization(mapRef, { onHiddenCategories, onPredicateSet, selectedFilterRef } = {}) {
 
     const map = ref(mapRef)
 
@@ -11,10 +12,6 @@ export function useTreeVisualization(mapRef, { onHiddenCategories, onPredicateSe
         water_use: new Set(),
         shade: new Set(),
         pollen_risk: new Set(),
-    })
-
-    watch(hiddenCategories, (data) => {
-        onHiddenCategories?.(data)
     })
 
     const { STATUS_COLORS, WATER_USE_COLORS, SHADE_COLORS, ORIGIN_COLORS, POLLEN_RISK_COLORS } = useMapColors()
@@ -46,23 +43,6 @@ export function useTreeVisualization(mapRef, { onHiddenCategories, onPredicateSe
     const filterCache = new Map(); // small cache to avoid re-allocating identical filters for same hidden set
     let lastPaintMode = null
 
-    function hasTreesLayer(m) {
-        return !!m?.getLayer?.('trees-circle')
-    }
-
-    function setTreePointFilter(m, extraFilter /* can be null */) {
-        // base condition: only non-cluster points
-        const base = ['!', ['has', 'point_count']];
-
-        // combine base + optional extra
-        const combined = extraFilter ? ['all', base, extraFilter] : base;
-
-        for (const id of TREE_POINT_LAYERS) {
-            if (m.getLayer(id)) m.setFilter(id, combined);
-        }
-    }
-
-
     const paintByMode = {
         status: () => ['match', ['get', 'status'], ...STATUS_COLORS],
         origin: () => ['match', ['get', 'species_origin'], ...ORIGIN_COLORS],
@@ -71,28 +51,43 @@ export function useTreeVisualization(mapRef, { onHiddenCategories, onPredicateSe
         shade: () => ['match', ['get', 'species_canopy_class'], ...SHADE_COLORS],
     }
 
+    watch(hiddenCategories, (data) => {
+        onHiddenCategories?.(data)
+    })
 
-    function visualiseTreeData(mode) {
+    watch(
+        selectedFilterRef,
+        (mode) => {
+            whenLayerReady(map.value, 'trees-circle', () => {
+                visualiseTreeData(mode ?? "status");
+                applyVisibility(mode ?? "status");
+            })
+        },
+        { immediate: true }
+    )
+
+    function visualiseTreeData(mode = 'status') {
+        const m = map.value
+        if (!hasLayer(m, 'trees-circle')) return
+
         if (mode === lastPaintMode) return
         lastPaintMode = mode
 
         const expr = paintByMode[mode]?.()
 
-        const m = map.value
-        if (!m || !hasTreesLayer(m)) return
         m.setPaintProperty('trees-circle', 'circle-color', expr ?? DEFAULT_COLOR)
     }
 
 
     function applyVisibility(mode = 'status') {
         const m = map.value;
-        if (!m || !hasTreesLayer(m)) return;
+        if (!hasLayer(m, 'trees-circle')) return
 
         const propName = modeToPropName[mode];
 
-        // If mode has no prop mapping, show all points (still non-cluster)
+        // If mode has no prop mapping, show all points
+        setTreePointFilter(m, null);
         if (!propName) {
-            setTreePointFilter(m, null);
             return;
         }
 
@@ -101,7 +96,7 @@ export function useTreeVisualization(mapRef, { onHiddenCategories, onPredicateSe
         onPredicateSet?.(predicate)
         const hidden = set ? Array.from(set) : [];
 
-        // Nothing hidden => show all points
+        // When nothing hidden, show all points
         if (!hidden.length) {
             setTreePointFilter(m, null);
             return;
@@ -112,9 +107,8 @@ export function useTreeVisualization(mapRef, { onHiddenCategories, onPredicateSe
 
         let extra = filterCache.get(cacheKey);
         if (!extra) {
-            // Keep features that:
-            // - do NOT have the property (don’t accidentally hide “unknowns”), OR
-            // - have the property and it is NOT in the hidden list
+            // Keep features that do NOT have the property (don’t accidentally hide “unknowns”), OR
+            // have the property and it is NOT in the hidden list
             extra = [
                 'any',
                 ['!', ['has', propName]],
@@ -160,6 +154,18 @@ export function useTreeVisualization(mapRef, { onHiddenCategories, onPredicateSe
             if (v == null) return true;
             return !hiddenSet.has(v);
         };
+    }
+
+    function setTreePointFilter(m, extraFilter) {
+        // only non-cluster points
+        const base = ['!', ['has', 'point_count']];
+
+        // combine base + optional extra
+        const combined = extraFilter ? ['all', base, extraFilter] : base;
+
+        for (const id of TREE_POINT_LAYERS) {
+            if (m.getLayer(id)) m.setFilter(id, combined);
+        }
     }
 
     return {
