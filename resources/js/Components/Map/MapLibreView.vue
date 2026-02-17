@@ -10,7 +10,7 @@
 
     <LocateControl :mapRef="map" />
 
-    <TreeCard :hovered="hoveredData" :selected="selectedData" :markerLatLng="markerLatLng"
+    <MapPanels :hovered="hoveredData" :selected="selectedData" :markerLatLng="markerLatLng"
         :selectedNeighborhood="selectedNeighborhood" :neighborhoodStats="neighborhoodStats" :pinClickFlag="pinClickFlag"
         @update:selected="selectedData = $event" @cancelCreate="onCancelCreate" @clearSelection="onClearSelection" />
     <MapLoadingOverlay :isLoading="isLoading" />
@@ -24,7 +24,7 @@
 import { onMounted, ref, onBeforeUnmount, watch, computed, nextTick, provide, readonly } from 'vue'
 import MapSidebar from '@/Components/Map/Partials/MapSidebar.vue'
 import MapLoadingOverlay from '@/Components/Map/Partials/MapLoadingOverlay.vue'
-import TreeCard from '@/Components/Map/Partials/TreeCard.vue'
+import MapPanels from '@/Components/Map/Partials/MapPanels.vue'
 import AuthPromptModal from '@/Components/Map/Partials/AuthPromptModal.vue'
 import LocateControl from '@/Components/Map/Controls/LocateControl.vue'
 import EventModeTopBar from '@/Components/Map/Controls/EventModeTopBar.vue'
