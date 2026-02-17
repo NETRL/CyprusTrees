@@ -1,5 +1,5 @@
 <template>
-    <div v-if="isPlantingMode" class="absolute top-3 left-3 right-12 lg:left-12 z-40">
+    <div v-if="isPlantingMode" class="absolute top-2 left-3 right-12 lg:left-12 z-40">
         <div class="rounded-2xl border border-gray-200 bg-white/90 backdrop-blur px-4 py-3 shadow
               dark:border-gray-800 dark:bg-slate-900/85">
             <div class="flex flex-wrap items-center justify-between gap-3">

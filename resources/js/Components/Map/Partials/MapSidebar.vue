@@ -1,6 +1,6 @@
 <template>
     <aside :class="[
-        'max-lg:hidden absolute left-2 top-4 z-50',
+        'max-lg:hidden absolute left-2 top-2 z-50',
         'max-h-[calc(100vh-7rem)] overflow-y-auto w-[390px]',
         'rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-lg',
         'transition-all duration-300 ease-in-out',
@@ -16,7 +16,7 @@
 
     <!-- Desktop open button (same anchor as sidebar) -->
     <button :class="[
-        'max-lg:hidden absolute left-2 top-4 z-40',
+        'max-lg:hidden absolute left-2 top-2 z-40',
         'grid h-9 w-9 place-items-center rounded-md',
         'bg-white/90 hover:bg-gray-100 shadow ring-1 ring-slate-200 backdrop-blur',
         'dark:bg-slate-900/90 dark:ring-slate-700 transition-opacity',
