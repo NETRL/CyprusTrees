@@ -2,19 +2,30 @@
     <div
         class="flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
         <!-- Header -->
-        <div class="sticky shrink-0 pb-5 border-b border-gray-200 dark:border-gray-800">
-            <div class="flex items-center gap-2 mb-1">
-                <span class="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
-                    Nicosia Trees
-                </span>
+        <div class="sticky flex justify-between shrink-0 pb-5 border-b border-gray-200 dark:border-gray-800">
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
+                        Nicosia Trees
+                    </span>
+                </div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Explore urban forestry data
+                </p>
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    Total trees mapped: <span class="font-semibold">{{ totalTrees }}</span>
+                </p>
             </div>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Explore urban forestry data
-            </p>
-            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                Total trees mapped: <span class="font-semibold">{{ totalTrees }}</span>
-            </p>
+            <div v-if="showCloseButton">
+                <button type="button"
+                    class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300 sm:h-9 sm:w-9 sm:rounded-xl"
+                    @click="emit('close')" title="Close" aria-label="Close">
+                    <X />
+                </button>
+            </div>
         </div>
+
+
 
         <!-- Content Area -->
         <div class="flex flex-col gap-5 min-h-0 flex-1 pt-5">
@@ -149,25 +160,17 @@ import { computed, inject, watch } from 'vue';
 import CompactFilter from '@/Components/Map/Partials/CompactFilter.vue';
 import LegendItem from '@/Components/Map/Partials/LegentItem.vue';
 import { useMapColors } from '@/Composables/useMapColors';
-import { Leaf, MapPin, AlertTriangle, Droplets, Sun } from 'lucide-vue-next';
+import { Leaf, MapPin, AlertTriangle, Droplets, Sun, X } from 'lucide-vue-next';
 import { useMapFilter } from '@/Composables/useMapFilter';
 
 const props = defineProps({
-    selectedData: {
-        type: Object,
-        default: null
-    },
-    treeData: {
-        type: Object,
-        default: () => null
-    },
-    neighborhoodData: {
-        type: Object,
-        default: () => null
-    },
+    selectedData: { type: Object, default: null },
+    treeData: { type: Object, default: () => null },
+    neighborhoodData: { type: Object, default: () => null },
+    showCloseButton: { type: Boolean, default: false, }
 })
 
-const emit = defineEmits(['toggleCategory']);
+const emit = defineEmits(['toggleCategory', 'close']);
 
 const hiddenCategories = inject('hiddenCategories') // read only
 // --- Reactive State ---

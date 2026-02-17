@@ -1,14 +1,31 @@
 <template>
     <aside :class="[
-        'max-lg:hidden absolute left-0 top-0 my-4 mx-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-lg transition-all duration-300 ease-in-out z-50',
-        'max-h-[calc(100vh-7rem)] overflow-y-auto w-[390px] flex flex-col',
-        {
-            'opacity-100 px-5 py-5 pointer-events-auto': isExpanded || isHovered,
-            'opacity-0 pointer-events-none px-0 py-5': !isExpanded && !isHovered,
-        },
+        'max-lg:hidden absolute left-2 top-4 z-50',
+        'max-h-[calc(100vh-7rem)] overflow-y-auto w-[390px]',
+        'rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-lg',
+        'transition-all duration-300 ease-in-out',
+        'flex flex-col',
+        isSidebarOpen
+            ? 'opacity-100 px-5 py-5 pointer-events-auto'
+            : 'opacity-0 pointer-events-none px-0 py-5',
+
     ]">
-        <SidebarContent v-bind="props" @toggleCategory="payload => emit('toggleCategory', payload)" />
+        <SidebarContent v-bind="props" @toggleCategory="payload => emit('toggleCategory', payload)"
+            :showCloseButton="true" @close="closeSidebar" />
     </aside>
+
+    <!-- Desktop open button (same anchor as sidebar) -->
+    <button :class="[
+        'max-lg:hidden absolute left-2 top-4 z-40',
+        'grid h-9 w-9 place-items-center rounded-md',
+        'bg-white/90 hover:bg-gray-100 shadow ring-1 ring-slate-200 backdrop-blur',
+        'dark:bg-slate-900/90 dark:ring-slate-700 transition-opacity',
+        !isSidebarOpen
+            ? 'opacity-100 pointer-events-auto'
+            : 'opacity-0 pointer-events-none',
+    ]" @click="openSidebar">
+        <i :class="[' group-hover:rotate-25 transition-all duration-300 ease-in-out pi pi-map']"></i>
+    </button>
 
     <!-- Mobile Bottom Sheet -->
     <BottomSheet v-model:state="mobileState">
@@ -19,10 +36,10 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import { useSidebar } from '@/Composables/useSidebar'
+import { inject, ref, watch } from 'vue'
 import SidebarContent from '@/Components/Map/Partials/SidebarContent.vue'
 import BottomSheet from '@/Components/Map/Partials/BottomSheet.vue'
+import { useMapUiState } from '@/Lib/Map/useMapUiState'
 
 const props = defineProps({
     selectedData: {
@@ -36,35 +53,34 @@ const props = defineProps({
     neighborhoodData: {
         type: Object,
         default: () => null,
-    },
-    currentMode: {
-        type: String,
-        default: '',
-    },
+    }
 })
 
-const emit = defineEmits(['toggleCategory'])
 
-const { isExpanded, isHovered, isMobileOpen } = useSidebar()
+const { isSidebarOpen, toggleSidebar, closeSidebar, openSidebar } = useMapUiState()
+
+const emit = defineEmits(['toggleCategory'])
 
 // local state for this BottomSheet instance
 const mobileState = ref('closed')
 
-// keep isMobileOpen and mobileState in sync
+// keep isSidebarOpen and mobileState in sync
 watch(
-    () => isMobileOpen.value,
+    () => isSidebarOpen.value,
     (val) => {
-        // e.g. burger opens sidebar on mobile
         mobileState.value = val ? 'mid' : 'closed'
-    },
-    { immediate: true }
+    }
 )
 
 watch(
     () => mobileState.value,
     (val) => {
         // if the sheet is not closed, then mobile sidebar is "open"
-        isMobileOpen.value = val !== 'closed'
+        if (val !== 'closed') {
+            openSidebar()
+        } else {
+            closeSidebar()
+        }
     }
-)
+    , { immediate: true })
 </script>

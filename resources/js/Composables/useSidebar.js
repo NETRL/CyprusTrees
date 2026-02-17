@@ -1,4 +1,4 @@
-import { ref, computed, onMounted, onUnmounted, provide, inject } from 'vue'
+import { ref, computed, onMounted, onUnmounted, provide, inject, readonly } from 'vue'
 
 const SidebarSymbol = Symbol('Sidebar')
 

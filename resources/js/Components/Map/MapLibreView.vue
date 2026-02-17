@@ -1,6 +1,6 @@
 <template>
     <MapSidebar :treeData="treeData" :neighborhoodData="neighborhoodData" :selectedData="selectedData"
-        :currentMode="selectedFilter" @toggleCategory="toggleCategory" />
+        @toggleCategory="toggleCategory" />
 
     <!-- Event Mode Top Bar -->
     <EventModeTopBar :isPlantingMode="isPlantingMode" :eventId="props.eventId" :activeEvent="activeEvent"
@@ -13,6 +13,7 @@
     <MapPanels :hovered="hoveredData" :selected="selectedData" :markerLatLng="markerLatLng"
         :selectedNeighborhood="selectedNeighborhood" :neighborhoodStats="neighborhoodStats" :pinClickFlag="pinClickFlag"
         @update:selected="selectedData = $event" @cancelCreate="onCancelCreate" @clearSelection="onClearSelection" />
+
     <MapLoadingOverlay :isLoading="isLoading" />
 
     <AuthPromptModal :open="showAuthPrompt" @close="showAuthPrompt = false" />
@@ -35,7 +36,6 @@ import { useMapFilter } from '@/Composables/useMapFilter'
 import { usePermissions } from '@/Composables/usePermissions'
 
 import mitt from 'mitt'
-import { useSidebar } from '@/Composables/useSidebar'
 import { useTreeVisualization } from '@/Lib/Map/useTreeVisualization'
 import { useMapLayers } from '@/Lib/Map/useMapLayers'
 import { useNeighborhoodSelection } from '@/Lib/Map/useNeighborhoodSelection'
@@ -85,7 +85,6 @@ const { selectedNeighborhood, neighborhoodStats } = useNeighborhoodSelection({
 const { selectedFilter } = useMapFilter()
 
 // -------- EVENT MODE (fetch + recenter) ----------
-const { hideSidebar } = useSidebar()
 const modeRef = computed(() => props.mode)
 const eventIdRef = computed(() => props.eventId)
 
@@ -99,7 +98,6 @@ const {
 } = useEventMode(map, {
     modeRef,
     eventIdRef,
-    hideSidebar,
 })
 
 provide('isPlantingMode', isPlantingMode)

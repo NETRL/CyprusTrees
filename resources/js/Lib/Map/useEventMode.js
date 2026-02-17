@@ -1,6 +1,7 @@
 import { ref, computed, watch, nextTick } from "vue"
+import { useMapUiState } from "./useMapUiState"
 
-export function useEventMode(mapRef, { modeRef, eventIdRef, hideSidebar, fetchEvent } = {}) {
+export function useEventMode(mapRef, { modeRef, eventIdRef, fetchEvent } = {}) {
     const activeEvent = ref(null)
     const eventLoading = ref(false)
     const eventError = ref(null)
@@ -8,6 +9,8 @@ export function useEventMode(mapRef, { modeRef, eventIdRef, hideSidebar, fetchEv
     const isEventMode = computed(() => modeRef?.value !== "default" && !!eventIdRef?.value)
     const isPlantingMode = computed(() => modeRef?.value === "planting" && !!eventIdRef?.value)
     const activePlantingEventId = computed(() => (isPlantingMode.value ? eventIdRef?.value : null))
+
+    const { closeSidebar } = useMapUiState() 
 
     function recenterToEventIfPossible() {
         const m = mapRef?.value
@@ -29,7 +32,7 @@ export function useEventMode(mapRef, { modeRef, eventIdRef, hideSidebar, fetchEv
 
             if (!(mode === "planting" && eventId)) return
 
-            hideSidebar?.()
+            closeSidebar()
 
             eventLoading.value = true
             try {
