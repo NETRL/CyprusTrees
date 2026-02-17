@@ -1,6 +1,6 @@
 import { useMapColors } from "@/Composables/useMapColors";
 import { ref, watch } from "vue";
-import { hasLayer, whenLayerReady } from "@/Lib/Map/core/useLayerChecks";
+import { hasLayer, whenLayerReady } from "@/Lib/Map/core/useLayerReady";
 
 export function useTreeVisualization(mapRef, { onHiddenCategories, onPredicateSet, selectedFilterRef } = {}) {
 

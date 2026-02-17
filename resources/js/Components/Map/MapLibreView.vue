@@ -38,7 +38,6 @@ import mitt from 'mitt'
 import { useSidebar } from '@/Composables/useSidebar'
 import { useTreeVisualization } from '@/Lib/Map/useTreeVisualization'
 import { useMapLayers } from '@/Lib/Map/useMapLayers'
-import { whenLayerReady } from '@/Lib/Map/core/useLayerChecks'
 import { useNeighborhoodSelection } from '@/Lib/Map/useNeighborhoodSelection'
 import { useTreeCreateMarker } from '@/Lib/Map/useTreeCreateMarker'
 import { useEventMode } from '@/Lib/Map/useEventMode'
@@ -223,6 +222,10 @@ onBeforeUnmount(() => {
     map.value = null
 
     treeLayerApi = null
+    neighLayerApi = null
+    
+    gisLayerApi?.destroy()
+    gisLayerApi = null
 
     mapBus.off('tree:saved', onTreeSaved)
     mapBus.off('tree:updated', onTreeUpdated)
