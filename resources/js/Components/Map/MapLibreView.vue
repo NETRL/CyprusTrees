@@ -22,7 +22,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, onBeforeUnmount, watch, computed, nextTick, provide, readonly } from 'vue'
+import { onMounted, ref, onBeforeUnmount, computed, provide, readonly } from 'vue'
 import MapSidebar from '@/Components/Map/Partials/MapSidebar.vue'
 import MapLoadingOverlay from '@/Components/Map/Partials/MapLoadingOverlay.vue'
 import MapPanels from '@/Components/Map/Partials/MapPanels.vue'

@@ -1,3 +1,5 @@
+import { hasLayer } from "@/Lib/Map/core/useLayerReady"
+
 export async function fetchTreeDetails(treeId, { onDataLoaded } = {}) {
     const res = await fetch(`/api/trees/${treeId}`)
 
@@ -354,7 +356,7 @@ export async function loadTreesLayer(mapInstance, {
             // Pulse the outer ring size (13 to 15)
             const radius = 13 + (pulse * 2);
 
-            if (mapInstance.getLayer('trees-selection-pulse')) {
+            if (hasLayer(mapInstance, 'trees-selection-pulse')) {
                 mapInstance.setPaintProperty('trees-selection-pulse', 'circle-radius', [
                     'case',
                     ['boolean', ['feature-state', 'selected'], false],
@@ -383,7 +385,7 @@ export async function loadTreesLayer(mapInstance, {
         }
 
         // Reset pulse layer to default
-        if (mapInstance.getLayer('trees-selection-pulse')) {
+        if (hasLayer(mapInstance, 'trees-selection-pulse')) {
             mapInstance.setPaintProperty('trees-selection-pulse', 'circle-radius', [
                 'case',
                 ['boolean', ['feature-state', 'selected'], false],

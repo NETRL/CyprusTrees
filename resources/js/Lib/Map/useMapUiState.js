@@ -4,7 +4,8 @@ const MapUiStateSymbol = Symbol('MapUiState')
 
 export const MAP_PANELS = Object.freeze({
     NONE: null,
-    TREE: "tree",           // selected/hovered tree or tree form
+    TREE: "tree",           // selected/hovered tree
+    TREE_FORM: "tree_form",
     NEIGHBORHOOD: "neighborhood",
     EVENTS: "events",       // "Show my events"
     SELECTION: "selection", // selected trees summary (phase 2+)
@@ -14,7 +15,6 @@ export const MAP_MODES = Object.freeze({
     NONE: null,                   // initial map (no mode)
     PLANTING: "planting",
     MAINTENANCE: "maintenance",
-    BROWSE: "browse",
     SELECT_TREES: "selectTrees",   // phase 2
     DRAW_BOUNDARY: "drawBoundary", // phase 2
 })
@@ -80,6 +80,7 @@ export function useMapUiStateProvider() {
     const context = {
         ui: readonly(state),
         isSidebarOpen,
+        isPanelOpen,
         // mutators
         openSidebar,
         closeSidebar,
