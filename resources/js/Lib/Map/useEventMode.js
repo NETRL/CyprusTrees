@@ -1,5 +1,5 @@
 import { ref, computed, watch, nextTick } from "vue"
-import { useMapUiState } from "./useMapUiState"
+import { useMapUiState } from "@/Lib/Map/useMapUiState"
 
 export function useEventMode(mapRef, { modeRef, eventIdRef, fetchEvent } = {}) {
     const activeEvent = ref(null)

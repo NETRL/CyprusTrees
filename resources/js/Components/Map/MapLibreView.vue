@@ -18,6 +18,12 @@
 
     <AuthPromptModal :open="showAuthPrompt" @close="showAuthPrompt = false" />
 
+    <div class="absolute top-13 left-2 z-50 flex flex-col gap-2">
+        <button class="px-3 py-2 rounded-md border bg-white dark:bg-gray-900 shadow" @click="togglePanel">
+            Show Events
+        </button>
+    </div>
+
 
 </template>
 
@@ -42,6 +48,8 @@ import { useNeighborhoodSelection } from '@/Lib/Map/useNeighborhoodSelection'
 import { useTreeCreateMarker } from '@/Lib/Map/useTreeCreateMarker'
 import { useEventMode } from '@/Lib/Map/useEventMode'
 import { useTreeMutatorHandler } from '@/Lib/Map/useTreeMutatorHandler'
+import { useMapUiState, MAP_PANELS } from '@/Lib/Map/useMapUiState'
+import { useEventFunctions } from '@/Lib/Map/useEventFunctions'
 
 const props = defineProps({
     initialTreeId: { type: Number, default: null },
@@ -100,6 +108,8 @@ const {
     eventIdRef,
 })
 
+const { onEventSelected } = useEventFunctions(map, { getTreeLayerApi: () => treeLayerApi })
+
 provide('isPlantingMode', isPlantingMode)
 provide('activePlantingEventId', activePlantingEventId)
 
@@ -133,7 +143,13 @@ const { onTreeSaved, onTreeUpdated } = useTreeMutatorHandler({
 // --- bus ---
 mapBus.on('tree:saved', onTreeSaved)
 mapBus.on('tree:updated', onTreeUpdated)
+mapBus.on('event:selected', onEventSelected)
 
+
+const { openPanel } = useMapUiState()
+function togglePanel() {
+    openPanel(MAP_PANELS.EVENTS)
+}
 // -------- MAP INIT ----------
 onMounted(async () => {
     try {
@@ -221,11 +237,12 @@ onBeforeUnmount(() => {
 
     treeLayerApi = null
     neighLayerApi = null
-    
+
     gisLayerApi?.destroy()
     gisLayerApi = null
 
     mapBus.off('tree:saved', onTreeSaved)
     mapBus.off('tree:updated', onTreeUpdated)
+    mapBus.off('event:selected', onEventSelected)
 })
 </script>

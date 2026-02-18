@@ -1,3 +1,5 @@
+// Suggested file rename: useMapStyleGuards.js (see naming notes below)
+
 export function whenLayerReady(m, layerId, fn) {
     if (!m) return
 
@@ -16,7 +18,7 @@ export function whenLayerReady(m, layerId, fn) {
     }
 
     const onTick = () => {
-        if (!hasLayer()) return
+        if (!hasLayer(m, layerId)) return
         cleanup()
         fn(m)
     }
@@ -27,7 +29,6 @@ export function whenLayerReady(m, layerId, fn) {
     m.on("styledata", onTick)
 }
 
-
 export function hasLayer(m, id) {
     try {
         return isStyleReady(m) && !!m.getLayer?.(id);
@@ -36,10 +37,29 @@ export function hasLayer(m, id) {
     }
 }
 
-function isStyleReady(m) {
+export function hasSource(m, id) {
     try {
-        return !!m && !!m.getStyle?.(); // getStyle() returns a style object when ready
+        return isStyleReady(m) && !!m.getSource?.(id);
     } catch {
         return false;
+    }
+}
+
+
+export function getSourceSafe(m, id) {
+    try {
+        if (!isStyleReady(m)) return null;
+        return m.getSource?.(id) ?? null;
+    } catch {
+        return null;
+    }
+}
+
+function isStyleReady(m) {
+    try {
+        // getStyle() returns a style object only once style exists.
+        return !!m && typeof m.getStyle === "function" && !!m.getStyle()
+    } catch {
+        return false
     }
 }

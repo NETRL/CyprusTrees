@@ -24,7 +24,7 @@ export function useMapUiStateProvider() {
     const state = reactive({
         sidebarState: true,
         activePanel: MAP_PANELS.NONE,
-        mapMode: MAP_MODES.NONE,
+        activeMode: MAP_MODES.NONE,
 
         // lightweight “panel context”
         events: {
@@ -68,7 +68,7 @@ export function useMapUiStateProvider() {
     }
 
     function setMapMode(mode) {
-        state.mapMode = mode
+        state.activeMode = mode
     }
 
     function resetSelection() {

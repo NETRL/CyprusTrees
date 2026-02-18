@@ -8,38 +8,22 @@
             'opacity-0 translate-x-4 pointer-events-none': !isPanelOpen,
         },
     ]">
-        <MapTreeForm v-if="ui.activePanel === MAP_PANELS.TREE_FORM" v-model:visible="formVisible" routeResource="trees"
-            :action="formAction" :markerLatLng="markerLatLng" :dataRow="props.selected" />
-        <NeighborhoodCardContent v-else-if="ui.activePanel === MAP_PANELS.NEIGHBORHOOD"
-            :activeNeighborhood="selectedNeighborhood" :stats="neighborhoodStats || {}"
-            @clearSelection="emit('clearSelection')" />
-        <TreeCardContent v-else-if="ui.activePanel === MAP_PANELS.TREE" :hovered="props.hovered"
-            :selected="props.selected" :isHovered="isHovered" :isSelected="isSelected" @editClick="onEditClick"
+        <MapPanelContent v-bind="contentProps" @update:formVisible="formVisible = $event" @editClick="onEditClick"
             @clearSelection="emit('clearSelection')" />
     </aside>
 
     <!-- Mobile Bottom Sheet -->
     <BottomSheet v-model:state="treeSheetState" :showFab="false" :showBackdrop="false" :heightRatio="0.75">
-        <div class="flex flex-col h-full px-5 pt-4 pb-1 w-full sm:items-center">
-            <MapTreeForm v-if="ui.activePanel === MAP_PANELS.TREE_FORM" v-model:visible="formVisible"
-                routeResource="trees" :action="formAction" :markerLatLng="markerLatLng" :dataRow="props.selected" />
-            <NeighborhoodCardContent v-else-if="ui.activePanel === MAP_PANELS.NEIGHBORHOOD"
-                :activeNeighborhood="selectedNeighborhood" :stats="neighborhoodStats || {}"
-                @clearSelection="emit('clearSelection')" />
-            <TreeCardContent v-else-if="ui.activePanel === MAP_PANELS.TREE" :hovered="props.hovered"
-                :selected="props.selected" :isHovered="isHovered" :isSelected="isSelected" @editClick="onEditClick"
-                @clearSelection="emit('clearSelection')" />
-        </div>
+        <MapPanelContent v-bind="contentProps" @update:formVisible="formVisible = $event" @editClick="onEditClick"
+            @clearSelection="emit('clearSelection')" />
     </BottomSheet>
 </template>
 
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useMapUiState, MAP_PANELS, MAP_MODES } from '@/Lib/Map/useMapUiState'
-import TreeCardContent from '@/Components/Map/Partials/TreeCardContent.vue'
 import BottomSheet from '@/Components/Map/Partials/BottomSheet.vue'
-import MapTreeForm from '@/Components/Map/Partials/MapTreeForm.vue'
-import NeighborhoodCardContent from '@/Components/Map/Partials/NeighborhoodCardContent.vue'
+import MapPanelContent from './MapPanelContent.vue'
 
 const emit = defineEmits(['cancelCreate', 'clearSelection'])
 
@@ -52,6 +36,18 @@ const props = defineProps({
     neighborhoodStats: { type: Object, default: null },
 })
 
+const contentProps = computed(() => ({
+    hovered: props.hovered,
+    selected: props.selected,
+    markerLatLng: props.markerLatLng,
+    selectedNeighborhood: props.selectedNeighborhood,
+    neighborhoodStats: props.neighborhoodStats,
+    formAction: formAction.value,
+    isHovered: isHovered.value,
+    isSelected: isSelected.value,
+    formVisible: formVisible.value,
+}))
+
 const { ui, isPanelOpen, openPanel, closePanel } = useMapUiState()
 
 // ---- Local Form State ----
@@ -63,7 +59,9 @@ const isHovered = computed(() => props.hovered !== null && ui.activePanel !== MA
 const isSelected = computed(() => props.selected !== null)
 const isCreating = computed(() => props.markerLatLng !== null)
 
-const isPlanting = computed(() => ui.activeMode === MAP_MODES.PLANTING) //TODO?
+const isEventPanel = computed(() => ui.activePanel === MAP_PANELS.EVENTS)
+const isPlanting = computed(() => ui.activeMode === MAP_MODES.PLANTING)
+const isMaintenance = computed(() => ui.activeMode === MAP_MODES.MAINTENANCE)
 
 // Panel routing, react to props and toggle composable
 watch(
@@ -78,10 +76,11 @@ watch(
 watch(
     [isSelected, isHovered],
     ([selected, hovered]) => {
-        if ((selected || hovered) && (!isEditing.value && !isCreating.value)) {
+        if ((selected || hovered) && (!isEditing.value && !isCreating.value) && !isEventPanel.value) {
             openPanel(MAP_PANELS.TREE)
         } else if (!isEditing.value && !isCreating.value && !props.markerLatLng) {
-            // only close if nothing else is holding the tree form panel open
+            // only close if nothing else is holding the panel open
+            if (ui.activePanel === MAP_PANELS.TREE) closePanel()
             if (ui.activePanel === MAP_PANELS.TREE_FORM) closePanel()
         }
     }

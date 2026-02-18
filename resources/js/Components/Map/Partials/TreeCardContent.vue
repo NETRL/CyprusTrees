@@ -464,8 +464,6 @@
         <TreeReportCard @closeModal="toggleReportModal" @submitted="handleSubmitted" :showModal="showModal"
             :tree="selected" />
     </div>
-
-
 </template>
 
 <script setup>

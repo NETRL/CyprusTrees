@@ -1,4 +1,4 @@
-import { hasLayer } from "@/Lib/Map/core/useLayerReady"
+import { hasLayer, getSourceSafe, hasSource } from "@/Lib/Map/core/useMapStyleUtils"
 
 export async function fetchTreeDetails(treeId, { onDataLoaded } = {}) {
     const res = await fetch(`/api/trees/${treeId}`)
@@ -93,7 +93,7 @@ export async function loadTreesLayer(mapInstance, {
     function setTreesData(newData) {
         data = preprocessTreesGeojson(newData);
         currentData = data
-        const src = mapInstance.getSource('trees');
+        const src = getSourceSafe(mapInstance, 'trees')
         if (src) src.setData(currentData);
         clearSelection(); // feature-state ids may become invalid after refresh
     }
@@ -107,14 +107,14 @@ export async function loadTreesLayer(mapInstance, {
 
         currentData = filtered;
 
-        const src = mapInstance.getSource('trees');
+        const src = getSourceSafe(mapInstance, 'trees')
         if (src) src.setData(currentData);
 
         clearSelection();
     }
 
     // If source exists, just update and return controls
-    if (mapInstance.getSource('trees')) {
+    if (hasSource(mapInstance, 'trees')) {
         setTreesData(data);
         setInitialFilter?.('status');
         return { selectTreeById, clearSelection, setTreesData };
@@ -529,7 +529,7 @@ export async function loadTreesLayer(mapInstance, {
         if (!features.length) return;
 
         const clusterId = features[0].properties.cluster_id;
-        const source = mapInstance.getSource('trees');
+        const source = getSourceSafe(mapInstance, 'trees') 
 
         source.getClusterExpansionZoom(clusterId, (err, zoom) => {
             if (err) return;
@@ -611,6 +611,7 @@ export async function loadTreesLayer(mapInstance, {
     }
 
     function selectTreeById(treeId) {
+        console.log('selectTreeById')
         if (!treeId) return;
 
         const numericId = Number(treeId);

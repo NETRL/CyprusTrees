@@ -7,12 +7,13 @@ use App\Models\ReportType;
 use App\Models\Species;
 use App\Models\Tag;
 use App\Models\Tree;
+use App\Services\UserEventsService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class MapController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, UserEventsService $svc)
     {
         $initialTreeId = $request->filled('tree_id') ? (int) $request->input('tree_id') : null;
         $requestedLat = $request->filled('lat') ? (float) $request->input('lat') : null;
@@ -25,6 +26,12 @@ class MapController extends Controller
             'lat' => $requestedLat,
             'lon' => $requestedLon,
         ];
+
+        $userEvents = [];
+        if ($request->user()?->id !== null) {
+            $userEvents = $svc->forUser($request->user()->id, now());
+        }
+
 
         return Inertia::render('Map/MapView', [
             'reportTypes' => ReportType::all(),
@@ -40,6 +47,7 @@ class MapController extends Controller
             'initialLocation' => $initialLocation,
             'mode' => $mode,
             'eventId' => $eventId,
+            'userEvents' => $userEvents
         ]);
     }
 }

@@ -138,6 +138,7 @@ export async function loadNeighborhoodsLayer(mapInstance, { onDataLoaded, onNeig
     }
 
     function clearSelection() {
+        console.log('clearSelection')
         onNeighborhoodSelected(null)
     }
 
