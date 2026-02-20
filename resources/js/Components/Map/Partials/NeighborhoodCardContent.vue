@@ -17,7 +17,7 @@
                 </span>
                 <div class="flex items-center space-x-2">
                     <span class="text-[10px] font-mono text-gray-400 dark:text-gray-500">
-                        ID: {{ activeNeighborhood.id }}
+                        ID: {{ activeNeighborhood?.id }}
                     </span>
                     <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" @click="emit('clearSelection')">
                         ✕
@@ -27,11 +27,11 @@
 
             <div class="mb-4">
                 <h3 class="text-xl font-extrabold text-gray-900 dark:text-white leading-tight">
-                    {{ activeNeighborhood.name || 'Unknown Neighborhood' }}
+                    {{ activeNeighborhood?.name || 'Unknown Neighborhood' }}
                 </h3>
                 <p class="text-xs font-medium text-indigo-600 dark:text-indigo-400 italic flex items-center gap-1">
                     <MapPin class="w-3 h-3" />
-                    {{ activeNeighborhood.district || 'District N/A' }}, {{ activeNeighborhood.city }}
+                    {{ activeNeighborhood?.district || 'District N/A' }}, {{ activeNeighborhood?.city }}
                 </p>
             </div>
         </div>
@@ -49,7 +49,7 @@
                         </div>
                     </div>
                     <div class="text-xl font-bold text-gray-900 dark:text-gray-100">
-                        {{ stats.total_trees || 0 }}
+                        {{ stats?.total_trees || 0 }}
                     </div>
                 </div>
                 <div
@@ -60,7 +60,7 @@
                         </div>
                     </div>
                     <div class="text-xl font-bold text-gray-900 dark:text-gray-100">
-                        {{ stats.avg_canopy ? stats.avg_canopy + 'm' : '—' }}
+                        {{ stats?.avg_canopy ? stats?.avg_canopy + 'm' : '—' }}
                     </div>
                 </div>
             </div>
@@ -72,9 +72,9 @@
                     Biodiversity (Top 3)
                 </h4>
 
-                <div v-if="stats.top_species && stats.top_species.length"
+                <div v-if="stats?.top_species && stats?.top_species.length"
                     class="space-y-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 border border-gray-100 dark:border-gray-700">
-                    <div v-for="(specie, index) in stats.top_species" :key="index">
+                    <div v-for="(specie, index) in stats?.top_species" :key="index">
                         <div class="flex justify-between text-xs mb-1">
                             <span class="font-medium text-gray-700 dark:text-gray-300">{{ specie.name }}</span>
                             <span class="text-gray-500">{{ specie.percentage }}%</span>
@@ -99,13 +99,13 @@
                 <div class="grid grid-cols-2 gap-2">
                     <div
                         class="bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-lg p-2 text-center">
-                        <div class="text-lg font-bold text-green-700 dark:text-green-400">{{ stats.health_good_pct || 0
+                        <div class="text-lg font-bold text-green-700 dark:text-green-400">{{ stats?.health_good_pct || 0
                         }}%</div>
                         <div class="text-[10px] text-green-600 dark:text-green-500">Good Health</div>
                     </div>
                     <div
                         class="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 rounded-lg p-2 text-center">
-                        <div class="text-lg font-bold text-amber-700 dark:text-amber-400">{{ stats.health_poor_pct || 0
+                        <div class="text-lg font-bold text-amber-700 dark:text-amber-400">{{ stats?.health_poor_pct || 0
                         }}%</div>
                         <div class="text-[10px] text-amber-600 dark:text-amber-500">Attn. Needed</div>
                     </div>
@@ -126,21 +126,21 @@
                         <span class="text-gray-600 dark:text-gray-400">Open Reports</span>
                         <span :class="[
                             'px-2 py-0.5 rounded-full font-bold',
-                            (stats.open_reports > 0) ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                            (stats?.open_reports > 0) ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
                         ]">
-                            {{ stats.open_reports || 0 }}
+                            {{ stats?.open_reports || 0 }}
                         </span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600 dark:text-gray-400">Last Planting Event</span>
                         <span class="text-gray-900 dark:text-gray-100 font-medium">
-                            {{ formatDate(stats.last_planted_at) }}
+                            {{ formatDate(stats?.last_planted_at) }}
                         </span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600 dark:text-gray-400">Total Maint. Cost (YTD)</span>
                         <span class="text-gray-900 dark:text-gray-100 font-medium">
-                            ${{ stats.maintenance_cost_ytd || '0.00' }}
+                            ${{ stats?.maintenance_cost_ytd || '0.00' }}
                         </span>
                     </div>
                 </div>

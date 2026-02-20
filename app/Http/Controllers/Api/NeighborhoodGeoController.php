@@ -49,7 +49,6 @@ class NeighborhoodGeoController extends Controller
         return response()->json($featureCollection);
     }
 
-    // Route: GET /api/neighborhoods/{id}/stats
     public function showStats($id): JsonResponse
     {
         // 1. Basic Tree Counts
@@ -98,18 +97,20 @@ class NeighborhoodGeoController extends Controller
             ->whereYear('maintenance_events.performed_at', date('Y')) // Filters for current year
             ->sum('maintenance_events.cost');
 
-        return response()->json([
-            'total_trees' => $totalTrees,
-            'avg_canopy' => round($avgCanopy, 2),
-            'top_species' => $formattedSpecies,
-            'health_good_pct' => $totalTrees > 0 ? round(($goodHealth / $totalTrees) * 100) : 0,
-            'health_poor_pct' => $totalTrees > 0 ? round((($totalTrees - $goodHealth) / $totalTrees) * 100) : 0,
-            'open_reports' => $openReports,
-            // Example of fetching last planting event
-            'last_planted_at' => DB::table('planting_events')
-                ->where('planting_events.neighborhood_id', $id)
-                ->max('planting_events.completed_at'),
-            'maintenance_cost_ytd' => $maintenance_cost_ytd
-        ]);
+        return response()->json(
+            [
+                'total_trees' => $totalTrees,
+                'avg_canopy' => round($avgCanopy, 2),
+                'top_species' => $formattedSpecies,
+                'health_good_pct' => $totalTrees > 0 ? round(($goodHealth / $totalTrees) * 100) : 0,
+                'health_poor_pct' => $totalTrees > 0 ? round((($totalTrees - $goodHealth) / $totalTrees) * 100) : 0,
+                'open_reports' => $openReports,
+                // Example of fetching last planting event
+                'last_planted_at' => DB::table('planting_events')
+                    ->where('planting_events.neighborhood_id', $id)
+                    ->max('planting_events.completed_at'),
+                'maintenance_cost_ytd' => $maintenance_cost_ytd
+            ]
+        )->header('Cache-Control', 'private, max-age=60');
     }
 }

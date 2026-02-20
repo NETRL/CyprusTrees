@@ -21,18 +21,19 @@ export function useNeighborhoodSelection({
                 neighborhoodStats.value = null
                 return
             }
-
+            const id = v.id
             const fc = neighborhoodData.value
             if (!fc?.features?.length) return
-
-            const feature = fc.features.find(f => Number(f.id) === Number(v))
+            
+            const feature = fc.features.find(f => Number(f.id) === Number(id))
             if (!feature) return
-
-            selectedNeighborhood.value = feature.properties
+            
+            // on every click assign a new reference to maintain reactivity.
+            selectedNeighborhood.value = feature ? { ...feature.properties } : null
 
             try {
                 neighborhoodStats.value = null
-                const stats = await loadNeighborhoodStats(v)
+                const stats = await loadNeighborhoodStats(id)
                 if (reqId !== statsReq) return
                 neighborhoodStats.value = stats
             } catch (err) {

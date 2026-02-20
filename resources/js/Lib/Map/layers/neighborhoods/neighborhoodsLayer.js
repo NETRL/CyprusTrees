@@ -100,31 +100,29 @@ export async function loadNeighborhoodsLayer(mapInstance, { onDataLoaded, onNeig
         // ---------- Click / selection ----------
 
         let selectedId = null
-        if (onNeighborhoodSelected) {
-            mapInstance.on('click', (e) => {
-                if (!interactionsAllowed()) return
-                const features = mapInstance.queryRenderedFeatures(e.point, {
-                    layers: [FILL_ID],
-                });
-                if (features.length === 0 && selectedId) {
-                    selectedId = null
-                    onNeighborhoodSelected(null)
-                }
-            })
+        mapInstance.on('click', (e) => {
+            if (!interactionsAllowed()) return
+            const features = mapInstance.queryRenderedFeatures(e.point, {
+                layers: [FILL_ID],
+            });
+            if (features.length === 0 && selectedId) {
+                selectedId = null
+                onNeighborhoodSelected?.(null)
+            }
+        })
+        // Had an issue where clicking again the feature did not update the ref because it is only a primitive value (id).
+        // returning an object instead of just the primitive id to force vue to update the ref.
+        mapInstance.on('click', FILL_ID, (e) => {
+            if (!interactionsAllowed()) return
+            if (clickHitsTree(e)) return
+            e.originalEvent?.stopPropagation()
+            e.originalEvent?.stopImmediatePropagation()
 
-            mapInstance.on('click', FILL_ID, (e) => {
-                if (!interactionsAllowed()) return
-                if (clickHitsTree(e)) return
-
-                e.originalEvent?.stopPropagation()
-                e.originalEvent?.stopImmediatePropagation()
-
-                if (!e.features?.length) return
-                const feature = e.features[0]
-                selectedId = feature.id
-                onNeighborhoodSelected(feature.id)
-            })
-        }
+            if (!e.features?.length) return
+            const feature = e.features[0]
+            selectedId = feature.id
+            onNeighborhoodSelected?.({ id: selectedId, nonce: Date.now() })
+        })
     } else {
         mapInstance.getSource(SOURCE_ID).setData(data)
     }
@@ -138,8 +136,7 @@ export async function loadNeighborhoodsLayer(mapInstance, { onDataLoaded, onNeig
     }
 
     function clearSelection() {
-        console.log('clearSelection')
-        onNeighborhoodSelected(null)
+        onNeighborhoodSelected?.(null)
     }
 
     return {

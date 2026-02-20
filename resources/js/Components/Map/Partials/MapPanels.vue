@@ -13,7 +13,7 @@
     </aside>
 
     <!-- Mobile Bottom Sheet -->
-    <BottomSheet v-model:state="treeSheetState" :showFab="false" :showBackdrop="false" :heightRatio="0.75">
+    <BottomSheet v-model:state="sheetState" :showFab="false" :showBackdrop="false" :heightRatio="0.75">
         <MapPanelContent v-bind="contentProps" @update:formVisible="formVisible = $event" @editClick="onEditClick"
             @clearSelection="emit('clearSelection')" />
     </BottomSheet>
@@ -24,6 +24,7 @@ import { computed, ref, watch } from 'vue'
 import { useMapUiState, MAP_PANELS, MAP_MODES } from '@/Lib/Map/useMapUiState'
 import BottomSheet from '@/Components/Map/Partials/BottomSheet.vue'
 import MapPanelContent from './MapPanelContent.vue'
+import { useDevice } from '@/Composables/useDevice'
 
 const emit = defineEmits(['cancelCreate', 'clearSelection'])
 
@@ -35,7 +36,7 @@ const props = defineProps({
     selectedNeighborhood: { type: Object, default: null },
     neighborhoodStats: { type: Object, default: null },
 })
-
+// all the props needed for the component.
 const contentProps = computed(() => ({
     hovered: props.hovered,
     selected: props.selected,
@@ -50,6 +51,8 @@ const contentProps = computed(() => ({
 
 const { ui, isPanelOpen, openPanel, closePanel } = useMapUiState()
 
+const { isDesktop } = useDevice()
+
 // ---- Local Form State ----
 const formVisible = ref(false)
 const formAction = ref('');      // 'Create' or 'Edit'
@@ -63,18 +66,19 @@ const isEventPanel = computed(() => ui.activePanel === MAP_PANELS.EVENTS)
 const isPlanting = computed(() => ui.activeMode === MAP_MODES.PLANTING)
 const isMaintenance = computed(() => ui.activeMode === MAP_MODES.MAINTENANCE)
 
+
 // Panel routing, react to props and toggle composable
 watch(
     () => props.selectedNeighborhood,
     (val) => {
         if ((val && !isSelected.value) && (!isEditing.value && !isCreating.value)) openPanel(MAP_PANELS.NEIGHBORHOOD)
-        else if (!val && ui.activePanel === MAP_PANELS.NEIGHBORHOOD) closePanel()
+        else if (!val && ui.activePanel === MAP_PANELS.NEIGHBORHOOD) closePanel();
     }
 )
 
 // when hovered or selected tree feature toggle the form.
 watch(
-    [isSelected, isHovered],
+    [() => props.selected, () => props.hovered],
     ([selected, hovered]) => {
         if ((selected || hovered) && (!isEditing.value && !isCreating.value) && !isEventPanel.value) {
             openPanel(MAP_PANELS.TREE)
@@ -94,7 +98,7 @@ watch(
             formVisible.value = true
             formAction.value = 'Create'
             openPanel(MAP_PANELS.TREE_FORM)
-            treeSheetState.value = 'mid'
+            sheetState.value = 'mid'
         } else {
             formVisible.value = false
         }
@@ -105,8 +109,8 @@ watch(
     () => props.pinClickFlag,
     () => {
         // only reopen if we’re in create mode (pin exists) and sheet is closed
-        if (props.markerLatLng && treeSheetState.value === 'closed') {
-            treeSheetState.value = 'mid'
+        if (props.markerLatLng && sheetState.value === 'closed') {
+            sheetState.value = 'mid'
         }
     }
 )
@@ -122,14 +126,28 @@ watch(
     }
 )
 
+
 // ---- Mobile Sheet ----
-const treeSheetState = ref('closed')
+const sheetState = ref('closed')
+
+watch(sheetState,
+    (state) => {
+        if (!isDesktop.value && state === 'closed') {
+            closePanel()
+        }
+    }
+)
+
+
 
 watch(
     isPanelOpen,
-    (open) => { treeSheetState.value = open ? 'mid' : 'closed' },
+    (open) => {
+        if( !isDesktop.value ) sheetState.value = open ? 'mid' : 'closed'
+    },
     { immediate: true }
 )
+
 
 // ---- Actions ----
 

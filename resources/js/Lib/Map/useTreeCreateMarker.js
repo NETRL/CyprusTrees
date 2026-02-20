@@ -1,13 +1,17 @@
 import { ref, computed, watch, onBeforeUnmount } from "vue"
 import { attachLongPressPin } from "@/Lib/Map/useMapLongPressPin"
+import { MAP_PANELS, useMapUiState } from "./useMapUiState"
 
 export function useTreeCreateMarker(mapRef, { onClearSelection } = {}) {
   const markerLatLng = ref(null)
   const showAuthPrompt = ref(false)
   const pinClickFlag = ref(0)
 
-  const isInteractionEnabled = computed(() => markerLatLng.value == null)
+  const { ui } = useMapUiState()
 
+  const isInteractionEnabled = computed(() => markerLatLng.value == null || ui.activePanel !== MAP_PANELS.EVENTS)
+  // TODO 
+  watch(() => ui.activePanel, v => { console.log('active: ', v)})
   let longPressPin = null
 
   function attach() {

@@ -611,7 +611,6 @@ export async function loadTreesLayer(mapInstance, {
     }
 
     function selectTreeById(treeId) {
-        console.log('selectTreeById')
         if (!treeId) return;
 
         const numericId = Number(treeId);

@@ -1,5 +1,5 @@
 <template>
-    <MapSidebar :treeData="treeData" :neighborhoodData="neighborhoodData" :selectedData="selectedData"
+    <MapSidebar :treeData="treeData" :neighborhoodData="neighborhoodData"
         @toggleCategory="toggleCategory" />
 
     <!-- Event Mode Top Bar -->
@@ -10,9 +10,9 @@
 
     <LocateControl :mapRef="map" />
 
-    <MapPanels :hovered="hoveredData" :selected="selectedData" :markerLatLng="markerLatLng"
+    <MapPanels :hovered="hoveredTree" :selected="selectedTree" :markerLatLng="markerLatLng"
         :selectedNeighborhood="selectedNeighborhood" :neighborhoodStats="neighborhoodStats" :pinClickFlag="pinClickFlag"
-        @update:selected="selectedData = $event" @cancelCreate="onCancelCreate" @clearSelection="onClearSelection" />
+        @update:selected="selectedTree = $event" @cancelCreate="onCancelCreate" @clearSelection="onClearSelection" />
 
     <MapLoadingOverlay :isLoading="isLoading" />
 
@@ -28,7 +28,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, onBeforeUnmount, computed, provide, readonly } from 'vue'
+import { onMounted, ref, onBeforeUnmount, computed, provide, readonly, watch } from 'vue'
 import MapSidebar from '@/Components/Map/Partials/MapSidebar.vue'
 import MapLoadingOverlay from '@/Components/Map/Partials/MapLoadingOverlay.vue'
 import MapPanels from '@/Components/Map/Partials/MapPanels.vue'
@@ -73,8 +73,8 @@ const treeData = ref([])
 const neighborhoodData = ref([])
 const selectedNeighborhoodId = ref(null)
 
-const selectedData = ref(null)
-const hoveredData = ref(null)
+const selectedTree = ref(null)
+const hoveredTree = ref(null)
 
 let treeLayerApi = null
 let neighLayerApi = null
@@ -89,7 +89,6 @@ const { selectedNeighborhood, neighborhoodStats } = useNeighborhoodSelection({
     neighborhoodData,
     selectedNeighborhoodId,
 })
-
 const { selectedFilter } = useMapFilter()
 
 // -------- EVENT MODE (fetch + recenter) ----------
@@ -131,7 +130,7 @@ const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY
 
 const { onTreeSaved, onTreeUpdated } = useTreeMutatorHandler({
     treeData,
-    selectedData,
+    selectedTree,
 
     getTreeLayerApi: () => treeLayerApi,  // since treeLayerApi is a plain let, expose it via a getter:
 
@@ -144,7 +143,6 @@ const { onTreeSaved, onTreeUpdated } = useTreeMutatorHandler({
 mapBus.on('tree:saved', onTreeSaved)
 mapBus.on('tree:updated', onTreeUpdated)
 mapBus.on('event:selected', onEventSelected)
-
 
 const { openPanel } = useMapUiState()
 function togglePanel() {
@@ -172,8 +170,8 @@ onMounted(async () => {
             onNeighborhoodSelected: selectedNeighborhoodId,
 
             onTreeData: treeData,
-            onTreeSelected: selectedData,
-            onTreeHovered: hoveredData,
+            onTreeSelected: selectedTree,
+            onTreeHovered: hoveredTree,
 
             onInitialFilter: selectedFilter,
         })
@@ -204,8 +202,8 @@ onMounted(async () => {
 function clearMapSelection() {
     treeLayerApi?.clearSelection?.()
     neighLayerApi?.clearSelection?.()
-    hoveredData.value = null
-    selectedData.value = null
+    hoveredTree.value = null
+    selectedTree.value = null
 }
 
 // -------- VISUALIZATION / FILTERING ----------

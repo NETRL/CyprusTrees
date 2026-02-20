@@ -4,7 +4,7 @@ import { router } from '@inertiajs/vue3'
 export function useTreeMutatorHandler({
     // state refs
     treeData,
-    selectedData,
+    selectedTree,
 
     // layer access (choose one)
     getTreeLayerApi, // () => api | null
@@ -15,8 +15,8 @@ export function useTreeMutatorHandler({
     activeEvent,        // ref
     lastCreatedTree,    // ref
 } = {}) {
-    if (!treeData || !selectedData) {
-        throw new Error("useTreeMutatorHandler: treeData and selectedData refs are required")
+    if (!treeData || !selectedTree) {
+        throw new Error("useTreeMutatorHandler: treeData and selectedTree refs are required")
     }
     if (!getTreeLayerApi) {
         throw new Error("useTreeMutatorHandler: getTreeLayerApi() is required")
@@ -35,7 +35,7 @@ export function useTreeMutatorHandler({
         const treeLayerApi = getTreeLayerApi?.()
         treeLayerApi?.setTreesData?.(next)
 
-        selectedData.value = propsObj
+        selectedTree.value = propsObj
     }
 
     async function onTreeSaved(payload) {
@@ -60,8 +60,8 @@ export function useTreeMutatorHandler({
             })
         }
 
-        if (selectedData.value?.id === propsObj.id) {
-            selectedData.value = propsObj
+        if (selectedTree.value?.id === propsObj.id) {
+            selectedTree.value = propsObj
         }
 
         if (isPlantingMode) {

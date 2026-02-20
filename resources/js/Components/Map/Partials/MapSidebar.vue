@@ -42,18 +42,8 @@ import BottomSheet from '@/Components/Map/Partials/BottomSheet.vue'
 import { useMapUiState } from '@/Lib/Map/useMapUiState'
 
 const props = defineProps({
-    selectedData: {
-        type: Object,
-        default: null,
-    },
-    treeData: {
-        type: Object,
-        default: () => null,
-    },
-    neighborhoodData: {
-        type: Object,
-        default: () => null,
-    }
+    treeData: { type: Object, default: () => null, },
+    neighborhoodData: { type: Object, default: () => null, }
 })
 
 
