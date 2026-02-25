@@ -19,8 +19,8 @@ class MapController extends Controller
         $requestedLat = $request->filled('lat') ? (float) $request->input('lat') : null;
         $requestedLon = $request->filled('lon') ? (float) $request->input('lon') : null;
 
-        $mode = $request->string('mode')->toString() ?: 'default';
-        $eventId = $request->filled('event_id') ? (int) $request->input('event_id') : null;
+        $initialMode = $request->string('mode')->toString() ?: 'default';
+        $initialEventId = $request->filled('event_id') ? (int) $request->input('event_id') : null;
 
         $initialLocation = [
             'lat' => $requestedLat,
@@ -45,8 +45,8 @@ class MapController extends Controller
             'ownerType' => Tree::getOwnerTypeOptions(),
             'initialTreeId' => $initialTreeId,
             'initialLocation' => $initialLocation,
-            'mode' => $mode,
-            'eventId' => $eventId,
+            'initialMode' => $initialMode,
+            'initialEventId' => $initialEventId,
             'userEvents' => $userEvents
         ]);
     }

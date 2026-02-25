@@ -1,5 +1,6 @@
 import { fetchTreeDetails } from '@/Lib/Map/layers/trees/treesLayer'
 import { router } from '@inertiajs/vue3'
+import { MAP_MODES, useMapUiState } from '@/Lib/Map/useMapUiState'
 
 export function useTreeMutatorHandler({
     // state refs
@@ -10,8 +11,7 @@ export function useTreeMutatorHandler({
     getTreeLayerApi, // () => api | null
 
     // planting/event context
-    isPlantingMode,     // computed/ref boolean
-    eventId,            // ref/computed number | null
+    initialEventId,            // ref/computed number | null
     activeEvent,        // ref
     lastCreatedTree,    // ref
 } = {}) {
@@ -22,6 +22,7 @@ export function useTreeMutatorHandler({
         throw new Error("useTreeMutatorHandler: getTreeLayerApi() is required")
     }
 
+    const { ui } = useMapUiState()
 
     async function onTreeUpdated(payload) {
         const id = payload?.id
@@ -64,12 +65,12 @@ export function useTreeMutatorHandler({
             selectedTree.value = propsObj
         }
 
-        if (isPlantingMode) {
+        if (ui.activeMode === MAP_MODES.PLANTING) {
             try {
                 if (lastCreatedTree) lastCreatedTree.value = propsObj
 
-                if (eventId) {
-                    await attachTreeToPlantingEvent({ treeId: id, eventId })
+                if (initialEventId) {
+                    await attachTreeToPlantingEvent({ treeId: id, initialEventId })
 
                     if (activeEvent?.value) {
                         activeEvent.value = {
@@ -91,10 +92,10 @@ export function useTreeMutatorHandler({
 
 // ----------------- helpers -----------------
 
-function attachTreeToPlantingEvent({ treeId, eventId }) {
+function attachTreeToPlantingEvent({ treeId, initialEventId }) {
     return new Promise((resolve, reject) => {
         router.post(
-            route('plantingEventTrees.store', eventId),
+            route('plantingEventTrees.store', initialEventId),
             {
                 tree_id: treeId,
                 planted_at: new Date().toISOString(),

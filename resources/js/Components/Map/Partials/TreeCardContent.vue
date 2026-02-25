@@ -475,6 +475,7 @@ import { usePage } from '@inertiajs/vue3';
 import { fetchTreeDetails } from '@/Lib/Map/layers/trees/treesLayer';
 import { useForm } from '@inertiajs/vue3'
 import { onMounted, onBeforeUnmount } from 'vue'
+import { MAP_MODES, useMapUiState } from '@/Lib/Map/useMapUiState';
 
 const page = usePage();
 
@@ -487,9 +488,10 @@ const props = defineProps({
 
 const emit = defineEmits(['update:selected', 'editClick', 'clearSelection'])
 
+const { ui } = useMapUiState()
+
 const can = inject('can')
 const reportTypes = inject('reportTypes');
-const isPlantingMode = inject('isPlantingMode', false)
 const lastCreatedTree = inject('lastCreatedTree')
 const activePlantingEventId = inject('activePlantingEventId', null)
 
@@ -502,6 +504,7 @@ const treeCameraInput = ref(null)
 const treePhotoPreview = ref(null)
 const isMobile = ref(false)
 
+const isPlantingMode = computed(() => { ui.activeMode === MAP_MODES.PLANTING })
 const userId = computed(() => page.props.auth.user?.id);
 
 const neighborhoodData = computed(() => {

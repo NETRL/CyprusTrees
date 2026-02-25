@@ -71,7 +71,7 @@ const isMaintenance = computed(() => ui.activeMode === MAP_MODES.MAINTENANCE)
 watch(
     () => props.selectedNeighborhood,
     (val) => {
-        if ((val && !isSelected.value) && (!isEditing.value && !isCreating.value)) openPanel(MAP_PANELS.NEIGHBORHOOD)
+        if ((val && !isSelected.value) && (!isEditing.value && !isCreating.value) && !isEventPanel.value) openPanel(MAP_PANELS.NEIGHBORHOOD)
         else if (!val && ui.activePanel === MAP_PANELS.NEIGHBORHOOD) closePanel();
     }
 )
@@ -82,10 +82,13 @@ watch(
     ([selected, hovered]) => {
         if ((selected || hovered) && (!isEditing.value && !isCreating.value) && !isEventPanel.value) {
             openPanel(MAP_PANELS.TREE)
-        } else if (!isEditing.value && !isCreating.value && !props.markerLatLng) {
+        } else if (!isEditing.value && !isCreating.value && !props.markerLatLng && !isEventPanel.value) {
             // only close if nothing else is holding the panel open
             if (ui.activePanel === MAP_PANELS.TREE) closePanel()
             if (ui.activePanel === MAP_PANELS.TREE_FORM) closePanel()
+        } else if (isEventPanel.value) {
+            openPanel(MAP_PANELS.EVENTS)
+            sheetState.value = 'mid'
         }
     }
 )
@@ -133,6 +136,8 @@ const sheetState = ref('closed')
 watch(sheetState,
     (state) => {
         if (!isDesktop.value && state === 'closed') {
+            //TODO Check correct bottom sheet user flow
+            // if (ui.activePanel === MAP_PANELS.EVENTS) return
             closePanel()
         }
     }
@@ -143,7 +148,7 @@ watch(sheetState,
 watch(
     isPanelOpen,
     (open) => {
-        if( !isDesktop.value ) sheetState.value = open ? 'mid' : 'closed'
+        if (!isDesktop.value) sheetState.value = open ? 'mid' : 'closed'
     },
     { immediate: true }
 )

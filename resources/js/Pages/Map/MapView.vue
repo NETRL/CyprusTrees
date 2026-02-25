@@ -8,8 +8,8 @@
         <main class="flex-1 relative overflow-hidden">
             <MapFilterProvider>
                 <MapUiStateProvider>
-                    <MapLibreView :initialTreeId="initialTreeId" :initialLocation="initialLocation" :mode="mode"
-                        :eventId="eventId" />
+                    <MapLibreView :initialTreeId="initialTreeId" :initialLocation="initialLocation" :initialMode="initialMode"
+                        :initialEventId="initialEventId" />
                 </MapUiStateProvider>
             </MapFilterProvider>
         </main>
@@ -35,8 +35,8 @@ const props = defineProps({
     ownerType: { type: Array, default: () => [] },
     initialTreeId: { type: Number, default: null, },
     initialLocation: { type: Object, default: null, },
-    mode: { type: String, default: 'default' },
-    eventId: { type: Number, default: null },
+    initialMode: { type: String, default: 'default' },
+    initialEventId: { type: Number, default: null },
     userEvents: { type: Array, default: () => [] },
 })
 

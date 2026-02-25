@@ -1,16 +1,69 @@
 import { ref, computed, watch, nextTick } from "vue"
-import { useMapUiState } from "@/Lib/Map/useMapUiState"
+import { MAP_MODES, useMapUiState } from "@/Lib/Map/useMapUiState"
 
-export function useEventMode(mapRef, { modeRef, eventIdRef, fetchEvent } = {}) {
+export function useEventMode(mapRef, { initialModeRef, initialEventIdRef, getTreeLayerApi, } = {}) {
+    const { ui, closeSidebar, setActiveMode } = useMapUiState()
+
+    const mode = ref(initialModeRef.value)
+    const eventId = ref(initialEventIdRef.value)
     const activeEvent = ref(null)
     const eventLoading = ref(false)
     const eventError = ref(null)
 
-    const isEventMode = computed(() => modeRef?.value !== "default" && !!eventIdRef?.value)
-    const isPlantingMode = computed(() => modeRef?.value === "planting" && !!eventIdRef?.value)
-    const activePlantingEventId = computed(() => (isPlantingMode.value ? eventIdRef?.value : null))
+    const isEventMode = computed(() => (mode?.value !== "default" && !!eventId?.value))
+    const activePlantingEventId = computed(() => (isPlantingMode.value ? eventId?.value : null))
 
-    const { closeSidebar } = useMapUiState() 
+    const isPlantingMode = computed(() => (mode?.value === "planting" && !!eventId?.value))
+
+    if (!getTreeLayerApi) {
+        throw new Error("useEventFunctions: getTreeLayerApi() is required")
+    }
+
+    if (isEventMode.value) {
+        setActiveMode(MAP_MODES.EVENTS)
+    }
+
+    watch(isPlantingMode, v => {
+        if (v) {
+            setActiveMode(MAP_MODES.PLANTING)
+        }
+    }, { immediate: true })
+
+
+    const onEventSelected = (ev) => {
+
+        const treeLayerApi = getTreeLayerApi?.()
+
+        if (ev.type === 'maintenance') {
+            // setActiveMode(MAP_MODES.MAINTENANCE)
+            treeLayerApi.selectTreeById(ev.meta.tree_id)
+        }
+    }
+
+    const onEventFocused = (ev) => {
+        if (ev.type === 'planting') {
+            console.log('focused: ', ev)
+            mode.value = ev.type
+            eventId.value = ev.meta?.planting_id
+        }
+
+    }
+
+    const onEventStart = (ev) => {
+        console.log('start: ', ev)
+    }
+
+    const onEventComplete = (ev) => {
+        console.log('complete: ', ev)
+    }
+
+    const terminateEventMode = () => {
+        mode.value = null
+        eventId.value = null
+        activeEvent.value = null
+        eventLoading.value = false
+        eventError.value = null
+    }
 
     function recenterToEventIfPossible() {
         const m = mapRef?.value
@@ -25,7 +78,7 @@ export function useEventMode(mapRef, { modeRef, eventIdRef, fetchEvent } = {}) {
 
     // fetch event when mode/id changes
     watch(
-        () => [modeRef?.value, eventIdRef?.value],
+        () => [mode?.value, eventId?.value],
         async ([mode, eventId]) => {
             activeEvent.value = null
             eventError.value = null
@@ -67,8 +120,6 @@ export function useEventMode(mapRef, { modeRef, eventIdRef, fetchEvent } = {}) {
 
     return {
         // flags
-        isEventMode,
-        isPlantingMode,
         activePlantingEventId,
 
         // state
@@ -78,5 +129,11 @@ export function useEventMode(mapRef, { modeRef, eventIdRef, fetchEvent } = {}) {
 
         // actions
         recenterToEventIfPossible,
+        onEventSelected,
+        onEventStart,
+        onEventComplete,
+        onEventFocused,
+        terminateEventMode,
+
     }
 }

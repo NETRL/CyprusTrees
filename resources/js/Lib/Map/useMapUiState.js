@@ -13,6 +13,7 @@ export const MAP_PANELS = Object.freeze({
 
 export const MAP_MODES = Object.freeze({
     NONE: null,                   // initial map (no mode)
+    EVENTS: "events",
     PLANTING: "planting",
     MAINTENANCE: "maintenance",
     SELECT_TREES: "selectTrees",   // phase 2
@@ -67,7 +68,7 @@ export function useMapUiStateProvider() {
         state.activePanel = state.activePanel === key ? MAP_PANELS.NONE : key
     }
 
-    function setMapMode(mode) {
+    function setActiveMode(mode) {
         state.activeMode = mode
     }
 
@@ -88,7 +89,7 @@ export function useMapUiStateProvider() {
         openPanel,
         closePanel,
         togglePanel,
-        setMapMode,
+        setActiveMode,
         resetSelection,
     }
 

@@ -169,7 +169,7 @@ export class GisDataLayerManager {
     }
 
     async _ensureData(rec) {
-        // load only once unless you want reload behavior
+        // load only once unless we want reload behavior
         if (rec.loadedOnce && !this.reloadOnMoveEnd) return
         const m = this.map
         const source = m.getSource(rec.sourceId)

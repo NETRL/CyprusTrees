@@ -1,10 +1,9 @@
 <template>
-    <MapSidebar :treeData="treeData" :neighborhoodData="neighborhoodData"
-        @toggleCategory="toggleCategory" />
+    <MapSidebar :treeData="treeData" :neighborhoodData="neighborhoodData" @toggleCategory="toggleCategory" />
 
     <!-- Event Mode Top Bar -->
-    <EventModeTopBar :isPlantingMode="isPlantingMode" :eventId="props.eventId" :activeEvent="activeEvent"
-        :eventLoading="eventLoading" :eventError="eventError" />
+    <EventModeTopBar :initialEventId="props.initialEventId" :activeEvent="activeEvent" :eventLoading="eventLoading"
+        :eventError="eventError" />
 
     <div ref="mapContainer" class="map-container w-full h-full"></div>
 
@@ -18,17 +17,10 @@
 
     <AuthPromptModal :open="showAuthPrompt" @close="showAuthPrompt = false" />
 
-    <div class="absolute top-13 left-2 z-50 flex flex-col gap-2">
-        <button class="px-3 py-2 rounded-md border bg-white dark:bg-gray-900 shadow" @click="togglePanel">
-            Show Events
-        </button>
-    </div>
-
-
 </template>
 
 <script setup>
-import { onMounted, ref, onBeforeUnmount, computed, provide, readonly, watch } from 'vue'
+import { onMounted, ref, onBeforeUnmount, computed, provide, readonly, watch, inject } from 'vue'
 import MapSidebar from '@/Components/Map/Partials/MapSidebar.vue'
 import MapLoadingOverlay from '@/Components/Map/Partials/MapLoadingOverlay.vue'
 import MapPanels from '@/Components/Map/Partials/MapPanels.vue'
@@ -48,14 +40,14 @@ import { useNeighborhoodSelection } from '@/Lib/Map/useNeighborhoodSelection'
 import { useTreeCreateMarker } from '@/Lib/Map/useTreeCreateMarker'
 import { useEventMode } from '@/Lib/Map/useEventMode'
 import { useTreeMutatorHandler } from '@/Lib/Map/useTreeMutatorHandler'
-import { useMapUiState, MAP_PANELS } from '@/Lib/Map/useMapUiState'
-import { useEventFunctions } from '@/Lib/Map/useEventFunctions'
+import { useMapUiState, MAP_PANELS, MAP_MODES } from '@/Lib/Map/useMapUiState'
+import { MapOptionsManager } from '@/Lib/Map/layers/managers/MapOptionsManager'
 
 const props = defineProps({
     initialTreeId: { type: Number, default: null },
     initialLocation: { type: Object, default: null, },
-    mode: { type: String, default: 'default' },
-    eventId: { type: Number, default: null },
+    initialMode: { type: String, default: 'default' },
+    initialEventId: { type: Number, default: null },
 })
 
 const { can } = usePermissions()
@@ -64,11 +56,14 @@ provide('can', can)
 const mapBus = mitt()
 provide('mapBus', mapBus)
 
+const userEvents = inject("userEvents", ref([]));
+
 const mapContainer = ref(null)
 const map = ref(null)
 
 const isLoading = ref(true)
 
+// Selection state
 const treeData = ref([])
 const neighborhoodData = ref([])
 const selectedNeighborhoodId = ref(null)
@@ -76,40 +71,49 @@ const selectedNeighborhoodId = ref(null)
 const selectedTree = ref(null)
 const hoveredTree = ref(null)
 
+// Api refs
 let treeLayerApi = null
 let neighLayerApi = null
 let gisLayerApi = null
 
+let mapOptionsMgr = null
+
+// Marker (long click) Api
 const treeCreate = useTreeCreateMarker(map, {
     onClearSelection: clearMapSelection,
 })
 const { markerLatLng, showAuthPrompt, pinClickFlag, isInteractionEnabled } = treeCreate
 
+// Neighborhood Select Api
 const { selectedNeighborhood, neighborhoodStats } = useNeighborhoodSelection({
     neighborhoodData,
     selectedNeighborhoodId,
 })
+
 const { selectedFilter } = useMapFilter()
+const { ui, openPanel, togglePanel, setActiveMode } = useMapUiState()
 
 // -------- EVENT MODE (fetch + recenter) ----------
-const modeRef = computed(() => props.mode)
-const eventIdRef = computed(() => props.eventId)
-
+const isEventMode = computed(() => ui.activeMode === MAP_MODES.EVENTS)
+const initialMode = computed(() => props.initialMode)
+const initialEventIdRef = computed(() => props.initialEventId)
 const {
-    isEventMode,
-    isPlantingMode,
     activePlantingEventId,
     activeEvent,
     eventLoading,
     eventError,
+
+    onEventSelected,
+    onEventStart,
+    onEventComplete,
+    onEventFocused,
+    terminateEventMode,
 } = useEventMode(map, {
-    modeRef,
-    eventIdRef,
+    initialModeRef: initialMode,
+    initialEventIdRef: initialEventIdRef,
+    getTreeLayerApi: () => treeLayerApi
 })
 
-const { onEventSelected } = useEventFunctions(map, { getTreeLayerApi: () => treeLayerApi })
-
-provide('isPlantingMode', isPlantingMode)
 provide('activePlantingEventId', activePlantingEventId)
 
 
@@ -134,8 +138,7 @@ const { onTreeSaved, onTreeUpdated } = useTreeMutatorHandler({
 
     getTreeLayerApi: () => treeLayerApi,  // since treeLayerApi is a plain let, expose it via a getter:
 
-    isPlantingMode,
-    eventId: eventIdRef, // computed from props
+    initialEventId: initialEventIdRef, // computed from props
     activeEvent,
     lastCreatedTree,
 })
@@ -143,11 +146,39 @@ const { onTreeSaved, onTreeUpdated } = useTreeMutatorHandler({
 mapBus.on('tree:saved', onTreeSaved)
 mapBus.on('tree:updated', onTreeUpdated)
 mapBus.on('event:selected', onEventSelected)
+mapBus.on('event:start', onEventStart)
+mapBus.on('event:complete', onEventComplete)
+mapBus.on('event:focus', onEventFocused)
 
-const { openPanel } = useMapUiState()
-function togglePanel() {
-    openPanel(MAP_PANELS.EVENTS)
-}
+const assignedTreeIdSet = computed(() => {
+    if (!isEventMode.value) return null // no restriction outside event mode
+
+    const set = new Set()
+    for (const ev of (userEvents ?? [])) {
+        const id = ev?.meta?.tree_id
+        if (id != null) set.add(Number(id))
+    }
+    return set
+})
+
+// compute a map filter expression that "include features where the feature property id is in the array"
+const eventBaseMapFilter = computed(() => {
+  const allow = assignedTreeIdSet.value
+  if (allow == null) return null
+
+  const ids = [...allow]
+  if (!ids.length) return ['==', 'id', -1] // show none
+
+  return ['in', 'id', ...ids] // legacy syntax
+})
+
+
+const eventBasePredicate = computed(() => {
+  if (assignedTreeIdSet.value == null) return () => true
+  const allow = new Set(assignedTreeIdSet.value)
+  return (f) => allow.has(f?.properties?.id)
+})
+
 // -------- MAP INIT ----------
 onMounted(async () => {
     try {
@@ -162,6 +193,10 @@ onMounted(async () => {
         treeCreate.attach()
 
         setupBaseLayers(m, MAPTILER_KEY)
+
+        mapOptionsMgr = new MapOptionsManager(m, {
+            mapUi: { openPanel, setActiveMode },
+        }).init()
 
         const layersComposable = useMapLayers(m, {
             isInteractionEnabled: () => isInteractionEnabled.value,
@@ -186,6 +221,8 @@ onMounted(async () => {
             onHiddenCategories: (set) => { hiddenCategories.value = set },
             onPredicateSet: (p) => { treeLayerApi?.setTreesDataFiltered(p) },
             selectedFilterRef: selectedFilter,
+            baseMapFilterRef: () => eventBaseMapFilter.value,
+            basePredicateRef: () => eventBasePredicate.value,
         })
 
         if (props.initialTreeId) {
@@ -196,6 +233,15 @@ onMounted(async () => {
         console.error(e)
     } finally {
         isLoading.value = false
+    }
+})
+
+// ---------- UI state watcher ----------
+
+watch(() => ui.activeMode, (mode) => {
+    if (mode === MAP_MODES.NONE) {
+        terminateEventMode()
+        clearMapSelection()
     }
 })
 
@@ -239,8 +285,14 @@ onBeforeUnmount(() => {
     gisLayerApi?.destroy()
     gisLayerApi = null
 
+    mapOptionsMgr?.destroy()
+    mapOptionsMgr = null
+
     mapBus.off('tree:saved', onTreeSaved)
     mapBus.off('tree:updated', onTreeUpdated)
     mapBus.off('event:selected', onEventSelected)
+    mapBus.off('event:start', onEventStart)
+    mapBus.off('event:complete', onEventComplete)
+    mapBus.off('event:focus', onEventFocused)
 })
 </script>

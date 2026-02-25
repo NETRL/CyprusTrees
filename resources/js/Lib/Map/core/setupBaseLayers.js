@@ -1,5 +1,6 @@
 import { BaseMapControl } from '@/Lib/Map/controls/BaseMapControl'
 import { getRasterLayers, getVectorLayers } from '@/Lib/Map/core/baseMapStyles'
+import { getSourceSafe } from '@/Lib/Map/core/useMapStyleUtils'
 
 export async function setupBaseLayers(map, maptilerKey) {
 
@@ -56,7 +57,7 @@ function addVectorStyleAsNamespace(map, styleJson, namespace) {
 
   // Ensure sources exist
   Object.entries(styleJson.sources || {}).forEach(([sourceId, sourceDef]) => {
-    if (!map.getSource(sourceId)) {
+    if (!getSourceSafe(map, sourceId)) {
       map.addSource(sourceId, sourceDef)
     }
   })

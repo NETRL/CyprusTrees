@@ -12,41 +12,40 @@ export async function fetchTreeDetails(treeId, { onDataLoaded } = {}) {
     return data
 }
 
-async function loadSvgAsSdfImage(map, name, url, rasterPx = 256) {
-    if (map.hasImage(name)) map.removeImage(name);
+// async function loadSvgAsSdfImage(map, name, url, rasterPx = 256) {
+//     if (map.hasImage(name)) map.removeImage(name);
 
-    const res = await fetch(`${url}?v=${Date.now()}`);
-    if (!res.ok) throw new Error(`Failed to load ${url}: ${res.status}`);
+//     const res = await fetch(`${url}?v=${Date.now()}`);
+//     if (!res.ok) throw new Error(`Failed to load ${url}: ${res.status}`);
 
-    const svgText = await res.text();
-    const blob = new Blob([svgText], { type: 'image/svg+xml' });
-    const blobUrl = URL.createObjectURL(blob);
+//     const svgText = await res.text();
+//     const blob = new Blob([svgText], { type: 'image/svg+xml' });
+//     const blobUrl = URL.createObjectURL(blob);
 
-    const img = await new Promise((resolve, reject) => {
-        const im = new Image();
-        im.onload = () => resolve(im);
-        im.onerror = reject;
-        im.src = blobUrl;
-    });
-    URL.revokeObjectURL(blobUrl);
+//     const img = await new Promise((resolve, reject) => {
+//         const im = new Image();
+//         im.onload = () => resolve(im);
+//         im.onerror = reject;
+//         im.src = blobUrl;
+//     });
+//     URL.revokeObjectURL(blobUrl);
 
-    const canvas = document.createElement('canvas');
-    canvas.width = rasterPx;
-    canvas.height = rasterPx;
+//     const canvas = document.createElement('canvas');
+//     canvas.width = rasterPx;
+//     canvas.height = rasterPx;
 
-    const ctx = canvas.getContext('2d', { alpha: true });
-    ctx.clearRect(0, 0, rasterPx, rasterPx);
-    ctx.drawImage(img, 0, 0, rasterPx, rasterPx);
+//     const ctx = canvas.getContext('2d', { alpha: true });
+//     ctx.clearRect(0, 0, rasterPx, rasterPx);
+//     ctx.drawImage(img, 0, 0, rasterPx, rasterPx);
 
-    const imageData = ctx.getImageData(0, 0, rasterPx, rasterPx);
+//     const imageData = ctx.getImageData(0, 0, rasterPx, rasterPx);
 
-    map.addImage(
-        name,
-        { width: rasterPx, height: rasterPx, data: imageData.data },
-        { sdf: true }
-    );
-}
-
+//     map.addImage(
+//         name,
+//         { width: rasterPx, height: rasterPx, data: imageData.data },
+//         { sdf: true }
+//     );
+// }
 
 
 function preprocessTreesGeojson(data) {
@@ -99,7 +98,7 @@ export async function loadTreesLayer(mapInstance, {
     }
 
     function setTreesDataFiltered(predicateFn) {
-        // predicateFn(feature) => true to keep
+        console.log(() => predicateFn)
         const filtered = {
             ...data,
             features: (data.features || []).filter(predicateFn),

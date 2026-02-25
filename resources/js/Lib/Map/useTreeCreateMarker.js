@@ -9,9 +9,11 @@ export function useTreeCreateMarker(mapRef, { onClearSelection } = {}) {
 
   const { ui } = useMapUiState()
 
-  const isInteractionEnabled = computed(() => markerLatLng.value == null || ui.activePanel !== MAP_PANELS.EVENTS)
-  // TODO 
-  watch(() => ui.activePanel, v => { console.log('active: ', v)})
+  const isInteractionEnabled = computed(() => markerLatLng.value == null
+    // && ui.activePanel !== MAP_PANELS.EVENTS
+  )
+  //TODO 
+  // watch(() => ui.activePanel, v => { console.log('active: ', v); console.log(isInteractionEnabled.value)})
   let longPressPin = null
 
   function attach() {

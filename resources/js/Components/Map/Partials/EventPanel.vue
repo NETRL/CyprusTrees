@@ -60,19 +60,19 @@
                 <div class="mt-3 flex flex-wrap gap-2">
                     <button type="button"
                         class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-800 hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-200 dark:hover:bg-gray-900/40"
-                        @click="select(selectedEvent)">
+                        @click="mapBus?.emit('event:focus', selectedEvent)">
                         Focus on map
                     </button>
 
                     <button v-if="selectedEvent?.actions?.includes('start')" type="button"
                         class="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-900/15 dark:text-amber-100 dark:hover:bg-amber-900/25"
-                        @click="emit('start', selectedEvent)">
+                        @click="mapBus?.emit('event:start', selectedEvent)">
                         ▶ Start
                     </button>
 
                     <button v-if="selectedEvent?.actions?.includes('complete')" type="button"
                         class="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-900 hover:bg-emerald-100 dark:border-emerald-900/50 dark:bg-emerald-900/15 dark:text-emerald-100 dark:hover:bg-emerald-900/25"
-                        @click="emit('complete', selectedEvent)">
+                        @click="mapBus?.emit('event:complete', selectedEvent)">
                         ✓ Complete
                     </button>
                 </div>
@@ -159,7 +159,7 @@
     <div v-else class="w-full overflow-y-auto">
         <!-- Sticky header -->
         <div
-            class="sticky top-0 z-10 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 backdrop-blur-md px-4 py-4">
+            class="lg:sticky top-0 z-10 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 backdrop-blur-md px-4 py-4">
             <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
                     <div class="flex items-center gap-2">
@@ -319,19 +319,19 @@
                             <div class="mt-3 flex flex-wrap gap-2">
                                 <button v-if="ev.actions?.includes('start')" type="button"
                                     class="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-900/15 dark:text-amber-100 dark:hover:bg-amber-900/25"
-                                    @click.stop="emit('start', ev)">
+                                    @click.stop="mapBus?.emit('event:start', ev)">
                                     ▶ Start
                                 </button>
 
                                 <button v-if="ev.actions?.includes('complete')" type="button"
                                     class="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-900 hover:bg-emerald-100 dark:border-emerald-900/50 dark:bg-emerald-900/15 dark:text-emerald-100 dark:hover:bg-emerald-900/25"
-                                    @click.stop="emit('complete', ev)">
+                                    @click.stop="mapBus?.emit('event:complete', ev)">
                                     ✓ Complete
                                 </button>
 
                                 <button v-if="ev.detailsUrl" type="button"
                                     class="inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-900 hover:bg-indigo-100 dark:border-indigo-900/50 dark:bg-indigo-900/15 dark:text-indigo-100 dark:hover:bg-indigo-900/25"
-                                    @click.stop="emit('details', ev)">
+                                    @click.stop="mapBus?.emit('event:details', ev)">
                                     ↗ Details
                                 </button>
                             </div>
@@ -420,23 +420,27 @@
                             </div>
 
                             <div class="mt-3 flex flex-wrap gap-2">
+                                <!-- <button type="button"
+                                    class="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-900 hover:bg-blue-100 dark:border-blue-900/50 dark:bg-blue-900/15 dark:text-blue-100 dark:hover:bg-blue-900/25"
+                                    @click.stop="mapBus?.emit('open-map', ev)">
+                                    <i class="pi pi-map" /> Open Map </button> -->
                                 <button v-if="ev.actions?.includes('start')" type="button"
                                     class="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-900/15 dark:text-amber-100 dark:hover:bg-amber-900/25"
-                                    @click.stop="emit('start', ev)">
+                                    @click.stop="mapBus?.emit('event:start', ev)">
                                     ▶ Start
                                 </button>
 
                                 <button v-if="ev.actions?.includes('complete')" type="button"
                                     class="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-900 hover:bg-emerald-100 dark:border-emerald-900/50 dark:bg-emerald-900/15 dark:text-emerald-100 dark:hover:bg-emerald-900/25"
-                                    @click.stop="emit('complete', ev)">
+                                    @click.stop="mapBus?.emit('event:complete', ev)">
                                     ✓ Complete
                                 </button>
 
-                                <button v-if="ev.detailsUrl" type="button"
+                                <!-- <button v-if="ev.detailsUrl" type="button"
                                     class="inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-900 hover:bg-indigo-100 dark:border-indigo-900/50 dark:bg-indigo-900/15 dark:text-indigo-100 dark:hover:bg-indigo-900/25"
-                                    @click.stop="emit('details', ev)">
+                                    @click.stop="mapBus?.emit('details', ev)">
                                     ↗ Details
-                                </button>
+                                </button> -->
                             </div>
                         </button>
                     </div>
@@ -453,15 +457,16 @@ import { computed, inject, nextTick, onMounted, reactive, ref, unref, watch } fr
 import KpiTiny from "@/Components/Map/Partials/KpiTiny.vue";
 import { useStoredPrefs } from "@/Composables/useStoredPrefs";
 
-const emit = defineEmits(["selected", "start", "complete", "details"]);
-const mapBus = inject('mapBus')
 const props = defineProps({
     selectedTree: { type: Object, default: null },
 });
 
+const mapBus = inject('mapBus')
+
 watch(() => props.selectedTree,
     (v) => {
         if (v) {
+            if (!selectedEvent.value) return
             showEventDetails.value = true
         }
     })
@@ -548,7 +553,6 @@ function select(ev) {
     } else {
         selectedEvent.value = ev;
     }
-    console.log(ev)
     mapBus?.emit('event:selected', ev) // parent zooms to feature
 }
 
@@ -668,15 +672,11 @@ const filteredPlanting = computed(() =>
 function getSectionState() {
     sectionsOpen.value.maintenance = getPref(`${STORAGE_KEY}maintenance`, true)
     sectionsOpen.value.planting = getPref(`${STORAGE_KEY}planting`, true)
-
-    console.log('maint: ' + sectionsOpen.value.maintenance)
-    console.log('planting: ' + sectionsOpen.value.planting)
 }
 
 function toggleSection(type) {
     sectionsOpen.value[type] = !sectionsOpen.value[type]
     setPref(`${STORAGE_KEY}${type}`, sectionsOpen.value[type])
-    console.log(sectionsOpen.value[type])
 }
 
 </script>

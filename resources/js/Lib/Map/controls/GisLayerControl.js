@@ -57,7 +57,7 @@ export class GisLayersControl {
     // Inner HTML Structure
     panel.innerHTML = `
       <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-100">
-        <h3 class="text-sm font-bold text-gray-800">${this.title}</h3>
+       <h3 class="text-xs uppercase tracking-widest font-bold text-gray-500 dark:text-gray-400">${this.title}</h3>
         <button type="button" data-close-btn class="text-gray-400 hover:text-gray-600">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>

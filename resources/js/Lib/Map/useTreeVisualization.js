@@ -2,7 +2,7 @@ import { useMapColors } from "@/Composables/useMapColors";
 import { ref, watch } from "vue";
 import { hasLayer, whenLayerReady } from "@/Lib/Map/core/useMapStyleUtils";
 
-export function useTreeVisualization(mapRef, { onHiddenCategories, onPredicateSet, selectedFilterRef } = {}) {
+export function useTreeVisualization(mapRef, { onHiddenCategories, onPredicateSet, selectedFilterRef, baseMapFilterRef, basePredicateRef } = {}) {
 
     const map = ref(mapRef)
 
@@ -66,6 +66,18 @@ export function useTreeVisualization(mapRef, { onHiddenCategories, onPredicateSe
         { immediate: true }
     )
 
+    watch(
+        () => [ baseMapFilterRef?.(), basePredicateRef?.() ],
+        () => applyVisibility(selectedFilterRef.value ?? 'status'),
+        // { immediate: true }
+    )
+
+    // watch(
+    //     () => basePredicateRef?.(),
+    //     () => applyVisibility(selectedFilterRef.value ?? 'status'),
+    //     // { immediate: true }
+    // )
+
     function visualiseTreeData(mode = 'status') {
         const m = map.value
         if (!hasLayer(m, 'trees-circle')) return
@@ -80,44 +92,50 @@ export function useTreeVisualization(mapRef, { onHiddenCategories, onPredicateSe
 
 
     function applyVisibility(mode = 'status') {
-        const m = map.value;
+        const m = map.value
         if (!hasLayer(m, 'trees-circle')) return
 
-        const propName = modeToPropName[mode];
+        const baseExtra = baseMapFilterRef?.() ?? null
+        
+        //  base predicate (event restriction)
+        const basePredicate = basePredicateRef?.() ?? (() => true)
 
-        // If mode has no prop mapping, show all points
-        setTreePointFilter(m, null);
+        // If mode isn't valid, fall back to status
+        const effectiveMode = modeToPropName[mode] ? mode : 'status'
+        const propName = modeToPropName[effectiveMode] // e.g. 'species_origin'
+
+        // --- category predicate (hidden categories for current mode) ---
+        const set = hiddenCategories.value?.[effectiveMode]
+        const categoryPredicate = makePredicateFromHidden(effectiveMode, set, modeToPropName)
+
+        // Always update the data source predicate (base AND category)
+        onPredicateSet?.((f) => basePredicate(f) && categoryPredicate(f))
+
+        // If for some reason we don't have a propName, only apply base map filter
         if (!propName) {
-            return;
+            setTreePointFilter(m, baseExtra, null)
+            return
         }
 
-        const set = hiddenCategories.value[mode];
-        const predicate = makePredicateFromHidden(mode, set, modeToPropName);
-        onPredicateSet?.(predicate)
-        const hidden = set ? Array.from(set) : [];
-
-        // When nothing hidden, show all points
+        // --- category map filter (hidden categories -> MapLibre expression) ---
+        const hidden = set ? Array.from(set) : []
         if (!hidden.length) {
-            setTreePointFilter(m, null);
-            return;
+            setTreePointFilter(m, baseExtra, null)
+            return
         }
 
-        hidden.sort();
-        const cacheKey = `${mode}:${hidden.join('|')}`;
+        hidden.sort()
+        const cacheKey = `${effectiveMode}:${hidden.join('|')}`
 
-        let extra = filterCache.get(cacheKey);
-        if (!extra) {
-            // Keep features that do NOT have the property (don’t accidentally hide “unknowns”), OR
-            // have the property and it is NOT in the hidden list
-            extra = [
-                'any',
-                ['!', ['has', propName]],
-                ['!', ['in', ['get', propName], ['literal', hidden]]],
-            ];
-            filterCache.set(cacheKey, extra);
+        let categoryExtra = filterCache.get(cacheKey)
+        if (!categoryExtra) {
+            categoryExtra = ['any', ['!has', propName], ['!in', propName, ...hidden]]
+            filterCache.set(cacheKey, categoryExtra)
         }
 
-        setTreePointFilter(m, extra);
+
+        // Apply both: base restriction AND category filter
+        setTreePointFilter(m, baseExtra, categoryExtra)
     }
 
 
@@ -156,15 +174,17 @@ export function useTreeVisualization(mapRef, { onHiddenCategories, onPredicateSe
         };
     }
 
-    function setTreePointFilter(m, extraFilter) {
-        // only non-cluster points
-        const base = ['!', ['has', 'point_count']];
+    function setTreePointFilter(m, baseExtra, categoryExtra) {
+        const base = ['!has', 'point_count'] // legacy filter syntax
 
-        // combine base + optional extra
-        const combined = extraFilter ? ['all', base, extraFilter] : base;
+        const parts = [base]
+        if (baseExtra) parts.push(baseExtra)
+        if (categoryExtra) parts.push(categoryExtra)
+
+        const combined = parts.length === 1 ? base : ['all', ...parts]
 
         for (const id of TREE_POINT_LAYERS) {
-            if (m.getLayer(id)) m.setFilter(id, combined);
+            if (m.getLayer(id)) m.setFilter(id, combined)
         }
     }
 
