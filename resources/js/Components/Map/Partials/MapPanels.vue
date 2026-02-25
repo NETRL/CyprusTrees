@@ -80,7 +80,8 @@ watch(
 watch(
     [() => props.selected, () => props.hovered],
     ([selected, hovered]) => {
-        if ((selected || hovered) && (!isEditing.value && !isCreating.value) && !isEventPanel.value) {
+        if ((!!selected || !!hovered) && (!isEditing.value && !isCreating.value) && !isEventPanel.value) {
+            if (ui.activePanel === MAP_PANELS.NEIGHBORHOOD && !selected) return
             openPanel(MAP_PANELS.TREE)
         } else if (!isEditing.value && !isCreating.value && !props.markerLatLng && !isEventPanel.value) {
             // only close if nothing else is holding the panel open

@@ -126,12 +126,6 @@ const hiddenCategories = ref(null)
 provide('hiddenCategories', readonly(hiddenCategories));
 let treeVisualizationApi = null
 
-// --- init ---
-const center = [33.37, 35.17]
-const zoom = 12
-
-const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY
-
 const { onTreeSaved, onTreeUpdated } = useTreeMutatorHandler({
     treeData,
     selectedTree,
@@ -182,23 +176,15 @@ const eventBasePredicate = computed(() => {
 // -------- MAP INIT ----------
 onMounted(async () => {
     try {
-        const { map: m } = await initMap(mapContainer.value, {
-            center,
-            zoom,
-            maptilerKey: MAPTILER_KEY,
-        })
-
-        map.value = m
+        map.value = await initMap(mapContainer.value)
 
         treeCreate.attach()
 
-        setupBaseLayers(m, MAPTILER_KEY)
-
-        mapOptionsMgr = new MapOptionsManager(m, {
+        mapOptionsMgr = new MapOptionsManager(map.value, {
             mapUi: { openPanel, setActiveMode },
         }).init()
 
-        const layersComposable = useMapLayers(m, {
+        const layersComposable = useMapLayers(map.value, {
             isInteractionEnabled: () => isInteractionEnabled.value,
 
             onNeighborhoodData: neighborhoodData,
@@ -217,7 +203,7 @@ onMounted(async () => {
         gisLayerApi = gApi
 
 
-        treeVisualizationApi = useTreeVisualization(m, {
+        treeVisualizationApi = useTreeVisualization(map.value, {
             onHiddenCategories: (set) => { hiddenCategories.value = set },
             onPredicateSet: (p) => { treeLayerApi?.setTreesDataFiltered(p) },
             selectedFilterRef: selectedFilter,

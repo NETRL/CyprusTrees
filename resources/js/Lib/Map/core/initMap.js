@@ -1,7 +1,13 @@
 import maplibregl from 'maplibre-gl'
+import { setupBaseLayers } from '@/Lib/Map/core/setupBaseLayers'
 
-export async function initMap(container, { center, zoom, maptilerKey }) {
-  const styleJson = await fetch(`https://api.maptiler.com/maps/streets-v2/style.json?key=${maptilerKey}`).then(res => res.json())
+export async function initMap(container) {
+
+  const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY
+  const styleJson = await fetch(`https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`).then(res => res.json())
+
+  const center = [33.37, 35.17]
+  const zoom = 12
 
   const map = new maplibregl.Map({
     container,
@@ -11,7 +17,7 @@ export async function initMap(container, { center, zoom, maptilerKey }) {
     zoom,
   })
 
-  // Add standard controls here if you like
+  // Add standard controls here
   map.addControl(
     new maplibregl.AttributionControl({
       compact: false,
@@ -30,5 +36,7 @@ export async function initMap(container, { center, zoom, maptilerKey }) {
   // Wait for load once, return a promise
   await new Promise(resolve => map.once('load', resolve))
 
-  return { map, styleJson }
+  setupBaseLayers(map, MAPTILER_KEY)
+
+  return map
 }

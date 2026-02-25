@@ -98,7 +98,6 @@ export async function loadTreesLayer(mapInstance, {
     }
 
     function setTreesDataFiltered(predicateFn) {
-        console.log(() => predicateFn)
         const filtered = {
             ...data,
             features: (data.features || []).filter(predicateFn),
