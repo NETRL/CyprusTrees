@@ -34,7 +34,7 @@
         "@primeuix/themes": "^1.2.5",
         "echarts": "^6.0.0",
         "lucide-vue-next": "^0.555.0",
-        "maplibre-gl": "^5.10.0",
+        "maplibre-gl": "5.10.0",
         "mitt": "^3.0.1",
         "primeicons": "^7.0.0",
         "primevue": "^4.4.1",

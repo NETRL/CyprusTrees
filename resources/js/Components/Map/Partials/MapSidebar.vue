@@ -40,6 +40,7 @@ import { inject, ref, watch } from 'vue'
 import SidebarContent from '@/Components/Map/Partials/SidebarContent.vue'
 import BottomSheet from '@/Components/Map/Partials/BottomSheet.vue'
 import { useMapUiState } from '@/Lib/Map/useMapUiState'
+import { useDevice } from '@/Composables/useDevice'
 
 const props = defineProps({
     treeData: { type: Object, default: () => null, },
@@ -48,6 +49,7 @@ const props = defineProps({
 
 
 const { isSidebarOpen, toggleSidebar, closeSidebar, openSidebar } = useMapUiState()
+const { isDesktop } = useDevice()
 
 const emit = defineEmits(['toggleCategory'])
 
@@ -66,6 +68,7 @@ watch(
     () => mobileState.value,
     (val) => {
         // if the sheet is not closed, then mobile sidebar is "open"
+        if(isDesktop) return
         if (val !== 'closed') {
             openSidebar()
         } else {
