@@ -1,6 +1,5 @@
-<!-- MapPanelContent.vue -->
 <template>
-    <EventPanel v-if="ui.activePanel === MAP_PANELS.EVENTS" :selectedTree="selected"/>
+    <EventPanel v-if="ui.activePanel === MAP_PANELS.EVENTS" :selectedTree="selected" @clearSelection="emit('clearSelection')"/>
     <MapTreeForm v-else-if="ui.activePanel === MAP_PANELS.TREE_FORM" :visible="formVisible" @update:visible="emit('update:formVisible', $event)" routeResource="trees"
         :action="formAction" :markerLatLng="markerLatLng" :dataRow="selected" />
     <NeighborhoodCardContent v-else-if="ui.activePanel === MAP_PANELS.NEIGHBORHOOD"

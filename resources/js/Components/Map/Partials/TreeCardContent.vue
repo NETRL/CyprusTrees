@@ -486,7 +486,7 @@ const props = defineProps({
     isSelected: { type: Boolean, required: true }
 });
 
-const emit = defineEmits(['update:selected', 'editClick', 'clearSelection'])
+const emit = defineEmits(['editClick', 'clearSelection'])
 
 const { ui } = useMapUiState()
 

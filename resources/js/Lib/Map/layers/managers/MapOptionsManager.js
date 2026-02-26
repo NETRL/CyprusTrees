@@ -22,6 +22,7 @@ export class MapOptionsManager {
             onShowEvents: () => {
                 this.mapUi.setActiveMode(MAP_MODES.EVENTS)
                 this.mapUi.openPanel(MAP_PANELS.EVENTS)
+                this.mapUi.closeSidebar()
             },
 
             onClose: () => {

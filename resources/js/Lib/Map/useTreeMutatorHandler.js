@@ -33,9 +33,11 @@ export function useTreeMutatorHandler({
         const next = upsertTreeFeature(treeData.value, propsObj)
         treeData.value = next
 
-        const treeLayerApi = getTreeLayerApi?.()
-        treeLayerApi?.setTreesData?.(next)
-
+        requestAnimationFrame(() => {
+            const api = getTreeLayerApi?.()
+            api?.setTreesData?.(next)
+            api?.selectTreeById?.(id)
+        })
         selectedTree.value = propsObj
     }
 

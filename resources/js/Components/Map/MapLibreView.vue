@@ -11,7 +11,7 @@
 
     <MapPanels :hovered="hoveredTree" :selected="selectedTree" :markerLatLng="markerLatLng"
         :selectedNeighborhood="selectedNeighborhood" :neighborhoodStats="neighborhoodStats" :pinClickFlag="pinClickFlag"
-        @update:selected="selectedTree = $event" @cancelCreate="onCancelCreate" @clearSelection="onClearSelection" />
+        @cancelCreate="onCancelCreate" @clearSelection="onClearSelection" />
 
     <MapLoadingOverlay :isLoading="isLoading" />
 
@@ -29,7 +29,6 @@ import LocateControl from '@/Components/Map/Controls/LocateControl.vue'
 import EventModeTopBar from '@/Components/Map/Controls/EventModeTopBar.vue'
 
 import { initMap } from '@/Lib/Map/core/initMap'
-import { setupBaseLayers } from '@/Lib/Map/core/setupBaseLayers'
 import { useMapFilter } from '@/Composables/useMapFilter'
 import { usePermissions } from '@/Composables/usePermissions'
 
@@ -91,7 +90,7 @@ const { selectedNeighborhood, neighborhoodStats } = useNeighborhoodSelection({
 })
 
 const { selectedFilter } = useMapFilter()
-const { ui, openPanel, togglePanel, setActiveMode } = useMapUiState()
+const { ui, openPanel, togglePanel, setActiveMode, closeSidebar } = useMapUiState()
 
 // -------- EVENT MODE (fetch + recenter) ----------
 const isEventMode = computed(() => ui.activeMode === MAP_MODES.EVENTS)
@@ -157,20 +156,20 @@ const assignedTreeIdSet = computed(() => {
 
 // compute a map filter expression that "include features where the feature property id is in the array"
 const eventBaseMapFilter = computed(() => {
-  const allow = assignedTreeIdSet.value
-  if (allow == null) return null
+    const allow = assignedTreeIdSet.value
+    if (allow == null) return null
 
-  const ids = [...allow]
-  if (!ids.length) return ['==', 'id', -1] // show none
+    const ids = [...allow]
+    if (!ids.length) return ['==', 'id', -1] // show none
 
-  return ['in', 'id', ...ids] // legacy syntax
+    return ['in', 'id', ...ids] // legacy syntax
 })
 
 
 const eventBasePredicate = computed(() => {
-  if (assignedTreeIdSet.value == null) return () => true
-  const allow = new Set(assignedTreeIdSet.value)
-  return (f) => allow.has(f?.properties?.id)
+    if (assignedTreeIdSet.value == null) return () => true
+    const allow = new Set(assignedTreeIdSet.value)
+    return (f) => allow.has(f?.properties?.id)
 })
 
 // -------- MAP INIT ----------
@@ -181,7 +180,7 @@ onMounted(async () => {
         treeCreate.attach()
 
         mapOptionsMgr = new MapOptionsManager(map.value, {
-            mapUi: { openPanel, setActiveMode },
+            mapUi: { openPanel, setActiveMode, closeSidebar },
         }).init()
 
         const layersComposable = useMapLayers(map.value, {

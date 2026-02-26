@@ -1,7 +1,8 @@
 <template>
     <!-- Desktop Card -->
-    <aside :class="[
-        'max-lg:hidden absolute right-2 top-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-2xl transition-all duration-300 ease-in-out z-50',
+    <aside v-if="isDesktop" :class="[
+        'absolute right-2 top-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800',
+        'shadow-2xl transition-all duration-300 ease-in-out z-50',
         'max-h-[calc(100vh-7rem)] overflow-hidden w-[420px] flex flex-col',
         {
             'opacity-100 translate-x-0 pointer-events-auto': isPanelOpen,
@@ -13,7 +14,7 @@
     </aside>
 
     <!-- Mobile Bottom Sheet -->
-    <BottomSheet v-model:state="sheetState" :showFab="false" :showBackdrop="false" :heightRatio="0.75">
+    <BottomSheet v-else v-model:state="sheetState" :showFab="false" :showBackdrop="false" :heightRatio="0.75">
         <MapPanelContent v-bind="contentProps" @update:formVisible="formVisible = $event" @editClick="onEditClick"
             @clearSelection="emit('clearSelection')" />
     </BottomSheet>
@@ -23,7 +24,7 @@
 import { computed, ref, watch } from 'vue'
 import { useMapUiState, MAP_PANELS, MAP_MODES } from '@/Lib/Map/useMapUiState'
 import BottomSheet from '@/Components/Map/Partials/BottomSheet.vue'
-import MapPanelContent from './MapPanelContent.vue'
+import MapPanelContent from '@/Components/Map/Partials/MapPanelContent.vue'
 import { useDevice } from '@/Composables/useDevice'
 
 const emit = defineEmits(['cancelCreate', 'clearSelection'])
@@ -49,7 +50,7 @@ const contentProps = computed(() => ({
     formVisible: formVisible.value,
 }))
 
-const { ui, isPanelOpen, openPanel, closePanel } = useMapUiState()
+const { ui, isPanelOpen, openPanel, closePanel, closeSidebar } = useMapUiState()
 
 const { isDesktop } = useDevice()
 
@@ -62,7 +63,8 @@ const isHovered = computed(() => props.hovered !== null && ui.activePanel !== MA
 const isSelected = computed(() => props.selected !== null)
 const isCreating = computed(() => props.markerLatLng !== null)
 
-const isEventPanel = computed(() => ui.activePanel === MAP_PANELS.EVENTS)
+const isEventPanel = computed(() => ui.activePanel === MAP_PANELS.EVENTS) // Replaced this
+const isEventMode = computed(() => ui.activeMode === MAP_MODES.EVENTS)  // with this. make sure thats what we want
 const isPlanting = computed(() => ui.activeMode === MAP_MODES.PLANTING)
 const isMaintenance = computed(() => ui.activeMode === MAP_MODES.MAINTENANCE)
 
@@ -71,7 +73,7 @@ const isMaintenance = computed(() => ui.activeMode === MAP_MODES.MAINTENANCE)
 watch(
     () => props.selectedNeighborhood,
     (val) => {
-        if ((val && !isSelected.value) && (!isEditing.value && !isCreating.value) && !isEventPanel.value) openPanel(MAP_PANELS.NEIGHBORHOOD)
+        if ((val && !isSelected.value) && (!isEditing.value && !isCreating.value) && !isEventMode.value) openPanel(MAP_PANELS.NEIGHBORHOOD)
         else if (!val && ui.activePanel === MAP_PANELS.NEIGHBORHOOD) closePanel();
     }
 )
@@ -80,15 +82,17 @@ watch(
 watch(
     [() => props.selected, () => props.hovered],
     ([selected, hovered]) => {
-        if ((!!selected || !!hovered) && (!isEditing.value && !isCreating.value) && !isEventPanel.value) {
+        if ((!!selected || !!hovered) && (!isEditing.value && !isCreating.value) && !isEventMode.value) {
             if (ui.activePanel === MAP_PANELS.NEIGHBORHOOD && !selected) return
             openPanel(MAP_PANELS.TREE)
-        } else if (!isEditing.value && !isCreating.value && !props.markerLatLng && !isEventPanel.value) {
+        } else if (!isEditing.value && !isCreating.value && !props.markerLatLng && !isEventMode.value) {
             // only close if nothing else is holding the panel open
             if (ui.activePanel === MAP_PANELS.TREE) closePanel()
             if (ui.activePanel === MAP_PANELS.TREE_FORM) closePanel()
-        } else if (isEventPanel.value) {
+        } else if (isEventMode.value) {
             openPanel(MAP_PANELS.EVENTS)
+            closeSidebar()
+
             sheetState.value = 'mid'
         }
     }
