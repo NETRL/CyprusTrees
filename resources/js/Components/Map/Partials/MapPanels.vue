@@ -92,7 +92,6 @@ watch(
         } else if (isEventMode.value) {
             openPanel(MAP_PANELS.EVENTS)
             closeSidebar()
-
             sheetState.value = 'mid'
         }
     }

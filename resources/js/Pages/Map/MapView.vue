@@ -38,6 +38,7 @@ const props = defineProps({
     initialMode: { type: String, default: 'default' },
     initialEventId: { type: Number, default: null },
     userEvents: { type: Array, default: () => [] },
+    plantingEvents: { type: Array, default: () => [] }, 
 })
 
 useCustomToast();
@@ -51,6 +52,7 @@ provide('healthStatus', props.healthStatus)
 provide('treeStatus', props.treeStatus)
 provide('ownerType', props.ownerType)
 provide('userEvents', props.userEvents)
+provide('plantingEvents', props.plantingEvents)
 
 
 

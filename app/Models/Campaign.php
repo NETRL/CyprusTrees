@@ -72,6 +72,6 @@ class Campaign extends Model
 
     public function plantingEvents()
     {
-        return $this->hasMany(PlantingEvent::class);
+        return $this->hasMany(PlantingEvent::class, 'campaign_id', 'id');
     }
 }

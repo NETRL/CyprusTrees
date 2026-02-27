@@ -125,7 +125,7 @@ class PlantingEvent extends Model
 
     public function campaign()
     {
-        return $this->belongsTo(Campaign::class);
+        return $this->belongsTo(Campaign::class, 'campaign_id', 'id');
     }
 
     public function neighborhood()

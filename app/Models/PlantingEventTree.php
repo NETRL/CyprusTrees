@@ -12,6 +12,8 @@ class PlantingEventTree extends Model
     use HasFactory, BaseModelTrait, Paginatable;
 
     protected $table = 'planting_events_trees';
+    protected $appends = ['species_label'];
+    protected $hidden = ['tree']; // avoid loading tree model also. only append the species_label
 
     protected $fillable = [
         'planting_id',
@@ -92,5 +94,10 @@ class PlantingEventTree extends Model
     public function plantedBy()
     {
         return $this->belongsTo(User::class, 'planted_by', 'id');
+    }
+
+    public function getSpeciesLabelAttribute()
+    {
+        return $this->tree?->species_label ?? '-';
     }
 }

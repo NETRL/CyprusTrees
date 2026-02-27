@@ -15,6 +15,7 @@ export const MAP_MODES = Object.freeze({
     NONE: null,                   // initial map (no mode)
     EVENTS: "events",
     PLANTING: "planting",
+    PLANTING_SUMMARY: "planting_summary",
     MAINTENANCE: "maintenance",
     SELECT_TREES: "selectTrees",   // phase 2
     DRAW_BOUNDARY: "drawBoundary", // phase 2

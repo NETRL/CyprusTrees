@@ -1,5 +1,5 @@
 <template>
-    <MapSidebar :treeData="treeData" :neighborhoodData="neighborhoodData" @toggleCategory="toggleCategory" />
+    <MapSidebar :treeData="treeData" @toggleCategory="toggleCategory" />
 
     <!-- Event Mode Top Bar -->
     <EventModeTopBar :initialEventId="props.initialEventId" :activeEvent="activeEvent" :eventLoading="eventLoading"
@@ -66,6 +66,7 @@ const isLoading = ref(true)
 const treeData = ref([])
 const neighborhoodData = ref([])
 const selectedNeighborhoodId = ref(null)
+const plantingTreeIds = ref(null)
 
 const selectedTree = ref(null)
 const hoveredTree = ref(null)
@@ -90,10 +91,11 @@ const { selectedNeighborhood, neighborhoodStats } = useNeighborhoodSelection({
 })
 
 const { selectedFilter } = useMapFilter()
-const { ui, openPanel, togglePanel, setActiveMode, closeSidebar } = useMapUiState()
+const { ui, openPanel, togglePanel, setActiveMode, closeSidebar, isSidebarOpen } = useMapUiState()
 
 // -------- EVENT MODE (fetch + recenter) ----------
 const isEventMode = computed(() => ui.activeMode === MAP_MODES.EVENTS)
+const isPlantingSumMode = computed(() => ui.activeMode === MAP_MODES.PLANTING_SUMMARY)
 const initialMode = computed(() => props.initialMode)
 const initialEventIdRef = computed(() => props.initialEventId)
 const {
@@ -142,15 +144,32 @@ mapBus.on('event:selected', onEventSelected)
 mapBus.on('event:start', onEventStart)
 mapBus.on('event:complete', onEventComplete)
 mapBus.on('event:focus', onEventFocused)
+mapBus.on('planting_summary:selected', onSummarySelected)
+mapBus.on('planting_summary:removed', () => { plantingTreeIds.value = null })
+mapBus.on('planting_summary:tree-clicked', onSummaryTreeClicked)
+
+
+function onSummaryTreeClicked(treeId){
+    treeLayerApi?.selectTreeById(treeId)
+}
+
+function onSummarySelected({ treeIds, coords }) {
+    setActiveMode(MAP_MODES.PLANTING_SUMMARY)
+    plantingTreeIds.value = treeIds
+    flyToMap(coords)
+}
 
 const assignedTreeIdSet = computed(() => {
-    if (!isEventMode.value) return null // no restriction outside event mode
+    if (isPlantingSumMode.value) return plantingTreeIds.value
+    if (!isEventMode.value) return null
+
 
     const set = new Set()
     for (const ev of (userEvents ?? [])) {
         const id = ev?.meta?.tree_id
         if (id != null) set.add(Number(id))
     }
+
     return set
 })
 
@@ -237,6 +256,15 @@ function clearMapSelection() {
     selectedTree.value = null
 }
 
+function flyToMap(coords) {
+    // Coords should be [lng, lat]
+    map.value.easeTo({
+        center: coords,
+        duration: 800,
+        zoom: Math.max(map.value.getZoom(), 12),
+    });
+}
+
 // -------- VISUALIZATION / FILTERING ----------
 
 function toggleCategory(payload) {
@@ -279,5 +307,11 @@ onBeforeUnmount(() => {
     mapBus.off('event:start', onEventStart)
     mapBus.off('event:complete', onEventComplete)
     mapBus.off('event:focus', onEventFocused)
+    mapBus.off('planting_summary:selected', onSummarySelected)
+    mapBus.off('planting_summary:removed', () => { plantingTreeIds.value = null })
+    mapBus.off('planting_summary:tree-clicked', onPlantingSummaryTreeClicked)
+
+
+
 })
 </script>

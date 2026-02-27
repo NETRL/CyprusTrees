@@ -6,6 +6,7 @@ use App\Models\Tree;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -38,6 +39,12 @@ return new class extends Migration
 
             $table->timestamps();
         });
+        //TODO Decide if we need geom in plantings.
+        // // Add PostGIS geometry column (WGS84, MultiPolygon)
+        // DB::statement("
+        //     ALTER TABLE planting_events
+        //     ADD COLUMN geom geometry(MULTIPOLYGON, 4326)
+        // ");
     }
 
     /**

@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Neighborhood;
+use App\Models\PlantingEvent;
 use App\Models\ReportType;
 use App\Models\Species;
 use App\Models\Tag;
 use App\Models\Tree;
 use App\Services\UserEventsService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 
 class MapController extends Controller
@@ -47,7 +49,19 @@ class MapController extends Controller
             'initialLocation' => $initialLocation,
             'initialMode' => $initialMode,
             'initialEventId' => $initialEventId,
-            'userEvents' => $userEvents
+            'userEvents' => $userEvents,
+            'plantingEvents' => $this->getPlantingEvents(),
         ]);
+        
+    }
+
+    function getPlantingEvents(): Collection{
+
+        $events = PlantingEvent::query()
+        ->where('completed_at', '!=', null)
+        ->with(['eventTrees', 'campaign', ])
+        ->get(['planting_id', 'campaign_id', 'completed_at', 'lat', 'lon', 'target_tree_count', 'status']);
+
+        return $events ?? [];
     }
 }

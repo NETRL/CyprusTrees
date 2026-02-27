@@ -1,5 +1,5 @@
 <template>
-    <div class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950">
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900/85">
         <div class="border-b border-gray-200 p-4 dark:border-gray-800">
             <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">

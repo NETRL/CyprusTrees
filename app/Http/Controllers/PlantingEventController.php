@@ -156,7 +156,7 @@ class PlantingEventController extends Controller
             'message' => __('Planting Event has been created.'),
         ]);
 
-        return redirect()->route('plantingEvents.index');
+        return redirect()->back();
     }
 
     public function update(Request $request, PlantingEvent $plantingEvent): RedirectResponse
@@ -181,7 +181,7 @@ class PlantingEventController extends Controller
             'message' => __('Planting Event has been updated.'),
         ]);
 
-        return redirect()->route('plantingEvents.index');
+        return redirect()->back();
     }
 
     public function destroy(Request $request, PlantingEvent $plantingEvent): RedirectResponse
@@ -195,7 +195,7 @@ class PlantingEventController extends Controller
             'message' => __('Planting Event has been deleted.'),
         ]);
 
-        return redirect()->route('plantingEvents.index');
+        return redirect()->back();
     }
 
     public function massDestroy(Request $request): RedirectResponse
@@ -211,7 +211,7 @@ class PlantingEventController extends Controller
                 'message' => __('No planting events selected.'),
             ]);
 
-            return redirect()->route('plantingEvents.index');
+            return redirect()->back();
         }
 
         DB::transaction(function () use ($ids) {

@@ -6,8 +6,8 @@
         'transition-all duration-300 ease-in-out',
         'flex flex-col',
         isSidebarOpen
-            ? 'opacity-100 px-5 py-5 pointer-events-auto'
-            : 'opacity-0 pointer-events-none px-0 py-5',
+            ? 'opacity-100 py-5 pointer-events-auto'
+            : 'opacity-0 pointer-events-none py-5',
 
     ]">
         <SidebarContent v-bind="props" @toggleCategory="payload => emit('toggleCategory', payload)"
@@ -29,14 +29,14 @@
 
     <!-- Mobile Bottom Sheet -->
     <BottomSheet v-model:state="mobileState">
-        <div class="flex flex-col h-full px-5 pt-4 pb-6 w-full sm:items-center">
+        <div class="flex flex-col h-full pt-4 pb-6 w-full sm:items-center">
             <SidebarContent v-bind="props" @toggleCategory="payload => emit('toggleCategory', payload)" />
         </div>
     </BottomSheet>
 </template>
 
 <script setup>
-import { inject, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import SidebarContent from '@/Components/Map/Partials/SidebarContent.vue'
 import BottomSheet from '@/Components/Map/Partials/BottomSheet.vue'
 import { useMapUiState } from '@/Lib/Map/useMapUiState'
@@ -44,7 +44,6 @@ import { useDevice } from '@/Composables/useDevice'
 
 const props = defineProps({
     treeData: { type: Object, default: () => null, },
-    neighborhoodData: { type: Object, default: () => null, }
 })
 
 
